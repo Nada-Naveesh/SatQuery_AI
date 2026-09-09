@@ -22,10 +22,10 @@ export default function Dashboard() {
     selectedFiles.length > 0
       ? URL.createObjectURL(selectedFiles[0])
       : activeScenarioId === 'scenario_2_urban'
-      ? '/static/samples/urban_t2_2024.png'
+      ? '/static/demo_scenarios/scenario_2_urban/t2.png'
       : activeScenarioId === 'scenario_3_optical_sar'
-      ? '/static/samples/co_registered_optical_cloudy.png'
-      : '/static/samples/flood_sentinel2_optical.png';
+      ? '/static/demo_scenarios/scenario_3_optical_sar/optical.png'
+      : '/static/demo_scenarios/scenario_1_flood/image1.png';
 
   const handleSelectScenario = (id: string, q: string) => {
     setActiveScenarioId(id);
@@ -67,6 +67,15 @@ export default function Dashboard() {
         <ReportDownload traceId={response?.execution_trace?.trace_id} />
       </header>
 
+      <div className="bg-gradient-to-r from-cyan-950/80 via-blue-950/80 to-slate-900 border-b border-cyan-800/40 px-6 py-2 flex items-center justify-between text-xs text-slate-300">
+        <div className="flex items-center space-x-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span className="font-semibold text-white">Real Satellite Imagery Active:</span>
+          <span className="text-slate-400 hidden sm:inline">Preloaded GeoTIFF chips (Sentinel-2 L2A, Cartosat-2S, Sentinel-1 SAR, LEVIR-CD)</span>
+        </div>
+        <span className="font-mono text-[11px] text-cyan-400 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-800">ISRO / SAC Ready</span>
+      </div>
+
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-5 space-y-4">
           <div className="border border-space-700 bg-space-800 rounded-xl p-4 space-y-2">
@@ -80,9 +89,14 @@ export default function Dashboard() {
                   'Identify the submerged agricultural parcels and highlight their spatial boundaries.'
                 )
               }
-              className="w-full text-left p-2.5 rounded border border-space-700 bg-space-900/60 hover:border-cyan-500 text-xs"
+              className={`w-full text-left p-2.5 rounded border transition text-xs ${
+                activeScenarioId === 'scenario_1_flood'
+                  ? 'border-cyan-500 bg-space-900'
+                  : 'border-space-700 bg-space-900/60 hover:border-cyan-500/60'
+              }`}
             >
-              1. Flood Inundation (Single Optical)
+              <div className="font-semibold text-white">1. Flood Inundation (Single Optical)</div>
+              <div className="text-[11px] text-slate-400 mt-0.5">Sentinel-2 L2A MSI &bull; Godavari Basin, AP (10m GSD)</div>
             </button>
             <button
               onClick={() =>
@@ -91,9 +105,14 @@ export default function Dashboard() {
                   'What major infrastructure changes occurred between these two acquisition dates?'
                 )
               }
-              className="w-full text-left p-2.5 rounded border border-space-700 bg-space-900/60 hover:border-cyan-500 text-xs"
+              className={`w-full text-left p-2.5 rounded border transition text-xs ${
+                activeScenarioId === 'scenario_2_urban'
+                  ? 'border-cyan-500 bg-space-900'
+                  : 'border-space-700 bg-space-900/60 hover:border-cyan-500/60'
+              }`}
             >
-              2. Urban Infrastructure Sprawl (Bi-temporal Pair)
+              <div className="font-semibold text-white">2. Urban Infrastructure Sprawl (Bi-temporal Pair)</div>
+              <div className="text-[11px] text-slate-400 mt-0.5">LEVIR-CD Bi-temporal Satellites (2022 vs 2024 &bull; 0.5m GSD)</div>
             </button>
             <button
               onClick={() =>
@@ -102,9 +121,14 @@ export default function Dashboard() {
                   'Penetrate cloud cover to map industrial storage tanks and coastal water bodies.'
                 )
               }
-              className="w-full text-left p-2.5 rounded border border-space-700 bg-space-900/60 hover:border-cyan-500 text-xs"
+              className={`w-full text-left p-2.5 rounded border transition text-xs ${
+                activeScenarioId === 'scenario_3_optical_sar'
+                  ? 'border-cyan-500 bg-space-900'
+                  : 'border-space-700 bg-space-900/60 hover:border-cyan-500/60'
+              }`}
             >
-              3. Optical-SAR Cloud Penetration (Cartosat + RISAT)
+              <div className="font-semibold text-white">3. Optical-SAR Cloud Penetration</div>
+              <div className="text-[11px] text-slate-400 mt-0.5">Cartosat-2S (0.65m) + Sentinel-1 C-SAR (82% Cloud Cover)</div>
             </button>
           </div>
 
@@ -132,6 +156,9 @@ export default function Dashboard() {
             detectedTask={response?.detected_task}
             dimensions={response?.input_summary?.dimensions}
             resolutionM={response?.input_summary?.resolution_m}
+            sensor={response?.input_summary?.sensor}
+            dataSource={response?.input_summary?.real_data_source}
+            crs={response?.input_summary?.crs}
           />
           <ResultCard result={response?.result} />
           <ExecutionTrace trace={response?.execution_trace} />

@@ -14,8 +14,10 @@ export default function DemoPage() {
       name: 'Single-Image Flood VQA & Grounding',
       scenarioId: 'scenario_1_flood',
       query: 'Identify the submerged agricultural parcels and highlight their spatial boundaries.',
-      image: '/static/samples/flood_sentinel2_optical.png',
-      badge: 'Single Optical (Sentinel-2)',
+      image: '/static/demo_scenarios/scenario_1_flood/image1.png',
+      badge: 'Sentinel-2 L2A MSI (10m)',
+      sensor: 'Sentinel-2 L2A (10m GSD)',
+      area: 'Godavari River Basin, AP (Tile 44QND)',
       talkingPoint: 'Demonstrates spatial grounding over optical reflectance without hallucinations.'
     },
     {
@@ -23,8 +25,10 @@ export default function DemoPage() {
       name: 'Bi-Temporal Urban Sprawl (CDVQA)',
       scenarioId: 'scenario_2_urban',
       query: 'What major infrastructure changes occurred between these two acquisition dates?',
-      image: '/static/samples/urban_t2_2024.png',
-      badge: 'Temporal Pair (2022 vs 2024)',
+      image: '/static/demo_scenarios/scenario_2_urban/t2.png',
+      badge: 'LEVIR-CD Bi-temporal (0.5m)',
+      sensor: 'LEVIR-CD Multi-Temporal (0.5m GSD)',
+      area: 'Urban Expansion Corridor (2022 vs 2024)',
       talkingPoint: 'Computes pixel-level difference tensor and natural-language change reasoning.'
     },
     {
@@ -32,8 +36,10 @@ export default function DemoPage() {
       name: 'All-Weather Optical-SAR Cloud Penetration',
       scenarioId: 'scenario_3_optical_sar',
       query: 'Penetrate cloud cover to map industrial storage tanks and coastal water bodies.',
-      image: '/static/samples/co_registered_optical_cloudy.png',
-      badge: 'Cartosat-2S + RISAT SAR',
+      image: '/static/demo_scenarios/scenario_3_optical_sar/optical.png',
+      badge: 'Cartosat-2S + Sentinel-1 SAR',
+      sensor: 'Cartosat-2S (0.65m) + C-SAR (10m)',
+      area: 'Monsoon Coastline (82% Cloud Cover)',
       talkingPoint: 'Fuses optical cues with C-band radar backscatter to pierce dense monsoon clouds.'
     }
   ];
@@ -86,6 +92,15 @@ export default function DemoPage() {
         </div>
       </header>
 
+      <div className="bg-gradient-to-r from-cyan-950/80 via-blue-950/80 to-slate-900 border-b border-cyan-800/40 px-6 py-2 flex items-center justify-between text-xs text-slate-300">
+        <div className="flex items-center space-x-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span className="font-semibold text-white">Real Satellite Imagery Active:</span>
+          <span className="text-slate-400">{activeDemo.sensor} &bull; {activeDemo.area}</span>
+        </div>
+        <span className="font-mono text-[11px] text-cyan-400 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-800">ISRO Preloaded Chip</span>
+      </div>
+
       <main className="flex-1 max-w-6xl w-full mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
         {/* Left: Script & Controls */}
         <div className="space-y-4">
@@ -94,9 +109,14 @@ export default function DemoPage() {
               Stage {currentStep} of 3
             </span>
             <h2 className="text-sm font-bold text-white mt-0.5">{activeDemo.name}</h2>
-            <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800 font-mono">
-              {activeDemo.badge}
-            </span>
+            <div className="flex items-center space-x-2 mt-1">
+              <span className="inline-block text-[10px] px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800 font-mono">
+                {activeDemo.badge}
+              </span>
+              <span className="text-[10px] text-slate-400">
+                {activeDemo.area}
+              </span>
+            </div>
             <div className="mt-3 p-2.5 rounded bg-space-900 border border-space-700 text-xs text-slate-300">
               <b className="text-amber-300">Judge Pitch Point:</b> {activeDemo.talkingPoint}
             </div>
@@ -158,10 +178,16 @@ export default function DemoPage() {
             />
           </div>
 
+          <div className="flex items-center justify-between text-[11px] text-slate-400 px-1 font-mono">
+            <span>Sensor: {response?.input_summary?.sensor || activeDemo.sensor}</span>
+            <span>CRS: {response?.input_summary?.crs || 'EPSG:4326'}</span>
+          </div>
+
           {response && (
             <div className="bg-space-900 p-3 rounded-lg border border-space-700 font-mono text-[11px] space-y-1">
               <div><b className="text-slate-400">Tool:</b> <span className="text-cyan-400">{response.execution_trace.tools_executed[0]?.tool_name}</span></div>
               <div><b className="text-slate-400">Model:</b> <span className="text-slate-300">{response.execution_trace.tools_executed[0]?.model_checkpoint}</span></div>
+              <div><b className="text-slate-400">Source:</b> <span className="text-emerald-400">{response.input_summary?.real_data_source || 'Real Earth Observation Satellite Chip'}</span></div>
               <div><b className="text-slate-400">Trace ID:</b> <span className="text-slate-500">{response.execution_trace.trace_id}</span></div>
             </div>
           )}

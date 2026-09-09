@@ -9,8 +9,14 @@ export async function fetchHealth(): Promise<any> {
 }
 
 export async function fetchScenarios(): Promise<DemoScenario[]> {
-  const res = await fetch(`${API_BASE_URL}/api/v1/scenarios`);
+  const res = await fetch(`${API_BASE_URL}/api/scenarios`);
   if (!res.ok) throw new Error('Failed to load demo scenarios');
+  return res.json();
+}
+
+export async function fetchScenarioDetail(scenarioId: string): Promise<DemoScenario> {
+  const res = await fetch(`${API_BASE_URL}/api/scenarios/${encodeURIComponent(scenarioId)}`);
+  if (!res.ok) throw new Error(`Failed to load scenario ${scenarioId}`);
   return res.json();
 }
 

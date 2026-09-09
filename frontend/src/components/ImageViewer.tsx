@@ -7,6 +7,9 @@ interface ImageViewerProps {
   detectedTask?: string;
   dimensions?: number[];
   resolutionM?: number;
+  dataSource?: string;
+  sensor?: string;
+  crs?: string;
 }
 
 export const ImageViewer: React.FC<ImageViewerProps> = ({
@@ -15,6 +18,9 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
   detectedTask,
   dimensions = [512, 512],
   resolutionM = 10.0,
+  dataSource,
+  sensor,
+  crs = 'EPSG:4326',
 }) => {
   const [viewMode, setViewMode] = useState<'base' | 'overlay' | 'split'>('base');
 
@@ -96,8 +102,15 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
       </div>
 
       <div className="mt-2 flex items-center justify-between text-[11px] text-slate-400 px-1">
-        <span>Dimensions: {dimensions[0]} x {dimensions[1]} px</span>
-        <span>CRS: EPSG:4326 &bull; GSD: {resolutionM}m</span>
+        <div className="flex items-center space-x-2">
+          <span>Dimensions: {dimensions[0]} x {dimensions[1]} px</span>
+          {(dataSource || sensor) && (
+            <span className="text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800/60 text-[10px] font-mono">
+              {sensor || dataSource}
+            </span>
+          )}
+        </div>
+        <span>CRS: {crs} &bull; GSD: {resolutionM}m</span>
       </div>
     </div>
   );

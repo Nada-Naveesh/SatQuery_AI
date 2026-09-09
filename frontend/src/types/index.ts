@@ -13,6 +13,10 @@ export interface InputSummary {
   dimensions: number[];
   crs?: string;
   resolution_m?: number;
+  sensor?: string;
+  area?: string;
+  acquisition_date?: string;
+  data_source?: string;
 }
 
 export interface VisualEvidence {
@@ -40,6 +44,7 @@ export interface ExecutionTrace {
   input_configuration: string;
   tools_executed: ToolExecutionRecord[];
   total_execution_time_ms: number;
+  data_source_label?: string;
 }
 
 export interface AnalysisResult {
@@ -67,4 +72,11 @@ export interface DemoScenario {
   default_query: string;
   image_paths: string[];
   input_type: 'single' | 'bitemporal_pair' | 'optical_sar_pair';
+  sensor?: string;
+  date?: string;
+  area?: string;
+  resolution?: string;
+  crs?: string;
+  suggested_queries?: string[];
+  real_data_source?: string;
 }
