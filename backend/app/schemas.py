@@ -25,6 +25,10 @@ class InputSummary(BaseModel):
     dimensions: List[int]
     crs: Optional[str] = "EPSG:4326"
     resolution_m: Optional[float] = 10.0
+    sensor: Optional[str] = None
+    area: Optional[str] = None
+    acquisition_date: Optional[str] = None
+    data_source: Optional[str] = None
 
 class VisualEvidence(BaseModel):
     evidence_type: str  # 'bounding_boxes', 'segmentation_mask', 'change_heatmap', 'fused_overlay'
@@ -49,6 +53,7 @@ class ExecutionTrace(BaseModel):
     input_configuration: str
     tools_executed: List[ToolExecutionRecord]
     total_execution_time_ms: float
+    data_source_label: Optional[str] = None
 
 class AnalysisResult(BaseModel):
     text_answer: str
@@ -73,3 +78,10 @@ class DemoScenario(BaseModel):
     default_query: str
     image_paths: List[str]
     input_type: str  # 'single', 'bitemporal_pair', 'optical_sar_pair'
+    sensor: Optional[str] = None
+    date: Optional[str] = None
+    area: Optional[str] = None
+    resolution: Optional[str] = None
+    crs: Optional[str] = "EPSG:4326"
+    suggested_queries: Optional[List[str]] = None
+    real_data_source: Optional[str] = None

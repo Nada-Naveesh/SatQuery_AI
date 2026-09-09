@@ -1,16 +1,34 @@
 import io
 import base64
+from pathlib import Path
 from typing import Tuple, Optional, Union
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-def load_image_from_bytes(file_bytes: bytes) -> Tuple[np.ndarray, str]:
+def load_image_from_bytes(file_bytes: bytes, filename: str = "") -> Tuple[np.ndarray, str]:
     """
     Loads an image from raw bytes into an RGB numpy uint8 array.
     Returns (image_array, format_str).
-    Supports GeoTIFF / TIFF, PNG, JPEG.
+    Supports GeoTIFF / TIFF (including 16-bit multispectral / float), PNG, JPEG.
     """
     try:
+        # Check if TIFF and try tifffile first if available
+        is_tiff = filename.lower().endswith(('.tif', '.tiff')) or file_bytes[:4] in (b'II*\x00', b'MM\x00*')
+        if is_tiff:
+            try:
+                import tifffile
+                arr = tifffile.imread(io.BytesIO(file_bytes))
+                if arr.ndim == 2:
+                    arr = normalize_remote_sensing_bands(arr, is_sar=any(k in filename.lower() for k in ["sar", "s1", "risat"]))
+                elif arr.ndim >= 3:
+                    if arr.shape[0] in (1, 2, 3, 4, 12) and arr.shape[0] < arr.shape[1]:
+                        # Channel-first format (C, H, W) -> (H, W, C)
+                        arr = np.transpose(arr, (1, 2, 0))
+                    arr = normalize_remote_sensing_bands(arr, is_sar=any(k in filename.lower() for k in ["sar", "s1", "risat"]))
+                return arr, "TIFF"
+            except Exception:
+                pass  # Fall back to PIL
+
         pil_img = Image.open(io.BytesIO(file_bytes))
         fmt = pil_img.format or "PNG"
         
@@ -19,6 +37,10 @@ def load_image_from_bytes(file_bytes: bytes) -> Tuple[np.ndarray, str]:
             background = Image.new("RGB", pil_img.size, (255, 255, 255))
             background.paste(pil_img, mask=pil_img.split()[-1])
             pil_img = background
+        elif pil_img.mode == "I;16" or pil_img.mode == "I":
+            raw_arr = np.array(pil_img, dtype=np.float32)
+            arr = normalize_remote_sensing_bands(raw_arr)
+            return arr, fmt
         elif pil_img.mode != "RGB":
             pil_img = pil_img.convert("RGB")
             
@@ -26,6 +48,17 @@ def load_image_from_bytes(file_bytes: bytes) -> Tuple[np.ndarray, str]:
         return arr, fmt
     except Exception as e:
         raise ValueError(f"Failed to decode image bytes: {str(e)}")
+
+def load_image_from_path(file_path: Union[str, Path]) -> Tuple[np.ndarray, str]:
+    """
+    Loads an image from a filesystem path into an RGB numpy uint8 array.
+    """
+    path = Path(file_path)
+    if not path.exists():
+        raise FileNotFoundError(f"Satellite image file not found: {path}")
+    with open(path, "rb") as f:
+        content = f.read()
+    return load_image_from_bytes(content, filename=path.name)
 
 def normalize_remote_sensing_bands(arr: np.ndarray, is_sar: bool = False) -> np.ndarray:
     """

@@ -25,6 +25,21 @@ def test_scenarios_endpoint():
     assert "scenario_2_urban" in ids
     assert "scenario_3_optical_sar" in ids
 
+def test_api_scenarios_alias_and_detail():
+    # Test /api/scenarios alias
+    res = client.get("/api/scenarios")
+    assert res.status_code == 200
+    assert len(res.json()) == 3
+
+    # Test /api/scenarios/{id}
+    res_detail = client.get("/api/scenarios/scenario_1_flood")
+    assert res_detail.status_code == 200
+    detail = res_detail.json()
+    assert "Sentinel-2" in detail["sensor"]
+    assert detail["area"] is not None
+    assert detail["crs"] == "EPSG:4326"
+    assert len(detail["suggested_queries"]) >= 1
+
 def test_analyze_scenario_1():
     payload = {
         "query": "Identify the submerged agricultural parcels and highlight their spatial boundaries.",

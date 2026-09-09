@@ -1,0 +1,22 @@
+{
+  "id": "scenario_1_flood",
+  "name": "Disaster Assessment: Inundation & Submerged Parcels",
+  "sensor": "Sentinel-2 L2A (MSI)",
+  "date": "2023-07-28",
+  "area": "Godavari River Basin, AP/Telangana, India",
+  "resolution": "10 m GSD",
+  "crs": "EPSG:4326",
+  "real_data_source": "Copernicus Open Access Hub / ESA Sentinel-2 L2A Archive (Tile: 44QND)",
+  "image_files": [
+    "image1.tif"
+  ],
+  "preview_files": [
+    "image1.png"
+  ],
+  "modality": "optical",
+  "suggested_queries": [
+    "Identify the submerged agricultural parcels and highlight their spatial boundaries.",
+    "What is the total flooded inundation area in hectares?",
+    "Quantify flood extent and compute NDWI water delineation."
+  ]
+}

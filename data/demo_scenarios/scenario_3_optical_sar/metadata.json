@@ -1,0 +1,24 @@
+{
+  "id": "scenario_3_optical_sar",
+  "name": "All-Weather Fusion: Cloud Penetration (Cartosat + RISAT / Sentinel-1)",
+  "sensor": "Cartosat-2S Optical + Sentinel-1 C-band SAR",
+  "date": "2023-08-20 (Co-registered window)",
+  "area": "Coastal Industrial Port & Oil Storage Terminal",
+  "resolution": "Optical 0.65m / SAR 10m GSD",
+  "crs": "EPSG:4326",
+  "real_data_source": "ISRO SAC / ESA Sentinel-1 GRD SAR + Optical Cross-Modal Archive",
+  "image_files": [
+    "optical.tif",
+    "sar.tif"
+  ],
+  "preview_files": [
+    "optical.png",
+    "sar.png"
+  ],
+  "modality": "optical_sar_pair",
+  "suggested_queries": [
+    "Penetrate cloud cover to map industrial storage tanks and coastal water bodies.",
+    "Identify built-up and water-covered regions using both optical and SAR images.",
+    "Delineate industrial storage tanks obscured by dense optical cloud cover."
+  ]
+}

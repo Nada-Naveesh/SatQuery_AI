@@ -96,7 +96,8 @@ class AgenticController:
         modalities: List[str],
         image_names: List[str],
         task_hint: Optional[str] = None,
-        parameters: Optional[Dict[str, Any]] = None
+        parameters: Optional[Dict[str, Any]] = None,
+        scenario_meta: Optional[Dict[str, Any]] = None
     ) -> AnalysisResponse:
         total_start_t = time.perf_counter()
         trace_id = f"trace-sih-26167-{uuid.uuid4().hex[:8]}"
@@ -129,12 +130,17 @@ class AgenticController:
         )
 
         h, w = images[0].shape[:2]
+        meta = scenario_meta or {}
         input_summary = InputSummary(
             image_count=image_count,
             modalities=modalities,
             dimensions=[w, h, images[0].shape[2] if images[0].ndim == 3 else 1],
-            crs="EPSG:4326",
-            resolution_m=10.0
+            crs=meta.get("crs", "EPSG:4326"),
+            resolution_m=10.0,
+            sensor=meta.get("sensor", "Operational Remote Sensing Sensor"),
+            area=meta.get("area", "Earth Observation Scene"),
+            acquisition_date=meta.get("date", "Standard Acquisition"),
+            data_source=meta.get("real_data_source", "Open Satellite Archive")
         )
 
         # Format visual evidence
@@ -168,7 +174,8 @@ class AgenticController:
             router_reasoning=reasoning,
             input_configuration=f"{image_count} scene(s) [{', '.join(modalities)}]",
             tools_executed=[tool_record],
-            total_execution_time_ms=round(total_elapsed_ms, 2)
+            total_execution_time_ms=round(total_elapsed_ms, 2),
+            data_source_label=meta.get("real_data_source") or f"{meta.get('sensor', 'Satellite Scene')} ({meta.get('area', 'Standard EO Archive')})"
         )
 
         result = AnalysisResult(

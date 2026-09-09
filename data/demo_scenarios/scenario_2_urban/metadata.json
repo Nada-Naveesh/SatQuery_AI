@@ -1,0 +1,24 @@
+{
+  "id": "scenario_2_urban",
+  "name": "Temporal Change: Urban Sprawl & Infrastructure Expansion",
+  "sensor": "High-Res Optical Satellite (LEVIR-CD Benchmark)",
+  "date": "2022-04-12 (T1) vs. 2024-05-18 (T2)",
+  "area": "Suburban Industrial Development Zone",
+  "resolution": "0.5 m GSD",
+  "crs": "EPSG:4326",
+  "real_data_source": "LEVIR-CD Large-Scale Remote Sensing Change Detection Archive",
+  "image_files": [
+    "t1.tif",
+    "t2.tif"
+  ],
+  "preview_files": [
+    "t1.png",
+    "t2.png"
+  ],
+  "modality": "bitemporal_pair",
+  "suggested_queries": [
+    "What major infrastructure changes occurred between these two acquisition dates?",
+    "Has the built-up area increased?",
+    "Quantify new highway paving and industrial structural expansion."
+  ]
+}

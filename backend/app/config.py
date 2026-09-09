@@ -4,13 +4,14 @@ from pathlib import Path
 # Base directory for the backend
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR.parent / "data"
+DEMO_SCENARIOS_DIR = DATA_DIR / "demo_scenarios"
 STATIC_DIR = BASE_DIR / "static"
 OVERLAYS_DIR = STATIC_DIR / "overlays"
 REPORTS_DIR = STATIC_DIR / "reports"
 SAMPLES_DIR = STATIC_DIR / "samples"
 
 # Ensure runtime directories exist
-for folder in [STATIC_DIR, OVERLAYS_DIR, REPORTS_DIR, SAMPLES_DIR]:
+for folder in [DATA_DIR, DEMO_SCENARIOS_DIR, STATIC_DIR, OVERLAYS_DIR, REPORTS_DIR, SAMPLES_DIR]:
     folder.mkdir(parents=True, exist_ok=True)
 
 class Settings:
@@ -30,6 +31,8 @@ class Settings:
     DEFAULT_CONFIDENCE_THRESHOLD: float = 0.50
     
     # Static paths
+    DATA_DIR: Path = DATA_DIR
+    DEMO_SCENARIOS_DIR: Path = DEMO_SCENARIOS_DIR
     STATIC_DIR: Path = STATIC_DIR
     OVERLAYS_DIR: Path = OVERLAYS_DIR
     REPORTS_DIR: Path = REPORTS_DIR
