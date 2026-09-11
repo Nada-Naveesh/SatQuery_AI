@@ -190,6 +190,66 @@
       "file_path": "demo_scenarios/scenario_4_coastal/t2.tif",
       "preview_path": "/static/demo_scenarios/scenario_4_coastal/t2.png",
       "scenario_tag": "scenario_4_coastal"
+    },
+    {
+      "id": "gvl_s2_2025_09_03",
+      "scene_id": "gvl_s2_2025_09_03",
+      "aoi": "gudlavalleru",
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "date": "2025-09-03",
+      "cloud_cover": 8.2,
+      "cloud_cover_pct": 8.2,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10,
+      "coordinates": [
+        16.02,
+        80.7
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "path_rgb": "data/gudlavalleru/optical_2025/s2_2025_09_03/rgb_512.tif",
+      "path_all_bands": "data/gudlavalleru/optical_2025/s2_2025_09_03/multi_band.tif",
+      "file_path": "data/gudlavalleru/optical_2025/s2_2025_09_03/rgb_512.tif",
+      "thumbnail": "data/gudlavalleru/optical_2025/s2_2025_09_03/thumb.jpg",
+      "preview_path": "/static/thumbs/gvl_s2_2025_09_03.jpg",
+      "thumbnail_url": "/static/thumbs/gvl_s2_2025_09_03.jpg",
+      "metadata_url": "/api/scenes/gvl_s2_2025_09_03"
+    },
+    {
+      "id": "gvl_s2_2026_09_05",
+      "scene_id": "gvl_s2_2026_09_05",
+      "aoi": "gudlavalleru",
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "date": "2026-09-05",
+      "cloud_cover": 5.7,
+      "cloud_cover_pct": 5.7,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10,
+      "coordinates": [
+        16.02,
+        80.7
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "path_rgb": "data/gudlavalleru/optical_2026/s2_2026_09_05/rgb_512.tif",
+      "path_all_bands": "data/gudlavalleru/optical_2026/s2_2026_09_05/multi_band.tif",
+      "file_path": "data/gudlavalleru/optical_2026/s2_2026_09_05/rgb_512.tif",
+      "thumbnail": "data/gudlavalleru/optical_2026/s2_2026_09_05/thumb.jpg",
+      "preview_path": "/static/thumbs/gvl_s2_2026_09_05.jpg",
+      "thumbnail_url": "/static/thumbs/gvl_s2_2026_09_05.jpg",
+      "metadata_url": "/api/scenes/gvl_s2_2026_09_05"
     }
   ]
 }

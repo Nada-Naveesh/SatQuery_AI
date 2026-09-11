@@ -68,6 +68,19 @@ export default function Dashboard() {
             PS 26167
           </span>
         </div>
+
+        <nav className="hidden md:flex items-center space-x-3 text-xs">
+          <span className="px-3 py-1.5 rounded-lg bg-cyan-600 text-white font-semibold shadow-sm">
+            Dashboard
+          </span>
+          <a href="/location" className="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white border border-space-700 hover:border-cyan-500 transition">
+            📍 Location Search (Gudlavalleru)
+          </a>
+          <a href="/demo" className="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white border border-space-700 hover:border-cyan-500 transition">
+            Judge Demo
+          </a>
+        </nav>
+
         <ReportDownload traceId={response?.execution_trace?.trace_id} />
       </header>
 

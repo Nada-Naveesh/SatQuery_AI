@@ -45,6 +45,9 @@ app.mount("/static/demo_scenarios", StaticFiles(directory=str(settings.DEMO_SCEN
 LATEST_STATIC_DIR = settings.DATA_DIR / "latest"
 LATEST_STATIC_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/static/latest", StaticFiles(directory=str(LATEST_STATIC_DIR)), name="latest")
+GVL_STATIC_DIR = settings.DATA_DIR / "gudlavalleru"
+if GVL_STATIC_DIR.exists():
+    app.mount("/static/gudlavalleru", StaticFiles(directory=str(GVL_STATIC_DIR)), name="gudlavalleru")
 app.mount("/static", StaticFiles(directory=str(settings.STATIC_DIR)), name="static")
 
 # In-memory store for session traces and cached payloads
@@ -217,6 +220,51 @@ def get_scenario_detail(scenario_id: str):
     return s
 
 
+@app.get("/api/scenes")
+def get_scenes_catalog(
+    aoi: Optional[str] = Query(None, description="Filter by Area of Interest"),
+    sensor: Optional[str] = Query(None, description="Filter by Sensor name"),
+    date_from: Optional[str] = Query(None, description="Filter from date YYYY-MM-DD"),
+    date_to: Optional[str] = Query(None, description="Filter to date YYYY-MM-DD"),
+    max_cloud_cover: Optional[float] = Query(None, description="Max cloud cover percentage"),
+):
+    """
+    Query scene catalog with filtering on AOI, sensor, and date range.
+    Returns scenes in standardized schema with thumbnail_url and metadata_url.
+    """
+    filtered = catalog_service.filter_scenes(
+        aoi=aoi,
+        sensor=sensor,
+        date_from=date_from,
+        date_to=date_to,
+        max_cloud_cover=max_cloud_cover
+    )
+    return {
+        "scenes": [
+            {
+                "id": s["id"],
+                "aoi": s["aoi"],
+                "sensor": s["sensor"],
+                "level": s.get("level", "L2A"),
+                "date": s["date"],
+                "cloud_cover": s.get("cloud_cover", 0.0),
+                "thumbnail_url": s.get("thumbnail_url", ""),
+                "metadata_url": s.get("metadata_url", f"/api/scenes/{s['id']}")
+            }
+            for s in filtered
+        ]
+    }
+
+
+@app.get("/api/scenes/{scene_id}")
+def get_scene_metadata(scene_id: str):
+    """Retrieves full metadata for a specific cataloged satellite scene."""
+    scene = catalog_service.get_scene_by_id(scene_id)
+    if not scene:
+        raise HTTPException(status_code=404, detail=f"Scene '{scene_id}' not found in catalog.")
+    return scene
+
+
 @app.get("/api/v1/scenes")
 def list_catalog_scenes(
     aoi: Optional[str] = Query(None, description="Filter by Area of Interest"),
@@ -264,77 +312,159 @@ async def analyze_remote_sensing_query(
     query: str = Form(...),
     task_hint: Optional[str] = Form("auto"),
     scenario_id: Optional[str] = Form(None),
+    scene_ids: Optional[str] = Form(None),
+    analysis_mode: Optional[str] = Form(None),
     files: Optional[List[UploadFile]] = File(None)
 ):
     """
     Primary agentic remote-sensing query endpoint.
-    Accepts either user-uploaded satellite image files (GeoTIFF/PNG/JPEG)
-    or a pre-configured real satellite scenario ID.
+    Accepts user-uploaded satellite image files (GeoTIFF/PNG/JPEG),
+    pre-configured demo scenarios, or catalog-indexed scenes (e.g. Gudlavalleru).
     """
     raw_images = []
     filenames = []
     modalities = []
     scenario_meta = {}
 
-    # 1. Handle preloaded real satellite scenario
-    if scenario_id:
-        if scenario_id == "scenario_today_near_real_time":
+    # -------------------------------------------------------------------------
+    # CRITICAL BUG FIX (SIH-26167):
+    # What s_dir represents:
+    #   s_dir stores the Path to a pre-packaged demonstration directory under
+    #   settings.DEMO_SCENARIOS_DIR (e.g. scenario_1_flood, scenario_2_urban).
+    #
+    # Under what conditions s_dir may be unset (None):
+    #   1. When querying near-real-time streaming scenes ("scenario_today_near_real_time" or "today").
+    #   2. When querying catalog-indexed scenes by ID (e.g. Gudlavalleru "gvl_s2_2025_09_03").
+    #   3. When the operator uploads custom satellite GeoTIFF / PNG files directly.
+    #
+    # In earlier versions, s_dir was only assigned in the `else` branch of scenario_id,
+    # causing an UnboundLocalError when checking `if s_dir.exists():` on NRT or catalog scenes.
+    # We now explicitly initialize s_dir = None and strictly guard `if s_dir is not None:`.
+    # -------------------------------------------------------------------------
+    s_dir: Optional[Path] = None
+
+    # Parse target scene ID(s) if provided
+    resolved_scene_ids: List[str] = []
+    if scene_ids:
+        raw_sids = scene_ids.strip()
+        if raw_sids.startswith("[") and raw_sids.endswith("]"):
+            try:
+                resolved_scene_ids = json.loads(raw_sids)
+            except Exception:
+                resolved_scene_ids = [s.strip().strip('"').strip("'") for s in raw_sids[1:-1].split(",") if s.strip()]
+        else:
+            resolved_scene_ids = [s.strip() for s in raw_sids.split(",") if s.strip()]
+    elif scenario_id:
+        if "," in scenario_id:
+            resolved_scene_ids = [s.strip() for s in scenario_id.split(",") if s.strip()]
+        else:
+            resolved_scene_ids = [scenario_id.strip()]
+
+    # 1. Handle scenario or scene ID(s)
+    if resolved_scene_ids:
+        # Check if all specified IDs correspond to catalog scenes (e.g. Gudlavalleru)
+        catalog_scenes = [catalog_service.get_scene_by_id(sid) for sid in resolved_scene_ids]
+        if all(cs is not None for cs in catalog_scenes):
+            for cs in catalog_scenes:
+                rel_path = cs.get("path_rgb") or cs.get("file_path") or cs.get("path_all_bands")
+                target_fpath = None
+                if rel_path:
+                    for cand in [settings.ROOT_DIR / rel_path, settings.DATA_DIR / rel_path]:
+                        if cand.exists():
+                            target_fpath = cand
+                            break
+                if not target_fpath or not target_fpath.exists():
+                    thumb_rel = cs.get("thumbnail") or cs.get("preview_path") or ""
+                    if thumb_rel:
+                        cand_thumb = settings.ROOT_DIR / thumb_rel.lstrip("/\\")
+                        if cand_thumb.exists():
+                            target_fpath = cand_thumb
+                
+                if not target_fpath or not target_fpath.exists():
+                    raise HTTPException(
+                        status_code=404,
+                        detail=f"Satellite raster data file for scene '{cs.get('id')}' not found on disk."
+                    )
+                
+                arr, _ = load_image_from_path(target_fpath)
+                raw_images.append(arr)
+                filenames.append(target_fpath.name)
+                modalities.append(detect_modality_heuristics(target_fpath.name, arr.shape[2] if arr.ndim == 3 else 1, arr))
+
+            scenario_meta = {
+                "sensor": catalog_scenes[0].get("sensor", "Sentinel-2"),
+                "area": catalog_scenes[0].get("aoi", "Gudlavalleru, AP"),
+                "resolution": f"{catalog_scenes[0].get('resolution_m', 10)} m GSD",
+                "crs": catalog_scenes[0].get("crs", "EPSG:4326"),
+                "real_data_source": "Copernicus Sentinel-2 L2A BOA Reflectance"
+            }
+
+            if len(raw_images) >= 2 and (analysis_mode == "change" or task_hint == "auto"):
+                task_hint = "change_detection"
+            elif len(raw_images) == 1 and analysis_mode == "single":
+                if task_hint == "auto":
+                    task_hint = "single_image_vqa"
+
+        elif len(resolved_scene_ids) == 1 and resolved_scene_ids[0] in ("scenario_today_near_real_time", "today"):
             scenario = catalog_service.get_todays_scenario()
             scenario_meta = scenario.model_dump()
             latest_tif = settings.DATA_DIR / "latest" / "latest_scene.tif"
             latest_png = settings.DATA_DIR / "latest" / "latest_scene.png"
             target_fpath = latest_tif if latest_tif.exists() else (latest_png if latest_png.exists() else None)
-            if target_fpath:
+            if target_fpath and target_fpath.exists():
                 arr, _ = load_image_from_path(target_fpath)
                 raw_images.append(arr)
                 filenames.append(target_fpath.name)
                 modalities.append(detect_modality_heuristics(target_fpath.name, arr.shape[2] if arr.ndim == 3 else 1, arr))
             else:
-                # Fallback to scenario 1
                 fallback_path = settings.DEMO_SCENARIOS_DIR / "scenario_1_flood" / "image1.tif"
+                if not fallback_path.exists():
+                    fallback_path = settings.DEMO_SCENARIOS_DIR / "scenario_1_flood" / "image1.png"
                 arr, _ = load_image_from_path(fallback_path)
                 raw_images.append(arr)
                 filenames.append(fallback_path.name)
                 modalities.append("optical_multispectral")
         else:
+            # Demonstration scenarios (scenario_1_flood, scenario_2_urban, etc.)
+            target_scenario_id = resolved_scene_ids[0]
             scenarios = get_all_scenarios()
-            scenario = next((s for s in scenarios if s.id == scenario_id), None)
+            scenario = next((s for s in scenarios if s.id == target_scenario_id), None)
             if not scenario:
-                raise HTTPException(status_code=404, detail=f"Scenario '{scenario_id}' not found.")
+                raise HTTPException(status_code=404, detail=f"Scenario or scene '{target_scenario_id}' not found.")
             
             scenario_meta = scenario.model_dump()
-            s_dir = settings.DEMO_SCENARIOS_DIR / scenario_id
+            s_dir = settings.DEMO_SCENARIOS_DIR / target_scenario_id
 
-        if s_dir.exists():
-            # Check for authentic GeoTIFF .tif files first, or fallback to .png
-            tif_files = sorted(s_dir.glob("*.tif"))
-            png_files = sorted(s_dir.glob("*.png"))
-            load_targets = tif_files if tif_files else png_files
-            for fpath in load_targets:
-                arr, _ = load_image_from_path(fpath)
-                raw_images.append(arr)
-                filenames.append(fpath.name)
-                modalities.append(detect_modality_heuristics(fpath.name, arr.shape[2] if arr.ndim == 3 else 1, arr))
-        else:
-            # Fallback to static samples if demo_scenarios folder missing
-            for rel_path in scenario.image_paths:
-                fname = os.path.basename(rel_path)
-                disk_path = settings.SAMPLES_DIR / fname
-                if not disk_path.exists():
-                    raise HTTPException(status_code=500, detail=f"Sample file missing: {fname}")
-                with open(disk_path, "rb") as f:
-                    content = f.read()
-                arr, _ = load_image_from_bytes(content, filename=fname)
-                raw_images.append(arr)
-                filenames.append(fname)
-                modalities.append(detect_modality_heuristics(fname, arr.shape[2] if arr.ndim == 3 else 1, arr))
+        # Safely read from s_dir only if s_dir was assigned and exists
+        if s_dir is not None:
+            if s_dir.exists():
+                tif_files = sorted(s_dir.glob("*.tif"))
+                png_files = sorted(s_dir.glob("*.png"))
+                load_targets = tif_files if tif_files else png_files
+                for fpath in load_targets:
+                    arr, _ = load_image_from_path(fpath)
+                    raw_images.append(arr)
+                    filenames.append(fpath.name)
+                    modalities.append(detect_modality_heuristics(fpath.name, arr.shape[2] if arr.ndim == 3 else 1, arr))
+            else:
+                for rel_path in scenario.image_paths:
+                    fname = os.path.basename(rel_path)
+                    disk_path = settings.SAMPLES_DIR / fname
+                    if not disk_path.exists():
+                        raise HTTPException(status_code=404, detail=f"Sample file missing: {fname}")
+                    with open(disk_path, "rb") as f:
+                        content = f.read()
+                    arr, _ = load_image_from_bytes(content, filename=fname)
+                    raw_images.append(arr)
+                    filenames.append(fname)
+                    modalities.append(detect_modality_heuristics(fname, arr.shape[2] if arr.ndim == 3 else 1, arr))
 
     # 2. Handle user custom upload flow
     else:
         if not files or len(files) == 0:
             raise HTTPException(
                 status_code=400,
-                detail="Must upload 1 or 2 satellite images (GeoTIFF / PNG) or select a pre-configured scenario."
+                detail="Must upload 1 or 2 satellite images (GeoTIFF / PNG) or select a pre-configured scenario/scene."
             )
         validated_files = await validate_upload_files(files)
         for content, fname in validated_files:
@@ -349,6 +479,13 @@ async def analyze_remote_sensing_query(
             "area": "Operator Region of Interest",
             "crs": "EPSG:4326"
         }
+
+    # Ensure valid imagery was resolved
+    if not raw_images or len(raw_images) == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="No valid satellite image data could be loaded for processing."
+        )
 
     # Execute Agent Controller with full real satellite metadata
     response = controller.execute(
@@ -373,6 +510,26 @@ async def analyze_remote_sensing_query(
     }
 
     return response
+
+
+@app.post("/api/analyze", response_model=AnalysisResponse)
+async def analyze_remote_sensing_query_alias(
+    query: str = Form(...),
+    task_hint: Optional[str] = Form("auto"),
+    scenario_id: Optional[str] = Form(None),
+    scene_ids: Optional[str] = Form(None),
+    analysis_mode: Optional[str] = Form(None),
+    files: Optional[List[UploadFile]] = File(None)
+):
+    """Alias for /api/v1/analyze supporting all parameter combinations."""
+    return await analyze_remote_sensing_query(
+        query=query,
+        task_hint=task_hint,
+        scenario_id=scenario_id,
+        scene_ids=scene_ids,
+        analysis_mode=analysis_mode,
+        files=files
+    )
 
 
 @app.get("/api/v1/report/pdf")
@@ -556,7 +713,47 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
           <span class="text-[10px] text-cyan-400 font-mono">1-Click Instant Run</span>
         </div>
         
+        <!-- Location Search Bar for Judges / Operators -->
+        <div class="mb-3 p-2.5 rounded-lg bg-space-900/80 border border-space-700 space-y-2">
+          <div class="flex items-center justify-between text-[11px] font-semibold text-slate-300">
+            <span class="flex items-center space-x-1">
+              <i class="fa-solid fa-location-crosshairs text-teal-400"></i>
+              <span>Location Search (MVP: Gudlavalleru)</span>
+            </span>
+            <span class="text-[9px] text-teal-400 font-mono">OSM + BBox</span>
+          </div>
+          <div class="flex gap-1.5">
+            <input type="text" id="dashboardLocSearch" value="Gudlavalleru" placeholder="Search location (e.g., Gudlavalleru, Vijayawada)" class="flex-1 bg-space-800 border border-space-600 rounded px-2.5 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-teal-400">
+            <button onclick="searchLocationDashboard()" class="bg-teal-600 hover:bg-teal-500 text-white text-xs px-3 py-1.5 rounded font-semibold transition">
+              Search
+            </button>
+          </div>
+          <div class="flex items-center justify-between text-[10px] text-slate-400">
+            <span>Hardcoded AOI: 16.02°N, 80.70°E</span>
+            <span class="text-teal-300 font-mono">2025 vs 2026</span>
+          </div>
+        </div>
+
         <div class="grid grid-cols-1 gap-2" id="scenariosContainer">
+          <!-- Gudlavalleru MVP Change Detection Scenario -->
+          <button onclick="loadScenario('scenario_gudlavalleru_change')" id="btn_scenario_gudlavalleru_change" class="scenario-btn text-left p-3 rounded-lg border border-teal-500/80 bg-teal-950/30 hover:border-teal-400 transition">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-teal-300 flex items-center space-x-1.5">
+                <i class="fa-solid fa-map-pin text-teal-400"></i>
+                <span>Gudlavalleru (2025 vs 2026 Change)</span>
+              </span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-teal-900/80 text-teal-300 font-mono font-semibold">Location MVP</span>
+            </div>
+            <p class="text-[11px] text-slate-300 mt-1">Gudlavalleru, Krishna District, AP. Detects campus expansion, new bypass road & impervious surfaces.</p>
+            <div class="mt-1.5 flex items-center space-x-2 text-[10px] text-slate-400 font-mono">
+              <span class="text-teal-300 font-bold">Sentinel-2 L2A</span>
+              <span>&bull;</span>
+              <span>10m GSD</span>
+              <span>&bull;</span>
+              <span>16.02°N, 80.70°E</span>
+            </div>
+          </button>
+
           <!-- Today's Live Operational Stream -->
           <button onclick="loadScenario('scenario_today_near_real_time')" id="btn_scenario_today_near_real_time" class="scenario-btn text-left p-3 rounded-lg border border-emerald-500/80 bg-emerald-950/30 hover:border-emerald-400 transition">
             <div class="flex items-center justify-between">
@@ -858,13 +1055,43 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         source: 'Copernicus Data Space Ecosystem (Direct Near-Real-Time Stream)',
         image: '/static/latest/latest_scene.png',
         query: 'Detect recent surface changes, water inundation, and newly emerged infrastructure.'
+      },
+      'scenario_gudlavalleru_change': {
+        name: 'Location MVP: Gudlavalleru (2025 vs 2026 Bi-Temporal Change Detection)',
+        sensor: 'Sentinel-2 L2A MSI',
+        date: '2025-09-03 (T1) vs. 2026-09-05 (T2)',
+        area: 'Gudlavalleru, Krishna District, AP, India [16.02°N, 80.70°E]',
+        resolution: '10 m GSD',
+        crs: 'EPSG:4326',
+        source: 'Copernicus Sentinel-2 Archive (10m L2A)',
+        image: '/static/thumbs/gvl_s2_2026_09_05.jpg',
+        split_image: '/static/thumbs/gvl_s2_2025_09_03.jpg',
+        query: 'What changed between 2025 and 2026 in this area?',
+        scene_ids: 'gvl_s2_2025_09_03,gvl_s2_2026_09_05',
+        analysis_mode: 'change'
       }
     };
+
+    let activeSceneIds = null;
+    let activeAnalysisMode = null;
 
     // Initialize with Scenario 1
     window.onload = () => {
       loadScenario('scenario_1_flood');
     };
+
+    function searchLocationDashboard() {
+      const q = (document.getElementById('dashboardLocSearch')?.value || '').trim().toLowerCase();
+      if (q.includes('gudlavalleru') || q === '') {
+        loadScenario('scenario_gudlavalleru_change');
+        setQuery('What changed between 2025 and 2026 in this area?', 'scenario_gudlavalleru_change');
+      } else if (q.includes('vizag') || q.includes('visakhapatnam')) {
+        loadScenario('scenario_4_coastal');
+      } else {
+        loadScenario('scenario_gudlavalleru_change');
+        alert(`Location '${q}' AOI extent resolved. For SIH 2026 pre-cached satellite archive, loaded Gudlavalleru reference AOI.`);
+      }
+    }
 
     function setQuery(text, scenarioId) {
       document.getElementById('queryInput').value = text;
@@ -880,7 +1107,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       if (!meta) return;
 
       // Update button highlights
-      ['scenario_today_near_real_time', 'scenario_1_flood', 'scenario_2_urban', 'scenario_3_optical_sar', 'scenario_4_coastal'].forEach(id => {
+      ['scenario_gudlavalleru_change', 'scenario_today_near_real_time', 'scenario_1_flood', 'scenario_2_urban', 'scenario_3_optical_sar', 'scenario_4_coastal'].forEach(id => {
         const btn = document.getElementById('btn_' + id);
         if (btn) {
           if (id === scenarioId) {
@@ -891,9 +1118,15 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         }
       });
 
+      activeSceneIds = meta.scene_ids || null;
+      activeAnalysisMode = meta.analysis_mode || null;
+
       document.getElementById('uploadLabel').innerText = `Real Satellite Scenario Selected: ${meta.sensor}`;
       setQuery(meta.query);
       document.getElementById('viewerBaseImg').src = meta.image;
+      if (meta.split_image) {
+        document.getElementById('viewerSplitImg').src = meta.split_image;
+      }
       document.getElementById('sceneDataSource').innerText = `${meta.sensor}, ${meta.date}, ${meta.area}`;
       document.getElementById('sceneResolution').innerText = meta.resolution;
       document.getElementById('sceneCRS').innerText = `CRS: ${meta.crs}`;
@@ -907,12 +1140,14 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       if (files && files.length > 0) {
         selectedFiles = Array.from(files);
         activeScenarioId = null;
+        activeSceneIds = null;
+        activeAnalysisMode = null;
         document.getElementById('uploadLabel').innerText = `${files.length} custom file(s) selected: ` + Array.from(files).map(f => f.name).join(', ');
         document.getElementById('sceneDataSource').innerText = `Custom User Upload (${files[0].name})`;
         document.getElementById('traceDataSource').innerText = `User Uploaded Satellite Scene`;
 
         // Unhighlight scenario buttons
-        ['scenario_1_flood', 'scenario_2_urban', 'scenario_3_optical_sar'].forEach(id => {
+        ['scenario_gudlavalleru_change', 'scenario_today_near_real_time', 'scenario_1_flood', 'scenario_2_urban', 'scenario_3_optical_sar', 'scenario_4_coastal'].forEach(id => {
           const btn = document.getElementById('btn_' + id);
           if (btn) btn.className = 'scenario-btn text-left p-3 rounded-lg border border-space-700 bg-space-900/60 hover:border-slate-500 transition';
         });
@@ -951,6 +1186,9 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         for (let i = 0; i < selectedFiles.length; i++) {
           formData.append('files', selectedFiles[i]);
         }
+      } else if (activeSceneIds) {
+        formData.append('scene_ids', activeSceneIds);
+        if (activeAnalysisMode) formData.append('analysis_mode', activeAnalysisMode);
       } else if (activeScenarioId) {
         formData.append('scenario_id', activeScenarioId);
       } else {

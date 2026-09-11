@@ -147,20 +147,96 @@ class SceneCatalogService:
                     "file_path": "demo_scenarios/scenario_4_coastal/t2.tif",
                     "preview_path": "/static/demo_scenarios/scenario_4_coastal/t2.png",
                     "scenario_tag": "scenario_4_coastal"
+                },
+                {
+                    "id": "gvl_s2_2025_09_03",
+                    "scene_id": "gvl_s2_2025_09_03",
+                    "aoi": "gudlavalleru",
+                    "sensor": "Sentinel-2",
+                    "level": "L2A",
+                    "date": "2025-09-03",
+                    "cloud_cover": 8.2,
+                    "cloud_cover_pct": 8.2,
+                    "bands": ["B02", "B03", "B04", "B08"],
+                    "resolution_m": 10,
+                    "coordinates": [16.02, 80.70],
+                    "crs": "EPSG:4326",
+                    "modality": "optical_multispectral",
+                    "path_rgb": "data/gudlavalleru/optical_2025/s2_2025_09_03/rgb_512.tif",
+                    "path_all_bands": "data/gudlavalleru/optical_2025/s2_2025_09_03/multi_band.tif",
+                    "file_path": "data/gudlavalleru/optical_2025/s2_2025_09_03/rgb_512.tif",
+                    "thumbnail": "data/gudlavalleru/optical_2025/s2_2025_09_03/thumb.jpg",
+                    "preview_path": "/static/thumbs/gvl_s2_2025_09_03.jpg",
+                    "thumbnail_url": "/static/thumbs/gvl_s2_2025_09_03.jpg",
+                    "metadata_url": "/api/scenes/gvl_s2_2025_09_03"
+                },
+                {
+                    "id": "gvl_s2_2026_09_05",
+                    "scene_id": "gvl_s2_2026_09_05",
+                    "aoi": "gudlavalleru",
+                    "sensor": "Sentinel-2",
+                    "level": "L2A",
+                    "date": "2026-09-05",
+                    "cloud_cover": 5.7,
+                    "cloud_cover_pct": 5.7,
+                    "bands": ["B02", "B03", "B04", "B08"],
+                    "resolution_m": 10,
+                    "coordinates": [16.02, 80.70],
+                    "crs": "EPSG:4326",
+                    "modality": "optical_multispectral",
+                    "path_rgb": "data/gudlavalleru/optical_2026/s2_2026_09_05/rgb_512.tif",
+                    "path_all_bands": "data/gudlavalleru/optical_2026/s2_2026_09_05/multi_band.tif",
+                    "file_path": "data/gudlavalleru/optical_2026/s2_2026_09_05/rgb_512.tif",
+                    "thumbnail": "data/gudlavalleru/optical_2026/s2_2026_09_05/thumb.jpg",
+                    "preview_path": "/static/thumbs/gvl_s2_2026_09_05.jpg",
+                    "thumbnail_url": "/static/thumbs/gvl_s2_2026_09_05.jpg",
+                    "metadata_url": "/api/scenes/gvl_s2_2026_09_05"
                 }
             ]
         }
 
     def _load_catalog(self) -> Dict[str, Any]:
         with open(self.catalog_file, "r", encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
+        if isinstance(data, list):
+            return {"version": "2.0.0", "scenes": data}
+        return data
 
     def _save_catalog(self, catalog: Dict[str, Any]):
         with open(self.catalog_file, "w", encoding="utf-8") as f:
             json.dump(catalog, f, indent=2)
 
     def get_all_scenes(self) -> List[Dict[str, Any]]:
-        return self._load_catalog().get("scenes", [])
+        raw_scenes = self._load_catalog().get("scenes", [])
+        normalized = []
+        for s in raw_scenes:
+            item = dict(s)
+            sid = item.get("id") or item.get("scene_id")
+            item["id"] = sid
+            item["scene_id"] = sid
+            if "cloud_cover" in item and "cloud_cover_pct" not in item:
+                item["cloud_cover_pct"] = float(item["cloud_cover"])
+            elif "cloud_cover_pct" in item and "cloud_cover" not in item:
+                item["cloud_cover"] = float(item["cloud_cover_pct"])
+            if "level" in item and "processing_level" not in item:
+                item["processing_level"] = item["level"]
+            elif "processing_level" in item and "level" not in item:
+                item["level"] = item["processing_level"]
+            if "path_rgb" in item and "file_path" not in item:
+                item["file_path"] = item["path_rgb"]
+            elif "file_path" in item and "path_rgb" not in item:
+                item["path_rgb"] = item["file_path"]
+            if "crs" not in item:
+                item["crs"] = "EPSG:4326"
+            if "resolution_m" not in item:
+                item["resolution_m"] = 10.0
+            if "thumbnail_url" not in item:
+                thumb_disk = Path(settings.STATIC_DIR) / "thumbs" / f"{sid}.jpg"
+                item["thumbnail_url"] = f"/static/thumbs/{sid}.jpg" if thumb_disk.exists() else item.get("preview_path", "")
+            if "metadata_url" not in item:
+                item["metadata_url"] = f"/api/scenes/{sid}"
+            normalized.append(item)
+        return normalized
 
     def filter_scenes(
         self,
@@ -168,31 +244,39 @@ class SceneCatalogService:
         sensor: Optional[str] = None,
         modality: Optional[str] = None,
         max_cloud_cover: Optional[float] = None,
+        date_from: Optional[str] = None,
+        date_to: Optional[str] = None,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         scenes = self.get_all_scenes()
+        start = date_from or start_date
+        end = date_to or end_date
         filtered = []
         for s in scenes:
             if aoi and aoi.lower() not in s.get("aoi", "").lower():
                 continue
-            if sensor and sensor.lower() not in s.get("sensor", "").lower():
-                continue
+            if sensor:
+                s_name = s.get("sensor", "").lower().replace("-", "").replace(" ", "")
+                q_name = sensor.lower().replace("-", "").replace(" ", "")
+                if q_name not in s_name:
+                    continue
             if modality and modality.lower() not in s.get("modality", "").lower():
                 continue
-            if max_cloud_cover is not None and s.get("cloud_cover_pct", 0.0) > max_cloud_cover:
+            c_cov = s.get("cloud_cover") if s.get("cloud_cover") is not None else s.get("cloud_cover_pct", 0.0)
+            if max_cloud_cover is not None and c_cov > max_cloud_cover:
                 continue
             s_date = s.get("date", "")
-            if start_date and s_date < start_date:
+            if start and s_date < start:
                 continue
-            if end_date and s_date > end_date:
+            if end and s_date > end:
                 continue
             filtered.append(s)
         return filtered
 
     def get_scene_by_id(self, scene_id: str) -> Optional[Dict[str, Any]]:
         for s in self.get_all_scenes():
-            if s.get("scene_id") == scene_id:
+            if s.get("scene_id") == scene_id or s.get("id") == scene_id:
                 return s
         return None
 

@@ -24,6 +24,11 @@ class SpecialistToolRegistry:
         ]
         for t in tools:
             self.register(t)
+        # Aliases for flexible task routing
+        self._task_map["bi_temporal_change_detection"] = self.get_tool_by_task("change_detection")
+        self._task_map["vqa"] = self.get_tool_by_task("visual_question_answering")
+        self._task_map["grounding"] = self.get_tool_by_task("region_grounding")
+        self._task_map["fusion"] = self.get_tool_by_task("optical_sar_fusion")
 
     def register(self, tool: BaseSpecialistTool):
         self._tools[tool.name] = tool
