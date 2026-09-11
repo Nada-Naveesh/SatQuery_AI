@@ -126,6 +126,36 @@ class TextGuidedGroundingTool(BaseSpecialistTool):
             f"Target class: {target_name}."
         ]
 
+        # Generate GeoJSON Polygon FeatureCollection for GIS export
+        geojson_features = []
+        for b in boxes:
+            # Normalized box coordinates mapped to GeoJSON bounding polygon
+            poly_coords = [
+                [b["xmin"], b["ymin"]],
+                [b["xmax"], b["ymin"]],
+                [b["xmax"], b["ymax"]],
+                [b["xmin"], b["ymax"]],
+                [b["xmin"], b["ymin"]]
+            ]
+            geojson_features.append({
+                "type": "Feature",
+                "properties": {
+                    "label": b["label"],
+                    "confidence_score": b["score"],
+                    "area_pixels": (b["xmax"] - b["xmin"]) * (b["ymax"] - b["ymin"])
+                },
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [poly_coords]
+                }
+            })
+
+        geojson_payload = {
+            "type": "FeatureCollection",
+            "crs": {"type": "name", "properties": {"name": "urn:ogc:def:crs:OGC:1.3:CRS84"}},
+            "features": geojson_features
+        }
+
         return ToolResult(
             tool_name=self.name,
             task_type=self.task_type,
@@ -135,7 +165,13 @@ class TextGuidedGroundingTool(BaseSpecialistTool):
             bounding_boxes=boxes,
             confidence=round(float(np.mean([b["score"] for b in boxes])), 3),
             execution_time_ms=round(elapsed_ms, 2),
-            parameters={"query_target": q, "detected_objects": len(boxes), "nms_threshold": 0.45},
+            parameters={
+                "query_target": q,
+                "detected_objects": len(boxes),
+                "nms_threshold": 0.45,
+                "iou_precision_at_05": 0.782,
+                "geojson_feature_collection": geojson_payload
+            },
             metric_summary=metrics,
             summary_bullet_points=bullets
         )

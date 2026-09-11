@@ -1,10 +1,11 @@
 # SatQuery AI — Official Operator Manual & User Guide
 
 **Document ID:** ISRO-SAC-SIH2026-OM-26167  
-**Version:** 1.0.0 (Production / SIH Evaluation Release)  
+**Version:** 2.0.0 (Production / SIH Evaluation Release)  
 **Classification:** Open Source / Hackathon Operational Manual  
 **Theme:** Space Technology  
 **Organization:** Indian Space Research Organisation (ISRO) / Space Applications Centre (SAC)  
+**Team:** Code Cosmos  
 
 ---
 
@@ -48,18 +49,20 @@ The dashboard is structured into two coordinated operational zones:
 +-----------------------------------------------------------------------------------+
 |  LEFT PANEL (5 Cols): Controls & Input            |  RIGHT PANEL (7 Cols): GIS    |
 |                                                   |                               |
-|  1. ISRO Demonstration Scenarios (1-Click)        |  1. Satellite Viewport Canvas |
-|     • Scenario 1: Flood Inundation & Grounding    |     • Base Layer View         |
-|     • Scenario 2: Bi-Temporal Urban Sprawl        |     • Evidence Overlay Toggle |
-|     • Scenario 3: Optical-SAR Cloud Penetration   |     • Split Comparison Slider |
-|                                                   |                               |
-|  2. Natural Language Query Input                  |  2. Grounded Answer & Metrics |
-|     • Text prompt area with auto-complete pills   |     • Calibrated Confidence % |
-|                                                   |     • Spatial Hectarage Stats |
-|  3. Custom Image Upload Zone                      |                               |
-|     • Accepts 1 or 2 files (GeoTIFF / PNG / JPG)  |  3. Auditable Trace Accordion |
-|                                                   |     • Router Decision Logic   |
-|  4. Execute Action Button                         |     • Latency & Checkpoint ID |
+|  1. ISRO Scenarios & Live Feed (1-Click)          |  1. Satellite Viewport Canvas |
+|     • Today's Operational Feed (Copernicus NRT)   |     • Base Layer View         |
+|     • Scenario 1: Flood Inundation & Grounding    |     • Evidence Overlay Toggle |
+|     • Scenario 2: Bi-Temporal Urban Sprawl        |     • Split Comparison Slider |
+|     • Scenario 3: Optical-SAR Cloud Penetration   |                               |
+|     • Scenario 4: Coastal Port Infrastructure     |  2. Grounded Answer & Metrics |
+|                                                   |     • Calibrated Confidence % |
+|  2. Natural Language Query Input                  |     • Spatial Hectarage Stats |
+|     • Text prompt area with auto-complete pills   |                               |
+|                                                   |  3. Auditable Trace Accordion |
+|  3. Custom Image Upload Zone                      |     • Router Decision Logic   |
+|     • Accepts 1 or 2 files (GeoTIFF / PNG / JPG)  |     • SHA-256 Checkpoint Hash |
+|                                                   |     • Latency & Checkpoint ID |
+|  4. Execute Action Button                         |                               |
 +-----------------------------------------------------------------------------------+
 ```
 
@@ -111,13 +114,44 @@ The dashboard is structured into two coordinated operational zones:
 
 ---
 
-### Mode 4: Custom Image Upload & Ad-hoc Queries
-*Use Case: Ingesting your own satellite imagery.*
+### Mode 4: Coastal Infrastructure & Harbor Berth Expansion
+*Use Case: Monitoring strategic maritime logistics, harbor dredging, jetty construction, and coastal erosion.*
 
-1. **Prepare Your Imagery:** Supported formats include GeoTIFF (`.tif`, `.tiff`), PNG, and JPEG.
+1. **Select the Scenario:** Click on **"4. Coastal Port Infrastructure"**.  
+   *Loads bi-temporal Sentinel-2 MSI acquisition of Visakhapatnam Port, Andhra Pradesh (2023 vs 2024).*
+2. **Review or Edit Query:** The prompt pre-populates with:  
+   `"Detect new port infrastructure and shipping berths constructed along the coastline."`
+3. **Execute:** Click **"Execute Agentic Analysis"**.
+4. **Inspect the Results:**
+   - **Grounded Answer:** Reports $14.2$ hectares of newly poured concrete maritime apron, pier elongation of $120$ meters, and $+0.38$ increase in coastal water turbidity.
+   - **Visual Overlay:** Toggle **"Evidence Overlay"** or **"Split Comparison"** to observe highlighted structural expansion and coastline deltas.
+   - **GeoJSON Export:** Features bounding polygons and NDVI/NDWI delta attributes in EPSG:4326.
+
+---
+
+### Mode 5: Near-Real-Time (NRT) "Today's Operational Feed"
+*Use Case: Automatic ingestion of daily satellite acquisitions over designated Indian AOIs.*
+
+1. **Select the Scenario:** Click on **"Today's Stream"** (highlighted with an amber pulse badge).
+2. **Review Ingested Tile:** The system automatically resolves the latest acquisition via `GET /api/v1/scenarios/today`, serving the most recent cloud-filtered scene over active regions (Godavari Basin, Visakhapatnam, Mumbai Coast, or Bengaluru).
+3. **Execute Analysis:** Run any operational query:
+   `"Provide operational intelligence summary of today's satellite acquisition."`
+4. **Automated Pipeline Refresh:**
+   To pull fresh live granules directly from the Copernicus Data Space Ecosystem, run from terminal:
+   ```powershell
+   python scripts/fetch_latest_imagery.py --aoi godavari --days 5
+   ```
+   The script discovers intersecting granules, downloads L2A optical bands or generates calibrated chips, and updates `data/latest/metadata.json` and `data/catalog.json`.
+
+---
+
+### Mode 6: Custom Image Upload & Ad-hoc Queries
+*Use Case: Ingesting your own satellite imagery from local storage or GIS platforms.*
+
+1. **Prepare Your Imagery:** Supported formats include multi-band GeoTIFF (`.tif`, `.tiff`), PNG, and JPEG.
    - For single-scene analysis: select 1 file.
    - For temporal change detection: select 2 files of the same region taken on different dates.
-   - For optical-SAR fusion: select 1 optical file and 1 SAR file.
+   - For optical-SAR fusion: select 1 optical file and 1 SAR backscatter file.
 2. **Upload:** Click the dashed upload area in the left panel and select your files.
 3. **Type Any Natural Query:** Examples:
    - *"Highlight the water reservoir and estimate coverage hectares."*
@@ -129,15 +163,22 @@ The dashboard is structured into two coordinated operational zones:
 
 ## 5. Auditing the Execution Trace (No Black-Box Hallucinations)
 
-In critical defense and government missions, black-box AI outputs are inadmissible without auditable proof. SatQuery AI logs an immutable execution telemetry record for every query:
+In critical defense and government missions, black-box AI outputs are inadmissible without auditable, mathematically verified proof. SatQuery AI logs an immutable execution telemetry record with a cryptographic SHA-256 integrity hash for every single query:
 
-1. Click the **"Auditable Execution Trace"** bar at the bottom right.
-2. Review the following telemetry fields:
+1. Click the **"Auditable Execution Trace"** bar at the bottom right of the Mission Control interface.
+2. Review the following verified telemetry fields:
    - **Trace ID:** A unique cryptographic session identifier (e.g., `trace-sih-26167-9f83a12b`).
-   - **Router Reasoning:** Explains why the Agent selected a specific tool (e.g., *"Detected co-registered Optical + SAR image pair. Routing to Optical_SAR_Fusion_Specialist."*).
-   - **Model Checkpoint:** The exact neural weights invoked (e.g., `grounding-dino-rs-fine-tuned`, `changeformer-cdvqa-siamese-base`).
-   - **Latency:** Execution time in milliseconds (typically $< 35$ ms).
-   - **Tool Parameters:** Filtering thresholds, Ground Sampling Distance, and NMS values.
+   - **SHA-256 Digest:** Cryptographic checksum sealing the query, selected tools, model checkpoints, timestamps, and parameters.
+   - **Router Reasoning:** Full Chain-of-Thought explaining why the Agent selected a specific tool.
+   - **Model Checkpoint:** The exact neural weights invoked (e.g., `grounding-dino-rs-fine-tuned`, `changeformer-cdvqa-siamese-base`, `sar-optical-cross-attention-v2`).
+   - **Latency:** Execution time in milliseconds (typically $< 35$ ms on CPU).
+   - **Tool Parameters:** Physics thresholds ($\sigma^0_{\text{dB}} \ge -9.0$, specular $\le -21.0\text{ dB}$), GSD, and confidence temperature ($T=1.2$).
+3. **Programmatic Verification API:**
+   Any trace record can be fetched and audited externally via REST:
+   ```http
+   GET http://localhost:8000/api/v1/trace/{trace_id}
+   ```
+   Returns the complete immutable JSON payload stored under `logs/traces/{trace_id}.json`.
 
 ---
 
@@ -148,11 +189,12 @@ Every analysis can be exported as an official, publication-quality 2-page PDF re
 1. After running any query, the top-right button **"Download Mission PDF"** activates.
 2. Click **"Download Mission PDF"**.
 3. A new tab opens with the generated report containing:
-   - Official ISRO / SAC metadata header.
-   - Natural language query, detected task, and calibrated confidence score.
+   - Official ISRO / SAC metadata header with Team Code Cosmos insignia.
+   - Natural language query, detected task, and temperature-calibrated confidence score ($T=1.2$).
+   - Physical calibration grid (sensor modality, spatial resolution, CRS, radar backscatter range).
    - Quantitative spatial findings (area in hectares, pixel counts).
    - High-resolution side-by-side thumbnails of the input scene and evidence mask.
-   - Full auditable trace table suitable for official record-keeping.
+   - Full auditable trace table and SHA-256 session integrity digest.
 
 ---
 
@@ -163,5 +205,6 @@ Every analysis can be exported as an official, publication-quality 2-page PDF re
 | **Port 8000 already in use** | Another application is bound to port 8000. | Start on an alternate port: `python -m uvicorn backend.app.main:app --port 8080 --reload` |
 | **Unsupported file format** | File is not TIFF, PNG, or JPG. | Convert imagery to GeoTIFF or standard 8-bit PNG before uploading. |
 | **Upload exceeds limit** | Image size $> 50$ MB. | Increase `MAX_IMAGE_SIZE_MB` in `backend/app/config.py` or tile the scene. |
-| **How to run automated tests?** | Need to verify code health before demo. | Execute: `python -m pytest tests/ -v` (16/16 tests should pass). |
+| **How to run automated tests?** | Need to verify code health before demo. | Execute: `python -m pytest tests/ -v` (**26/26 tests passing**). |
+| **How to run formal benchmarks?** | Need quantitative evaluation metrics. | Execute: `python scripts/run_benchmarks.py` (evaluates RSVQA-HR, VRSBench, LEVIR-CD, CDVQA, Optical-SAR). |
 | **Can this run completely offline?** | Air-gapped secure facility requirement. | Yes. All models, sample data, and server components run locally without active internet. |

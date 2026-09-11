@@ -19,17 +19,18 @@ def test_scenarios_endpoint():
     res = client.get("/api/v1/scenarios")
     assert res.status_code == 200
     scenarios = res.json()
-    assert len(scenarios) == 3
+    assert len(scenarios) >= 4
     ids = [s["id"] for s in scenarios]
     assert "scenario_1_flood" in ids
     assert "scenario_2_urban" in ids
     assert "scenario_3_optical_sar" in ids
+    assert "scenario_4_coastal" in ids
 
 def test_api_scenarios_alias_and_detail():
     # Test /api/scenarios alias
     res = client.get("/api/scenarios")
     assert res.status_code == 200
-    assert len(res.json()) == 3
+    assert len(res.json()) >= 4
 
     # Test /api/scenarios/{id}
     res_detail = client.get("/api/scenarios/scenario_1_flood")

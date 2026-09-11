@@ -31,6 +31,8 @@ class Settings:
     DEFAULT_CONFIDENCE_THRESHOLD: float = 0.50
     
     # Static paths
+    BASE_DIR: Path = BASE_DIR
+    ROOT_DIR: Path = BASE_DIR.parent
     DATA_DIR: Path = DATA_DIR
     DEMO_SCENARIOS_DIR: Path = DEMO_SCENARIOS_DIR
     STATIC_DIR: Path = STATIC_DIR

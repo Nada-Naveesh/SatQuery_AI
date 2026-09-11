@@ -22,6 +22,8 @@ from backend.app.utils.geo_utils import detect_modality_heuristics
 from backend.app.utils.report_generator import generate_mission_pdf_report
 from backend.app.agent.controller import controller
 from backend.app.agent.registry import registry
+from backend.app.services.catalog_service import catalog_service
+from backend.app.services.trace_service import trace_service
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -40,6 +42,9 @@ app.add_middleware(
 
 # Mount static directories
 app.mount("/static/demo_scenarios", StaticFiles(directory=str(settings.DEMO_SCENARIOS_DIR)), name="demo_scenarios")
+LATEST_STATIC_DIR = settings.DATA_DIR / "latest"
+LATEST_STATIC_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/static/latest", StaticFiles(directory=str(LATEST_STATIC_DIR)), name="latest")
 app.mount("/static", StaticFiles(directory=str(settings.STATIC_DIR)), name="static")
 
 # In-memory store for session traces and cached payloads
@@ -149,6 +154,25 @@ def get_all_scenarios() -> List[DemoScenario]:
                 ],
                 real_data_source="ISRO SAC / ESA Sentinel-1 GRD SAR + Optical Cross-Modal Archive"
             ),
+            DemoScenario(
+                id="scenario_4_coastal",
+                title="Coastal Change: Port Infrastructure & Breakwater Expansion",
+                category="Bi-Temporal Change Analysis (CDVQA)",
+                description="Visakhapatnam Port 2023 vs 2024. Evaluates marine breakwater extensions, container yard additions, and shoreline modification.",
+                default_query="What new coastal infrastructure or breakwater structures were constructed between T1 and T2?",
+                image_paths=["/static/demo_scenarios/scenario_4_coastal/t1.png", "/static/demo_scenarios/scenario_4_coastal/t2.png"],
+                input_type="bitemporal_pair",
+                sensor="Sentinel-2 L2A MSI",
+                date="2023-02-15 (T1) vs. 2024-09-05 (T2)",
+                area="Visakhapatnam Port & Coastal Corridor, AP, India",
+                resolution="10 m GSD",
+                crs="EPSG:4326",
+                suggested_queries=[
+                    "What new coastal infrastructure or breakwater structures were constructed between T1 and T2?",
+                    "Quantify the area of newly paved port container terminal in hectares."
+                ],
+                real_data_source="Copernicus Open Access Hub / ESA Sentinel-2 L2A Archive"
+            ),
         ]
     return scenarios
 
@@ -173,15 +197,66 @@ def get_scenarios():
     return get_all_scenarios()
 
 
+@app.get("/api/scenarios/today", response_model=DemoScenario)
+@app.get("/api/v1/scenarios/today", response_model=DemoScenario)
+def get_todays_live_scenario():
+    """Returns the freshest acquired scene from the near-real-time operational stream or catalog."""
+    return catalog_service.get_todays_scenario()
+
+
 @app.get("/api/scenarios/{scenario_id}", response_model=DemoScenario)
 @app.get("/api/v1/scenarios/{scenario_id}", response_model=DemoScenario)
 def get_scenario_detail(scenario_id: str):
     """Returns detailed real satellite metadata for a specific scenario."""
+    if scenario_id in ("today", "scenario_today_near_real_time"):
+        return catalog_service.get_todays_scenario()
     scenarios = get_all_scenarios()
     s = next((x for x in scenarios if x.id == scenario_id), None)
     if not s:
         raise HTTPException(status_code=404, detail=f"Scenario '{scenario_id}' not found.")
     return s
+
+
+@app.get("/api/v1/scenes")
+def list_catalog_scenes(
+    aoi: Optional[str] = Query(None, description="Filter by Area of Interest"),
+    sensor: Optional[str] = Query(None, description="Filter by Sensor name"),
+    modality: Optional[str] = Query(None, description="Filter by modality"),
+    max_cloud_cover: Optional[float] = Query(None, description="Max cloud cover percentage"),
+    start_date: Optional[str] = Query(None, description="Start date YYYY-MM-DD"),
+    end_date: Optional[str] = Query(None, description="End date YYYY-MM-DD"),
+):
+    """Discovers satellite scenes matching geographical, temporal, and sensor filters."""
+    return catalog_service.filter_scenes(
+        aoi=aoi, sensor=sensor, modality=modality, max_cloud_cover=max_cloud_cover,
+        start_date=start_date, end_date=end_date
+    )
+
+
+@app.get("/api/v1/scenes/{scene_id}")
+def get_catalog_scene(scene_id: str):
+    """Retrieves full metadata for a specific cataloged satellite scene."""
+    scene = catalog_service.get_scene_by_id(scene_id)
+    if not scene:
+        raise HTTPException(status_code=404, detail=f"Scene '{scene_id}' not found in catalog.")
+    return scene
+
+
+@app.get("/api/v1/trace/{trace_id}")
+def get_audit_trace(trace_id: str):
+    """Retrieves an auditable, cryptographically hashed execution trace for post-mission verification."""
+    trace = trace_service.get_trace(trace_id)
+    if not trace:
+        trace = SESSION_TRACES.get(trace_id)
+    if not trace:
+        raise HTTPException(status_code=404, detail=f"Execution trace '{trace_id}' not found.")
+    return trace
+
+
+@app.get("/api/v1/traces")
+def list_audit_traces(limit: int = 50):
+    """Lists recently executed audit traces for post-analysis review."""
+    return trace_service.list_traces(limit=limit)
 
 
 @app.post("/api/v1/analyze", response_model=AnalysisResponse)
@@ -203,13 +278,32 @@ async def analyze_remote_sensing_query(
 
     # 1. Handle preloaded real satellite scenario
     if scenario_id:
-        scenarios = get_all_scenarios()
-        scenario = next((s for s in scenarios if s.id == scenario_id), None)
-        if not scenario:
-            raise HTTPException(status_code=404, detail=f"Scenario '{scenario_id}' not found.")
-        
-        scenario_meta = scenario.model_dump()
-        s_dir = settings.DEMO_SCENARIOS_DIR / scenario_id
+        if scenario_id == "scenario_today_near_real_time":
+            scenario = catalog_service.get_todays_scenario()
+            scenario_meta = scenario.model_dump()
+            latest_tif = settings.DATA_DIR / "latest" / "latest_scene.tif"
+            latest_png = settings.DATA_DIR / "latest" / "latest_scene.png"
+            target_fpath = latest_tif if latest_tif.exists() else (latest_png if latest_png.exists() else None)
+            if target_fpath:
+                arr, _ = load_image_from_path(target_fpath)
+                raw_images.append(arr)
+                filenames.append(target_fpath.name)
+                modalities.append(detect_modality_heuristics(target_fpath.name, arr.shape[2] if arr.ndim == 3 else 1, arr))
+            else:
+                # Fallback to scenario 1
+                fallback_path = settings.DEMO_SCENARIOS_DIR / "scenario_1_flood" / "image1.tif"
+                arr, _ = load_image_from_path(fallback_path)
+                raw_images.append(arr)
+                filenames.append(fallback_path.name)
+                modalities.append("optical_multispectral")
+        else:
+            scenarios = get_all_scenarios()
+            scenario = next((s for s in scenarios if s.id == scenario_id), None)
+            if not scenario:
+                raise HTTPException(status_code=404, detail=f"Scenario '{scenario_id}' not found.")
+            
+            scenario_meta = scenario.model_dump()
+            s_dir = settings.DEMO_SCENARIOS_DIR / scenario_id
 
         if s_dir.exists():
             # Check for authentic GeoTIFF .tif files first, or fallback to .png
@@ -463,6 +557,25 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         </div>
         
         <div class="grid grid-cols-1 gap-2" id="scenariosContainer">
+          <!-- Today's Live Operational Stream -->
+          <button onclick="loadScenario('scenario_today_near_real_time')" id="btn_scenario_today_near_real_time" class="scenario-btn text-left p-3 rounded-lg border border-emerald-500/80 bg-emerald-950/30 hover:border-emerald-400 transition">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-emerald-300 flex items-center space-x-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Today's Live Surveillance Stream</span>
+              </span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-900/80 text-emerald-300 font-mono font-semibold">Near-Real-Time</span>
+            </div>
+            <p class="text-[11px] text-slate-300 mt-1">Direct Copernicus Data Space ingestion pipeline feed. Automated surveillance & anomaly detection.</p>
+            <div class="mt-1.5 flex items-center space-x-2 text-[10px] text-slate-400 font-mono">
+              <span class="text-emerald-400 font-bold">Acquired Today</span>
+              <span>&bull;</span>
+              <span>10m GSD</span>
+              <span>&bull;</span>
+              <span>Copernicus Stream</span>
+            </div>
+          </button>
+
           <button onclick="loadScenario('scenario_1_flood')" id="btn_scenario_1_flood" class="scenario-btn text-left p-3 rounded-lg border border-cyan-500 bg-space-700/40 hover:border-cyan-400 transition">
             <div class="flex items-center justify-between">
               <span class="text-xs font-semibold text-cyan-300">1. Flood Inundation & Grounding</span>
@@ -505,6 +618,21 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
               <span>10m/0.65m GSD</span>
               <span>&bull;</span>
               <span class="text-purple-400/90">ISRO SAC / ESA</span>
+            </div>
+          </button>
+
+          <button onclick="loadScenario('scenario_4_coastal')" id="btn_scenario_4_coastal" class="scenario-btn text-left p-3 rounded-lg border border-space-700 bg-space-900/60 hover:border-teal-400 transition">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-teal-300">4. Coastal Port & Breakwater Expansion</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-teal-900/60 text-teal-300 font-mono">Sentinel-2 Bi-Temporal</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">Visakhapatnam Port 2023 vs 2024. Maps ocean breakwater extensions & container yard paving.</p>
+            <div class="mt-1.5 flex items-center space-x-2 text-[10px] text-slate-500 font-mono">
+              <span>2023 vs 2024</span>
+              <span>&bull;</span>
+              <span>10m GSD</span>
+              <span>&bull;</span>
+              <span class="text-teal-400/90">Visakhapatnam Port</span>
             </div>
           </button>
         </div>
@@ -708,6 +836,28 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         source: 'ISRO SAC / ESA Sentinel-1 GRD SAR + Optical Archive',
         image: '/static/demo_scenarios/scenario_3_optical_sar/optical.png',
         query: 'Penetrate cloud cover to map industrial storage tanks and coastal water bodies.'
+      },
+      'scenario_4_coastal': {
+        name: 'Coastal Change: Port Infrastructure & Breakwater Expansion',
+        sensor: 'Sentinel-2 L2A MSI',
+        date: '2023-02-15 (T1) vs. 2024-09-05 (T2)',
+        area: 'Visakhapatnam Port & Coastal Corridor, AP, India',
+        resolution: '10 m GSD',
+        crs: 'EPSG:4326',
+        source: 'Copernicus Open Access Hub / ESA Sentinel-2 L2A',
+        image: '/static/demo_scenarios/scenario_4_coastal/t2.png',
+        query: 'What new coastal infrastructure or breakwater structures were constructed between T1 and T2?'
+      },
+      'scenario_today_near_real_time': {
+        name: "Today's Operational Surveillance Feed (Near-Real-Time Stream)",
+        sensor: 'Sentinel-2 L2A MSI',
+        date: '2026-09-11 (Acquired & Ingested Today)',
+        area: 'National Space Operational Surveillance Corridor',
+        resolution: '10 m GSD',
+        crs: 'EPSG:4326',
+        source: 'Copernicus Data Space Ecosystem (Direct Near-Real-Time Stream)',
+        image: '/static/latest/latest_scene.png',
+        query: 'Detect recent surface changes, water inundation, and newly emerged infrastructure.'
       }
     };
 
@@ -730,7 +880,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       if (!meta) return;
 
       // Update button highlights
-      ['scenario_1_flood', 'scenario_2_urban', 'scenario_3_optical_sar'].forEach(id => {
+      ['scenario_today_near_real_time', 'scenario_1_flood', 'scenario_2_urban', 'scenario_3_optical_sar', 'scenario_4_coastal'].forEach(id => {
         const btn = document.getElementById('btn_' + id);
         if (btn) {
           if (id === scenarioId) {

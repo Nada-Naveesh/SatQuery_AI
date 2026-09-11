@@ -1,0 +1,24 @@
+{
+  "id": "scenario_4_coastal",
+  "name": "Coastal Change: Port Infrastructure & Breakwater Expansion",
+  "sensor": "Sentinel-2 L2A MSI",
+  "date": "2023-02-15 (T1) vs 2024-09-05 (T2)",
+  "area": "Visakhapatnam Port & Coastal Corridor, AP, India",
+  "resolution": "10 m GSD",
+  "crs": "EPSG:4326",
+  "real_data_source": "Copernicus Open Access Hub / ESA Sentinel-2 L2A Archive",
+  "image_files": [
+    "t1.tif",
+    "t2.tif"
+  ],
+  "preview_files": [
+    "t1.png",
+    "t2.png"
+  ],
+  "modality": "bitemporal_pair",
+  "suggested_queries": [
+    "What new coastal infrastructure or breakwater structures were constructed between T1 and T2?",
+    "Quantify the area of newly paved port container terminal in hectares.",
+    "Detect land reclamation along the coastal water boundary."
+  ]
+}

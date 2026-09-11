@@ -21,6 +21,10 @@ export default function Dashboard() {
   const baseImagePreview =
     selectedFiles.length > 0
       ? URL.createObjectURL(selectedFiles[0])
+      : activeScenarioId === 'scenario_today_near_real_time'
+      ? '/static/latest/latest_scene.png'
+      : activeScenarioId === 'scenario_4_coastal'
+      ? '/static/demo_scenarios/scenario_4_coastal/t2.png'
       : activeScenarioId === 'scenario_2_urban'
       ? '/static/demo_scenarios/scenario_2_urban/t2.png'
       : activeScenarioId === 'scenario_3_optical_sar'
@@ -85,6 +89,28 @@ export default function Dashboard() {
             <button
               onClick={() =>
                 handleSelectScenario(
+                  'scenario_today_near_real_time',
+                  'Detect recent surface changes, water inundation, and newly emerged infrastructure.'
+                )
+              }
+              className={`w-full text-left p-2.5 rounded border transition text-xs ${
+                activeScenarioId === 'scenario_today_near_real_time'
+                  ? 'border-emerald-500 bg-emerald-950/40'
+                  : 'border-emerald-900/60 bg-emerald-950/20 hover:border-emerald-500/60'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="font-semibold text-emerald-300 flex items-center space-x-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>Today's Live Surveillance Stream</span>
+                </div>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-900/60 text-emerald-300">Near-Real-Time</span>
+              </div>
+              <div className="text-[11px] text-slate-400 mt-0.5">Sentinel-2 L2A &bull; Acquired & Ingested Today (10m GSD)</div>
+            </button>
+            <button
+              onClick={() =>
+                handleSelectScenario(
                   'scenario_1_flood',
                   'Identify the submerged agricultural parcels and highlight their spatial boundaries.'
                 )
@@ -129,6 +155,22 @@ export default function Dashboard() {
             >
               <div className="font-semibold text-white">3. Optical-SAR Cloud Penetration</div>
               <div className="text-[11px] text-slate-400 mt-0.5">Cartosat-2S (0.65m) + Sentinel-1 C-SAR (82% Cloud Cover)</div>
+            </button>
+            <button
+              onClick={() =>
+                handleSelectScenario(
+                  'scenario_4_coastal',
+                  'What new coastal infrastructure or breakwater structures were constructed between T1 and T2?'
+                )
+              }
+              className={`w-full text-left p-2.5 rounded border transition text-xs ${
+                activeScenarioId === 'scenario_4_coastal'
+                  ? 'border-cyan-500 bg-space-900'
+                  : 'border-space-700 bg-space-900/60 hover:border-cyan-500/60'
+              }`}
+            >
+              <div className="font-semibold text-white">4. Coastal Port & Breakwater Expansion</div>
+              <div className="text-[11px] text-slate-400 mt-0.5">Visakhapatnam Port 2023 vs 2024 (Sentinel-2 &bull; 10m GSD)</div>
             </button>
           </div>
 

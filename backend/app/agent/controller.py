@@ -5,6 +5,7 @@ from typing import List, Dict, Any, Optional, Tuple
 import numpy as np
 
 from backend.app.agent.registry import registry
+from backend.app.services.trace_service import trace_service
 from backend.app.schemas import (
     AnalysisResponse,
     AnalysisResult,
@@ -177,6 +178,12 @@ class AgenticController:
             total_execution_time_ms=round(total_elapsed_ms, 2),
             data_source_label=meta.get("real_data_source") or f"{meta.get('sensor', 'Satellite Scene')} ({meta.get('area', 'Standard EO Archive')})"
         )
+
+        # Persist verifiable audit trace for compliance and auditing
+        try:
+            trace_service.save_trace(trace_id, execution_trace.model_dump())
+        except Exception as err:
+            print(f"Warning: Failed to persist trace {trace_id}: {err}")
 
         result = AnalysisResult(
             text_answer=tool_result.text_output,

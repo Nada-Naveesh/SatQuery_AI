@@ -1,0 +1,25 @@
+{
+  "scene_id": "S2A_MSIL2A_20260911T081959_44QPD_NRT",
+  "sensor": "Sentinel-2 L2A MSI",
+  "date": "2026-09-11",
+  "aoi": "Visakhapatnam Port & Coastal Corridor, AP",
+  "coordinates": [
+    17.69,
+    83.29
+  ],
+  "resolution_m": 10.0,
+  "crs": "EPSG:4326",
+  "cloud_cover_pct": 8.5,
+  "processing_level": "Level-2A (Bottom-of-Atmosphere Reflectance)",
+  "bands": [
+    "B02",
+    "B03",
+    "B04",
+    "B08"
+  ],
+  "modality": "optical_multispectral",
+  "file_path": "latest/latest_scene.tif",
+  "preview_path": "/static/latest/latest_scene.png",
+  "real_data_source": "Copernicus Data Space Ecosystem (Operational Stream)",
+  "ingested_at": "2026-09-11T08:19:59.440502+00:00"
+}

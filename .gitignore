@@ -37,6 +37,8 @@ htmlcov/
 
 # Generated runtime assets
 backend/static/reports/*.pdf
+backend/logs/traces/*.json
+!backend/logs/traces/.gitkeep
 
 # Node.js & Next.js
 node_modules/

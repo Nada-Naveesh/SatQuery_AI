@@ -1,0 +1,195 @@
+{
+  "version": "2.0.0",
+  "last_updated": "2026-09-11T08:19:59.440502+00:00",
+  "organization": "ISRO / SAC & Team Code Cosmos",
+  "project": "SatQuery AI",
+  "scenes": [
+    {
+      "scene_id": "S2A_MSIL2A_20260911T081959_44QPD_NRT",
+      "sensor": "Sentinel-2 L2A MSI",
+      "date": "2026-09-11",
+      "aoi": "Visakhapatnam Port & Coastal Corridor, AP",
+      "coordinates": [
+        17.69,
+        83.29
+      ],
+      "resolution_m": 10.0,
+      "crs": "EPSG:4326",
+      "cloud_cover_pct": 8.5,
+      "processing_level": "Level-2A (Bottom-of-Atmosphere Reflectance)",
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "modality": "optical_multispectral",
+      "file_path": "latest/latest_scene.tif",
+      "preview_path": "/static/latest/latest_scene.png",
+      "real_data_source": "Copernicus Data Space Ecosystem (Operational Stream)",
+      "ingested_at": "2026-09-11T08:19:59.440502+00:00"
+    },
+    {
+      "scene_id": "S2A_MSIL2A_20230728T045701_44QND",
+      "sensor": "Sentinel-2 L2A MSI",
+      "date": "2023-07-28",
+      "aoi": "Godavari River Basin, AP/Telangana, India",
+      "coordinates": [
+        16.89,
+        81.79
+      ],
+      "resolution_m": 10.0,
+      "crs": "EPSG:4326",
+      "cloud_cover_pct": 8.4,
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "modality": "optical_multispectral",
+      "file_path": "demo_scenarios/scenario_1_flood/image1.tif",
+      "preview_path": "/static/demo_scenarios/scenario_1_flood/image1.png",
+      "scenario_tag": "scenario_1_flood"
+    },
+    {
+      "scene_id": "LEVIR_CD_T1_20220412",
+      "sensor": "High-Res Optical Satellite (LEVIR-CD)",
+      "date": "2022-04-12",
+      "aoi": "Suburban Industrial Development Zone",
+      "coordinates": [
+        28.61,
+        77.23
+      ],
+      "resolution_m": 0.5,
+      "crs": "EPSG:4326",
+      "cloud_cover_pct": 0.0,
+      "processing_level": "Orthorectified Surface Reflectance",
+      "bands": [
+        "Red",
+        "Green",
+        "Blue"
+      ],
+      "modality": "optical_highres",
+      "file_path": "demo_scenarios/scenario_2_urban/t1.tif",
+      "preview_path": "/static/demo_scenarios/scenario_2_urban/t1.png",
+      "scenario_tag": "scenario_2_urban"
+    },
+    {
+      "scene_id": "LEVIR_CD_T2_20240518",
+      "sensor": "High-Res Optical Satellite (LEVIR-CD)",
+      "date": "2024-05-18",
+      "aoi": "Suburban Industrial Development Zone",
+      "coordinates": [
+        28.61,
+        77.23
+      ],
+      "resolution_m": 0.5,
+      "crs": "EPSG:4326",
+      "cloud_cover_pct": 0.0,
+      "processing_level": "Orthorectified Surface Reflectance",
+      "bands": [
+        "Red",
+        "Green",
+        "Blue"
+      ],
+      "modality": "optical_highres",
+      "file_path": "demo_scenarios/scenario_2_urban/t2.tif",
+      "preview_path": "/static/demo_scenarios/scenario_2_urban/t2.png",
+      "scenario_tag": "scenario_2_urban"
+    },
+    {
+      "scene_id": "CARTOSAT2S_PAN_VNIR_20230820",
+      "sensor": "Cartosat-2S PAN/VNIR",
+      "date": "2023-08-20",
+      "aoi": "Coastal Industrial Port & Oil Storage Terminal",
+      "coordinates": [
+        17.68,
+        83.21
+      ],
+      "resolution_m": 0.65,
+      "crs": "EPSG:4326",
+      "cloud_cover_pct": 82.0,
+      "processing_level": "Standard Ortho Product",
+      "bands": [
+        "Panchromatic",
+        "VNIR"
+      ],
+      "modality": "optical_cloudy",
+      "file_path": "demo_scenarios/scenario_3_optical_sar/optical.tif",
+      "preview_path": "/static/demo_scenarios/scenario_3_optical_sar/optical.png",
+      "scenario_tag": "scenario_3_optical_sar"
+    },
+    {
+      "scene_id": "S1A_IW_GRDH_1SDV_20230820T004218",
+      "sensor": "Sentinel-1 / RISAT C-band SAR",
+      "date": "2023-08-20",
+      "aoi": "Coastal Industrial Port & Oil Storage Terminal",
+      "coordinates": [
+        17.68,
+        83.21
+      ],
+      "resolution_m": 10.0,
+      "crs": "EPSG:4326",
+      "cloud_cover_pct": 0.0,
+      "processing_level": "GRD (Ground Range Detected, Gamma0 Calibrated)",
+      "bands": [
+        "VV",
+        "VH"
+      ],
+      "modality": "sar_cband",
+      "file_path": "demo_scenarios/scenario_3_optical_sar/sar.tif",
+      "preview_path": "/static/demo_scenarios/scenario_3_optical_sar/sar.png",
+      "scenario_tag": "scenario_3_optical_sar"
+    },
+    {
+      "scene_id": "S2B_MSIL2A_VIZAG_T1_20230215",
+      "sensor": "Sentinel-2 L2A MSI",
+      "date": "2023-02-15",
+      "aoi": "Visakhapatnam Port & Coastal Corridor, AP",
+      "coordinates": [
+        17.69,
+        83.29
+      ],
+      "resolution_m": 10.0,
+      "crs": "EPSG:4326",
+      "cloud_cover_pct": 3.2,
+      "processing_level": "Level-2A",
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "modality": "optical_multispectral",
+      "file_path": "demo_scenarios/scenario_4_coastal/t1.tif",
+      "preview_path": "/static/demo_scenarios/scenario_4_coastal/t1.png",
+      "scenario_tag": "scenario_4_coastal"
+    },
+    {
+      "scene_id": "S2A_MSIL2A_VIZAG_T2_20240905",
+      "sensor": "Sentinel-2 L2A MSI",
+      "date": "2024-09-05",
+      "aoi": "Visakhapatnam Port & Coastal Corridor, AP",
+      "coordinates": [
+        17.69,
+        83.29
+      ],
+      "resolution_m": 10.0,
+      "crs": "EPSG:4326",
+      "cloud_cover_pct": 4.1,
+      "processing_level": "Level-2A",
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "modality": "optical_multispectral",
+      "file_path": "demo_scenarios/scenario_4_coastal/t2.tif",
+      "preview_path": "/static/demo_scenarios/scenario_4_coastal/t2.png",
+      "scenario_tag": "scenario_4_coastal"
+    }
+  ]
+}

@@ -41,6 +41,28 @@ export default function DemoPage() {
       sensor: 'Cartosat-2S (0.65m) + C-SAR (10m)',
       area: 'Monsoon Coastline (82% Cloud Cover)',
       talkingPoint: 'Fuses optical cues with C-band radar backscatter to pierce dense monsoon clouds.'
+    },
+    {
+      step: 4,
+      name: 'Coastal Infrastructure & Port Expansion',
+      scenarioId: 'scenario_4_coastal',
+      query: 'Detect new port infrastructure and shipping berths constructed along the coastline.',
+      image: '/static/demo_scenarios/scenario_4_coastal/t2.png',
+      badge: 'Sentinel-2 L2A Bi-temporal (10m)',
+      sensor: 'Sentinel-2 MSI Bi-temporal (10m GSD)',
+      area: 'Visakhapatnam Port, AP (2023 vs 2024)',
+      talkingPoint: 'Multi-spectral change detection tracking maritime logistics, jetty expansion, and coastal sediment change.'
+    },
+    {
+      step: 5,
+      name: "Today's Operational Feed (NRT)",
+      scenarioId: 'today',
+      query: "Provide operational intelligence summary of today's satellite acquisition.",
+      image: '/static/latest/latest_scene.png',
+      badge: 'Near-Real-Time Operational Feed',
+      sensor: 'Sentinel-2 L2A / Copernicus NRT',
+      area: 'Active Operational AOI (Godavari / Vizag / Mumbai / BLR)',
+      talkingPoint: 'Automated daily ingestion directly from Copernicus Data Space API with instant physics-calibrated analytics.'
     }
   ];
 
@@ -106,7 +128,7 @@ export default function DemoPage() {
         <div className="space-y-4">
           <div className="bg-space-800 border border-space-700 rounded-xl p-4">
             <span className="text-[10px] uppercase font-bold text-cyan-400 tracking-wider">
-              Stage {currentStep} of 3
+              Stage {currentStep} of {steps.length}
             </span>
             <h2 className="text-sm font-bold text-white mt-0.5">{activeDemo.name}</h2>
             <div className="flex items-center space-x-2 mt-1">
