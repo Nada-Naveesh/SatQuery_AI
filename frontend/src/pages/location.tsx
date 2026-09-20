@@ -15,15 +15,105 @@ interface SceneItem {
   metadata_url: string;
 }
 
-export default function LocationSearchPage() {
-  // Search and AOI state
-  const [searchQuery, setSearchQuery] = useState('Gudlavalleru');
-  const [selectedLocation, setSelectedLocation] = useState({
+interface LocationMeta {
+  name: string;
+  lat: number;
+  lon: number;
+  bbox: [number, number, number, number];
+  key: string;
+}
+
+const AP_LOCATIONS_MAP: Record<string, LocationMeta> = {
+  vijayawada: {
+    name: 'Vijayawada, Krishna District, Andhra Pradesh',
+    lat: 16.5062,
+    lon: 80.6480,
+    bbox: [16.45, 80.58, 16.57, 80.71],
+    key: 'vijayawada'
+  },
+  amaravati: {
+    name: 'Amaravati Capital Region, Andhra Pradesh',
+    lat: 16.5415,
+    lon: 80.5150,
+    bbox: [16.48, 80.45, 16.60, 80.58],
+    key: 'amaravati'
+  },
+  visakhapatnam: {
+    name: 'Visakhapatnam Port & Smart City, Andhra Pradesh',
+    lat: 17.6868,
+    lon: 83.2185,
+    bbox: [17.62, 83.15, 17.75, 83.32],
+    key: 'visakhapatnam'
+  },
+  tirupati: {
+    name: 'Tirupati & Seshachalam Foothills, Andhra Pradesh',
+    lat: 13.6288,
+    lon: 79.4192,
+    bbox: [13.56, 79.35, 13.70, 79.48],
+    key: 'tirupati'
+  },
+  guntur: {
+    name: 'Guntur Agricultural & Commercial Hub, Andhra Pradesh',
+    lat: 16.3067,
+    lon: 80.4365,
+    bbox: [16.24, 80.37, 16.37, 80.50],
+    key: 'guntur'
+  },
+  rajahmundry: {
+    name: 'Rajahmundry & Godavari River Basin, Andhra Pradesh',
+    lat: 17.0005,
+    lon: 81.8040,
+    bbox: [16.94, 81.74, 17.06, 81.87],
+    key: 'rajahmundry'
+  },
+  kakinada: {
+    name: 'Kakinada Deepwater Port & Coringa, Andhra Pradesh',
+    lat: 16.9891,
+    lon: 82.2475,
+    bbox: [16.92, 82.18, 17.05, 82.31],
+    key: 'kakinada'
+  },
+  kurnool: {
+    name: 'Kurnool Tungabhadra Basin & Solar Park, Andhra Pradesh',
+    lat: 15.8281,
+    lon: 78.0373,
+    bbox: [15.76, 77.97, 15.89, 78.10],
+    key: 'kurnool'
+  },
+  nellore: {
+    name: 'Nellore Pennar Basin & Aquaculture, Andhra Pradesh',
+    lat: 14.4426,
+    lon: 79.9865,
+    bbox: [14.38, 79.92, 14.50, 80.05],
+    key: 'nellore'
+  },
+  anantapur: {
+    name: 'Anantapur Semi-Arid & Renewable Belt, Andhra Pradesh',
+    lat: 14.6819,
+    lon: 77.6006,
+    bbox: [14.62, 77.54, 14.75, 77.66],
+    key: 'anantapur'
+  },
+  gudlavalleru: {
     name: 'Gudlavalleru, Krishna District, Andhra Pradesh',
     lat: 16.02,
     lon: 80.70,
-    bbox: [15.97, 80.65, 16.07, 80.75]
-  });
+    bbox: [15.97, 80.65, 16.07, 80.75],
+    key: 'gudlavalleru'
+  },
+  ap_state: {
+    name: 'Andhra Pradesh State Regional Mosaic (Macro View)',
+    lat: 15.9129,
+    lon: 79.7400,
+    bbox: [12.60, 76.75, 19.15, 84.75],
+    key: 'andhra'
+  }
+};
+
+export default function LocationSearchPage() {
+  // Search and AOI state (Default to Vijayawada, Andhra Pradesh)
+  const [searchQuery, setSearchQuery] = useState('Vijayawada');
+  const [selectedLocation, setSelectedLocation] = useState<LocationMeta>(AP_LOCATIONS_MAP.vijayawada);
 
   // Date filters
   const [dateFrom, setDateFrom] = useState('2025-01-01');
@@ -31,10 +121,7 @@ export default function LocationSearchPage() {
 
   // Scene catalog state
   const [scenes, setScenes] = useState<SceneItem[]>([]);
-  const [selectedSceneIds, setSelectedSceneIds] = useState<string[]>([
-    'gvl_s2_2025_09_03',
-    'gvl_s2_2026_09_05'
-  ]);
+  const [selectedSceneIds, setSelectedSceneIds] = useState<string[]>([]);
   const [isLoadingScenes, setIsLoadingScenes] = useState(false);
 
   // Analysis state
@@ -50,17 +137,23 @@ export default function LocationSearchPage() {
   const [showOverlay, setShowOverlay] = useState(true);
 
   // Load scenes matching location & dates
-  const loadScenes = async () => {
+  const loadScenes = async (targetAoi?: string) => {
     setIsLoadingScenes(true);
     try {
-      const aoiParam = searchQuery.toLowerCase().includes('gudlavalleru') ? 'gudlavalleru' : searchQuery;
+      const q = (targetAoi || searchQuery).trim().toLowerCase();
       const data = await fetchCatalogScenes({
-        aoi: aoiParam,
+        aoi: q,
         sensor: 'sentinel-2',
         date_from: dateFrom,
         date_to: dateTo
       });
-      setScenes(data.scenes || []);
+      const fetchedScenes = data.scenes || [];
+      setScenes(fetchedScenes);
+      if (fetchedScenes.length >= 2) {
+        setSelectedSceneIds([fetchedScenes[0].id, fetchedScenes[fetchedScenes.length - 1].id]);
+      } else if (fetchedScenes.length === 1) {
+        setSelectedSceneIds([fetchedScenes[0].id]);
+      }
     } catch (e: any) {
       console.error('Error loading scenes:', e);
     } finally {
@@ -69,28 +162,33 @@ export default function LocationSearchPage() {
   };
 
   useEffect(() => {
-    loadScenes();
+    loadScenes('vijayawada');
   }, []);
+
+  const selectApPreset = (key: string) => {
+    const loc = AP_LOCATIONS_MAP[key];
+    if (!loc) return;
+    setSearchQuery(loc.name.split(',')[0]);
+    setSelectedLocation(loc);
+    loadScenes(loc.key);
+  };
 
   const handleLocationSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const query = searchQuery.trim().toLowerCase();
 
-    // Fast-path hardcoded support for MVP Gudlavalleru
-    if (query.includes('gudlavalleru')) {
-      setSelectedLocation({
-        name: 'Gudlavalleru, Krishna District, Andhra Pradesh',
-        lat: 16.02,
-        lon: 80.70,
-        bbox: [15.97, 80.65, 16.07, 80.75]
-      });
-      loadScenes();
-      return;
+    // Fast-path lookup across all AP cities & regions
+    for (const [k, loc] of Object.entries(AP_LOCATIONS_MAP)) {
+      if (query.includes(k) || k.includes(query) || loc.name.toLowerCase().includes(query)) {
+        setSelectedLocation(loc);
+        loadScenes(loc.key);
+        return;
+      }
     }
 
     // Free geocoder fallback (OpenStreetMap / Nominatim)
     try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`);
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery + ' Andhra Pradesh')}`);
       const results = await res.json();
       if (results && results.length > 0) {
         const first = results[0];
@@ -100,21 +198,16 @@ export default function LocationSearchPage() {
           name: first.display_name,
           lat,
           lon,
-          bbox: [lat - 0.05, lon - 0.05, lat + 0.05, lon + 0.05]
+          bbox: [lat - 0.05, lon - 0.05, lat + 0.05, lon + 0.05],
+          key: query
         });
-      } else {
-        alert('Location not found. Showing hardcoded Gudlavalleru reference AOI.');
+        loadScenes(query);
+        return;
       }
     } catch {
-      // Offline fallback to Gudlavalleru
-      setSelectedLocation({
-        name: `${searchQuery} (Offline fallback to Gudlavalleru AOI)`,
-        lat: 16.02,
-        lon: 80.70,
-        bbox: [15.97, 80.65, 16.07, 80.75]
-      });
+      // Fallback
     }
-    loadScenes();
+    loadScenes(query);
   };
 
   const toggleSceneSelection = (id: string) => {
@@ -181,7 +274,7 @@ export default function LocationSearchPage() {
   return (
     <div className="bg-space-900 text-slate-100 min-h-screen flex flex-col font-sans">
       <Head>
-        <title>Location Search & Analysis — SatQuery AI (Gudlavalleru MVP)</title>
+        <title>Location Search & Analysis — SatQuery AI (Andhra Pradesh State-Wide Coverage)</title>
       </Head>
 
       {/* Top Header */}
@@ -245,8 +338,8 @@ export default function LocationSearchPage() {
           {/* 1. Location Search */}
           <div className="bg-space-800 border border-space-700 rounded-xl p-4 shadow-sm space-y-3">
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-              <span>1. Location Search</span>
-              <span className="text-[10px] text-cyan-400 font-mono">Nominatim / OSM + Hardcoded AOI</span>
+              <span>1. Location Search & Andhra Pradesh Coverage</span>
+              <span className="text-[10px] text-teal-400 font-mono">11 AP Regions &bull; Sentinel-2</span>
             </h2>
 
             <form onSubmit={handleLocationSearch} className="flex gap-2">
@@ -254,48 +347,102 @@ export default function LocationSearchPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search location (e.g., Gudlavalleru, Vijayawada)"
-                className="flex-1 bg-space-900 border border-space-700 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                placeholder="Search AP location (e.g., Vijayawada, Amaravati, Vizag, Tirupati, Kurnool)..."
+                className="flex-1 bg-space-900 border border-space-700 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-teal-500"
               />
               <button
                 type="submit"
-                className="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition"
+                className="bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition"
               >
                 Search
               </button>
             </form>
 
             <div className="flex flex-wrap gap-1.5 pt-1">
-              <span className="text-[10px] text-slate-500 self-center">Quick AOIs:</span>
+              <span className="text-[10px] text-slate-500 self-center">AP Cities:</span>
               <button
                 type="button"
-                onClick={() => {
-                  setSearchQuery('Gudlavalleru');
-                  handleLocationSearch();
-                }}
-                className="text-[10px] bg-space-700 hover:bg-cyan-900/60 text-cyan-300 px-2.5 py-1 rounded-md border border-space-600 font-mono"
-              >
-                Gudlavalleru (AP) [MVP]
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchQuery('Vijayawada');
-                  handleLocationSearch();
-                }}
-                className="text-[10px] bg-space-700 hover:bg-space-600 text-slate-300 px-2.5 py-1 rounded-md border border-space-600 font-mono"
+                onClick={() => selectApPreset('vijayawada')}
+                className="text-[10px] bg-space-700 hover:bg-teal-900/60 text-teal-300 px-2 py-0.5 rounded-md border border-teal-700 font-mono"
               >
                 Vijayawada
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setSearchQuery('Visakhapatnam');
-                  handleLocationSearch();
-                }}
-                className="text-[10px] bg-space-700 hover:bg-space-600 text-slate-300 px-2.5 py-1 rounded-md border border-space-600 font-mono"
+                onClick={() => selectApPreset('amaravati')}
+                className="text-[10px] bg-space-700 hover:bg-teal-900/60 text-teal-300 px-2 py-0.5 rounded-md border border-teal-700 font-mono"
               >
-                Visakhapatnam Port
+                Amaravati
+              </button>
+              <button
+                type="button"
+                onClick={() => selectApPreset('visakhapatnam')}
+                className="text-[10px] bg-space-700 hover:bg-teal-900/60 text-teal-300 px-2 py-0.5 rounded-md border border-teal-700 font-mono"
+              >
+                Visakhapatnam
+              </button>
+              <button
+                type="button"
+                onClick={() => selectApPreset('tirupati')}
+                className="text-[10px] bg-space-700 hover:bg-teal-900/60 text-teal-300 px-2 py-0.5 rounded-md border border-teal-700 font-mono"
+              >
+                Tirupati
+              </button>
+              <button
+                type="button"
+                onClick={() => selectApPreset('guntur')}
+                className="text-[10px] bg-space-700 hover:bg-teal-900/60 text-teal-300 px-2 py-0.5 rounded-md border border-teal-700 font-mono"
+              >
+                Guntur
+              </button>
+              <button
+                type="button"
+                onClick={() => selectApPreset('rajahmundry')}
+                className="text-[10px] bg-space-700 hover:bg-teal-900/60 text-teal-300 px-2 py-0.5 rounded-md border border-teal-700 font-mono"
+              >
+                Rajahmundry
+              </button>
+              <button
+                type="button"
+                onClick={() => selectApPreset('kakinada')}
+                className="text-[10px] bg-space-700 hover:bg-teal-900/60 text-teal-300 px-2 py-0.5 rounded-md border border-teal-700 font-mono"
+              >
+                Kakinada
+              </button>
+              <button
+                type="button"
+                onClick={() => selectApPreset('kurnool')}
+                className="text-[10px] bg-space-700 hover:bg-teal-900/60 text-teal-300 px-2 py-0.5 rounded-md border border-teal-700 font-mono"
+              >
+                Kurnool
+              </button>
+              <button
+                type="button"
+                onClick={() => selectApPreset('nellore')}
+                className="text-[10px] bg-space-700 hover:bg-teal-900/60 text-teal-300 px-2 py-0.5 rounded-md border border-teal-700 font-mono"
+              >
+                Nellore
+              </button>
+              <button
+                type="button"
+                onClick={() => selectApPreset('anantapur')}
+                className="text-[10px] bg-space-700 hover:bg-teal-900/60 text-teal-300 px-2 py-0.5 rounded-md border border-teal-700 font-mono"
+              >
+                Anantapur
+              </button>
+              <button
+                type="button"
+                onClick={() => selectApPreset('gudlavalleru')}
+                className="text-[10px] bg-space-700 hover:bg-teal-900/60 text-teal-300 px-2 py-0.5 rounded-md border border-teal-700 font-mono"
+              >
+                Gudlavalleru
+              </button>
+              <button
+                type="button"
+                onClick={() => selectApPreset('ap_state')}
+                className="text-[10px] bg-teal-950 hover:bg-teal-900 text-teal-200 px-2 py-0.5 rounded-md border border-teal-500 font-mono font-bold"
+              >
+                Entire AP
               </button>
             </div>
 
@@ -589,7 +736,7 @@ export default function LocationSearchPage() {
             )}
 
             <div className="flex items-center justify-between text-[11px] text-slate-400 px-1 font-mono">
-              <span>AOI: Gudlavalleru (16.02°N, 80.70°E)</span>
+              <span>AOI: {selectedLocation.name.split(',')[0]} ({selectedLocation.lat.toFixed(2)}°N, {selectedLocation.lon.toFixed(2)}°E)</span>
               <span>CRS: EPSG:4326 &bull; 10m GSD</span>
             </div>
           </div>

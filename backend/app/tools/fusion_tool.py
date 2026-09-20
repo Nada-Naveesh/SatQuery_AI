@@ -96,17 +96,17 @@ class OpticalSARFusionTool(BaseSpecialistTool):
         mean_sigma0 = float(np.mean(sigma0_db))
 
         text_ans = (
-            f"Successfully executed co-registered Optical–SAR cross-modal fusion. "
-            f"Overcame {cloud_cov_pct:.1f}% optical cloud occlusion by leveraging Sentinel-1 / RISAT C-band SAR microwave backscatter (mean sigma0: {mean_sigma0:.1f} dB). "
-            f"Resolved {builtup_metrics['area_hectares']:.1f} ha of dense structural built-up features (dielectric double-bounce >= {double_bounce_thresh_db} dB) "
-            f"and {water_metrics['area_hectares']:.1f} ha of calm water bodies (specular attenuation <= {specular_thresh_db} dB)."
+            f"Radar imagery was combined with optical images to see clearly through the clouds. "
+            f"Radar signals penetrated the cloud cover without difficulty. "
+            f"On the map, golden-amber areas show buildings and metal industrial structures (about {builtup_metrics['area_hectares']:.1f} hectares), "
+            f"while blue areas show calm water bodies (about {water_metrics['area_hectares']:.1f} hectares)."
         )
 
         bullets = [
-            f"Atmospheric Penetration: 100% penetration of {cloud_cov_pct:.1f}% cloud cover achieved using C-band radar backscatter (5.405 GHz).",
-            f"Dihedral Double-Bounce: {builtup_metrics['area_hectares']:.1f} hectares of metallic industrial tanks and structures delineated (sigma0 >= {double_bounce_thresh_db} dB).",
-            f"Specular Water Extent: {water_metrics['area_hectares']:.1f} hectares mapped with low radar backscatter cross-section (sigma0 <= {specular_thresh_db} dB).",
-            f"Physical Fusion Rule: Optical cloud pixels masked; synthetic aperture radar dielectric intensity mapped to surface roughness categories."
+            f"All-weather capability: Successfully saw through {cloud_cov_pct:.1f}% cloud cover using radar signals.",
+            f"Buildings & metal structures: About {builtup_metrics['area_hectares']:.1f} hectares detected (shown in golden amber).",
+            f"Water bodies: About {water_metrics['area_hectares']:.1f} hectares mapped (shown in blue).",
+            f"Why this works: Metal structures reflect radar strongly (appearing bright), while calm water reflects radar away (appearing dark)."
         ]
 
         return ToolResult(

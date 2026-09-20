@@ -254,8 +254,18 @@ class SceneCatalogService:
         end = date_to or end_date
         filtered = []
         for s in scenes:
-            if aoi and aoi.lower() not in s.get("aoi", "").lower():
-                continue
+            if aoi:
+                aoi_lower = aoi.lower().strip()
+                s_aoi = s.get("aoi", "").lower()
+                s_reg = s.get("region_id", "").lower()
+                search_keys = [str(k).lower() for k in s.get("search_keys", [])]
+                matched = (
+                    aoi_lower in s_aoi
+                    or aoi_lower == s_reg
+                    or any(aoi_lower == k or aoi_lower in k for k in search_keys)
+                )
+                if not matched:
+                    continue
             if sensor:
                 s_name = s.get("sensor", "").lower().replace("-", "").replace(" ", "")
                 q_name = sensor.lower().replace("-", "").replace(" ", "")

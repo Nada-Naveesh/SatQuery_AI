@@ -115,15 +115,16 @@ class TextGuidedGroundingTool(BaseSpecialistTool):
         elapsed_ms = (time.perf_counter() - start_t) * 1000.0
 
         text_ans = (
-            f"Successfully localized {len(boxes)} candidate region(s) matching '{q}'. "
-            f"Total target coverage spans {metrics['area_hectares']:.1f} hectares "
-            f"({metrics['coverage_percentage']:.1f}% of scene area) with high spatial grounding confidence."
+            f"Found {len(boxes)} area(s) matching your question. "
+            f"The highlighted boxes and colored areas on the map show these locations, covering approximately {metrics['area_hectares']:.1f} hectares "
+            f"({metrics['coverage_percentage']:.1f}% of the image)."
         )
 
         bullets = [
-            f"Localized {len(boxes)} bounding envelope(s) with mean confidence: {np.mean([b['score'] for b in boxes]):.1%}.",
-            f"Cumulative footprint: {metrics['area_hectares']:.1f} hectares ({metrics['pixel_count']} pixels).",
-            f"Target class: {target_name}."
+            f"Identified {len(boxes)} matching area(s) on the map.",
+            f"Total area covered: about {metrics['area_hectares']:.1f} hectares.",
+            f"Type of feature found: {target_name}.",
+            f"Highlighted boxes show the exact boundaries of the target features."
         ]
 
         # Generate GeoJSON Polygon FeatureCollection for GIS export

@@ -107,27 +107,29 @@ class BiTemporalChangeTool(BaseSpecialistTool):
         elapsed_ms = (time.perf_counter() - start_t) * 1000.0
         conf = 0.932
 
-        # Query-specific change captioning (CDVQA answering)
+        # Query-specific change captioning in simple, clear English
         if "increase" in q or "built" in q or "expand" in q:
-            qa_prefix = f"Yes, built-up infrastructure has increased significantly by approximately {builtup_exp_metrics['area_hectares']:.1f} hectares. "
+            qa_prefix = f"Yes, the built-up area increased by about {builtup_exp_metrics['area_hectares']:.1f} hectares. "
         elif "flood" in q or "water" in q:
-            qa_prefix = "Hydrological transitions observed between acquisition dates. "
+            qa_prefix = "Water body and flood boundary changes were observed between the two dates. "
         else:
             qa_prefix = ""
 
         text_ans = (
-            f"{qa_prefix}Detected significant temporal change ({change_category}). "
-            f"Total altered area encompasses {area_ha:.1f} hectares ({cov_pct:.1f}% of monitored landscape). "
-            f"{primary_desc}"
+            f"{qa_prefix}Between the two dates, some land in this area changed ({change_category.lower()}). "
+            f"The built-up area (buildings and roads) increased by about {builtup_exp_metrics['area_hectares']:.1f} hectares. "
+            f"In total, about {area_ha:.1f} hectares ({cov_pct:.1f}% of the monitored area) shows visible change. "
+            f"The red highlighted areas on the map show exactly where these physical changes happened."
         )
 
         bullets = [
-            f"Change Category: {change_category}.",
-            f"Total Surface Transition: {area_ha:.1f} hectares ({metrics['pixel_count']} verified pixels).",
-            f"Built-Up / Industrial Addition: {builtup_exp_metrics['area_hectares']:.1f} hectares.",
-            f"Mean Spectral Drift: Delta NDVI {mean_delta_ndvi:.3f}, Delta Brightness {delta_bright:.1f}.",
-            f"Validation Split: Evaluated against LEVIR-CD and CDVQA benchmark standards."
+            f"Between the two acquisition dates, some land in this area changed ({change_category}).",
+            f"Built-up area (buildings, roads) increased by about {builtup_exp_metrics['area_hectares']:.1f} hectares.",
+            f"Total changed land area is about {area_ha:.1f} hectares (about {cov_pct:.1f}% of the monitored area).",
+            f"Red highlighted areas on the map mark the exact locations of these changes."
         ]
+        if veg_loss_metrics['area_hectares'] > 0.5:
+            bullets.append(f"Green land (vegetation) decreased by about {veg_loss_metrics['area_hectares']:.1f} hectares.")
 
         return ToolResult(
             tool_name=self.name,

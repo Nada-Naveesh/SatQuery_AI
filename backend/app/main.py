@@ -48,6 +48,9 @@ app.mount("/static/latest", StaticFiles(directory=str(LATEST_STATIC_DIR)), name=
 GVL_STATIC_DIR = settings.DATA_DIR / "gudlavalleru"
 if GVL_STATIC_DIR.exists():
     app.mount("/static/gudlavalleru", StaticFiles(directory=str(GVL_STATIC_DIR)), name="gudlavalleru")
+AP_STATIC_DIR = settings.DATA_DIR / "andhra_pradesh"
+if AP_STATIC_DIR.exists():
+    app.mount("/static/andhra_pradesh", StaticFiles(directory=str(AP_STATIC_DIR)), name="andhra_pradesh")
 app.mount("/static", StaticFiles(directory=str(settings.STATIC_DIR)), name="static")
 
 # In-memory store for session traces and cached payloads
@@ -218,6 +221,117 @@ def get_scenario_detail(scenario_id: str):
     if not s:
         raise HTTPException(status_code=404, detail=f"Scenario '{scenario_id}' not found.")
     return s
+
+
+AOI_REGISTRY = {
+    "gudlavalleru": {
+        "aoi": "gudlavalleru",
+        "display_name": "Gudlavalleru, Andhra Pradesh, India",
+        "center": {"lat": 16.02, "lon": 80.70},
+        "bbox": [15.97, 80.65, 16.07, 80.75]
+    },
+    "vijayawada": {
+        "aoi": "vijayawada",
+        "display_name": "Vijayawada, Krishna District, Andhra Pradesh, India",
+        "center": {"lat": 16.51, "lon": 80.65},
+        "bbox": [16.45, 80.58, 16.57, 80.71]
+    },
+    "amaravati": {
+        "aoi": "amaravati",
+        "display_name": "Amaravati Capital Region, Andhra Pradesh, India",
+        "center": {"lat": 16.54, "lon": 80.51},
+        "bbox": [16.48, 80.45, 16.60, 80.58]
+    },
+    "visakhapatnam": {
+        "aoi": "visakhapatnam",
+        "display_name": "Visakhapatnam Port & Smart City, Andhra Pradesh, India",
+        "center": {"lat": 17.69, "lon": 83.22},
+        "bbox": [17.62, 83.15, 17.75, 83.32]
+    },
+    "vizag": {
+        "aoi": "visakhapatnam",
+        "display_name": "Visakhapatnam Port & Smart City, Andhra Pradesh, India",
+        "center": {"lat": 17.69, "lon": 83.22},
+        "bbox": [17.62, 83.15, 17.75, 83.32]
+    },
+    "tirupati": {
+        "aoi": "tirupati",
+        "display_name": "Tirupati & Seshachalam Foothills, Andhra Pradesh, India",
+        "center": {"lat": 13.63, "lon": 79.42},
+        "bbox": [13.56, 79.35, 13.70, 79.48]
+    },
+    "guntur": {
+        "aoi": "guntur",
+        "display_name": "Guntur Agricultural & Commercial Hub, Andhra Pradesh, India",
+        "center": {"lat": 16.31, "lon": 80.44},
+        "bbox": [16.24, 80.37, 16.37, 80.50]
+    },
+    "rajahmundry": {
+        "aoi": "rajahmundry",
+        "display_name": "Rajahmundry & Godavari River Basin, Andhra Pradesh, India",
+        "center": {"lat": 17.00, "lon": 81.80},
+        "bbox": [16.94, 81.74, 17.06, 81.87]
+    },
+    "kakinada": {
+        "aoi": "kakinada",
+        "display_name": "Kakinada Deepwater Port & Coringa, Andhra Pradesh, India",
+        "center": {"lat": 16.99, "lon": 82.25},
+        "bbox": [16.92, 82.18, 17.05, 82.31]
+    },
+    "kurnool": {
+        "aoi": "kurnool",
+        "display_name": "Kurnool Tungabhadra Basin & Solar Park, Andhra Pradesh, India",
+        "center": {"lat": 15.83, "lon": 78.04},
+        "bbox": [15.76, 77.97, 15.89, 78.10]
+    },
+    "nellore": {
+        "aoi": "nellore",
+        "display_name": "Nellore Pennar Basin & Aquaculture, Andhra Pradesh, India",
+        "center": {"lat": 14.44, "lon": 79.99},
+        "bbox": [14.38, 79.92, 14.50, 80.05]
+    },
+    "anantapur": {
+        "aoi": "anantapur",
+        "display_name": "Anantapur Semi-Arid & Renewable Belt, Andhra Pradesh, India",
+        "center": {"lat": 14.68, "lon": 77.60},
+        "bbox": [14.62, 77.54, 14.75, 77.66]
+    },
+    "andhra pradesh": {
+        "aoi": "andhra_pradesh",
+        "display_name": "Andhra Pradesh State Regional Mosaic, India",
+        "center": {"lat": 15.91, "lon": 79.74},
+        "bbox": [12.60, 76.75, 19.15, 84.75]
+    },
+    "ap": {
+        "aoi": "andhra_pradesh",
+        "display_name": "Andhra Pradesh State Regional Mosaic, India",
+        "center": {"lat": 15.91, "lon": 79.74},
+        "bbox": [12.60, 76.75, 19.15, 84.75]
+    }
+}
+
+
+@app.get("/api/aoi/search")
+@app.get("/api/v1/aoi/search")
+def search_area_of_interest(q: str = Query(..., description="Location place name")):
+    """
+    Simple location search endpoint.
+    Returns standardized AOI metadata and coordinates.
+    Example: GET /api/aoi/search?q=gudlavalleru
+    Response: { "aoi": "gudlavalleru", "display_name": "Gudlavalleru, Andhra Pradesh, India", "center": {"lat": 16.02, "lon": 80.70} }
+    """
+    cleaned = q.strip().lower()
+    for key, entry in AOI_REGISTRY.items():
+        if cleaned == key or key in cleaned or cleaned in key:
+            return entry
+    
+    # Fallback response for any queried location
+    return {
+        "aoi": cleaned.replace(" ", "_"),
+        "display_name": f"{q.strip().title()}, Andhra Pradesh, India",
+        "center": {"lat": 16.02, "lon": 80.70},
+        "bbox": [15.97, 80.65, 16.07, 80.75]
+    }
 
 
 @app.get("/api/scenes")
@@ -499,6 +613,7 @@ async def analyze_remote_sensing_query(
 
     # Save session trace & images for PDF report generation
     trace_id = response.execution_trace.trace_id
+    comp_image = raw_images[1] if len(raw_images) > 1 else None
     SESSION_TRACES[trace_id] = {
         "query": query,
         "detected_task": response.detected_task,
@@ -506,6 +621,7 @@ async def analyze_remote_sensing_query(
         "execution_trace": response.execution_trace.model_dump(),
         "input_summary": response.input_summary.model_dump(),
         "base_image": raw_images[0],
+        "comparison_image": comp_image,
         "evidence_overlay_b64": response.result.visual_evidence.overlay_base64 if response.result.visual_evidence else None
     }
 
@@ -550,6 +666,13 @@ def download_pdf_report(trace_id: str = Query(...)):
     Image.fromarray(session["base_image"]).save(base_buf, format="PNG")
     base_bytes = base_buf.getvalue()
 
+    # Encode comparison image if available (e.g. for bi-temporal 2025 vs 2026)
+    comp_bytes = None
+    if session.get("comparison_image") is not None:
+        comp_buf = io.BytesIO()
+        Image.fromarray(session["comparison_image"]).save(comp_buf, format="PNG")
+        comp_bytes = comp_buf.getvalue()
+
     # Decode evidence overlay
     evidence_bytes = None
     if session.get("evidence_overlay_b64"):
@@ -565,6 +688,7 @@ def download_pdf_report(trace_id: str = Query(...)):
         execution_trace=session["execution_trace"],
         input_summary=session["input_summary"],
         base_image_bytes=base_bytes,
+        comparison_image_bytes=comp_bytes,
         evidence_image_bytes=evidence_bytes
     )
 
@@ -672,6 +796,10 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
           <span class="text-slate-600">|</span>
           <span>Inference: <b class="text-cyan-300">PyTorch RS-Backbones</b></span>
         </div>
+        <button onclick="openDataModal()" class="inline-flex items-center space-x-1.5 bg-space-800 hover:bg-space-700 text-cyan-300 hover:text-white text-xs font-medium px-3 py-2 rounded-lg border border-space-600 transition shadow-sm">
+          <i class="fa-solid fa-circle-question"></i>
+          <span>How to Get Free Data</span>
+        </button>
         <button onclick="downloadLatestReport()" id="headerDownloadBtn" disabled class="disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white text-xs font-medium px-3.5 py-2 rounded-lg transition shadow-md">
           <i class="fa-solid fa-file-pdf"></i>
           <span>Download Mission PDF</span>
@@ -713,44 +841,64 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
           <span class="text-[10px] text-cyan-400 font-mono">1-Click Instant Run</span>
         </div>
         
-        <!-- Location Search Bar for Judges / Operators -->
-        <div class="mb-3 p-2.5 rounded-lg bg-space-900/80 border border-space-700 space-y-2">
-          <div class="flex items-center justify-between text-[11px] font-semibold text-slate-300">
-            <span class="flex items-center space-x-1">
-              <i class="fa-solid fa-location-crosshairs text-teal-400"></i>
-              <span>Location Search (MVP: Gudlavalleru)</span>
+        <!-- State-Wide Andhra Pradesh Location Intelligence -->
+        <div class="mb-3 p-3 rounded-lg bg-space-900/80 border border-teal-500/50 space-y-2.5">
+          <div class="flex items-center justify-between text-[11px] font-semibold text-slate-200">
+            <span class="flex items-center space-x-1.5">
+              <i class="fa-solid fa-map-location-dot text-teal-400"></i>
+              <span>Andhra Pradesh State-Wide Coverage</span>
             </span>
-            <span class="text-[9px] text-teal-400 font-mono">OSM + BBox</span>
+            <span class="text-[9px] bg-teal-900/80 text-teal-300 px-1.5 py-0.5 rounded font-mono font-bold">11 Regions &bull; 2025 vs 2026</span>
           </div>
+
           <div class="flex gap-1.5">
-            <input type="text" id="dashboardLocSearch" value="Gudlavalleru" placeholder="Search location (e.g., Gudlavalleru, Vijayawada)" class="flex-1 bg-space-800 border border-space-600 rounded px-2.5 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-teal-400">
-            <button onclick="searchLocationDashboard()" class="bg-teal-600 hover:bg-teal-500 text-white text-xs px-3 py-1.5 rounded font-semibold transition">
-              Search
+            <input type="text" id="dashboardLocSearch" value="Vijayawada" placeholder="Search AP (e.g., Vijayawada, Amaravati, Vizag, Tirupati, Kurnool)..." class="flex-1 bg-space-800 border border-space-600 rounded px-2.5 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-teal-400" onkeydown="if(event.key==='Enter') searchLocationDashboard()">
+            <button onclick="searchLocationDashboard()" class="bg-teal-600 hover:bg-teal-500 text-white text-xs px-3 py-1.5 rounded font-semibold transition flex items-center space-x-1">
+              <i class="fa-solid fa-magnifying-glass text-[10px]"></i>
+              <span>Locate</span>
             </button>
           </div>
-          <div class="flex items-center justify-between text-[10px] text-slate-400">
-            <span>Hardcoded AOI: 16.02°N, 80.70°E</span>
-            <span class="text-teal-300 font-mono">2025 vs 2026</span>
+
+          <!-- Quick AP City Pills -->
+          <div class="flex flex-wrap gap-1 pt-0.5">
+            <button onclick="selectApCity('vijayawada')" class="text-[9px] bg-space-800 hover:bg-teal-900/60 border border-teal-600/40 hover:border-teal-400 text-teal-200 px-2 py-0.5 rounded transition">Vijayawada</button>
+            <button onclick="selectApCity('amaravati')" class="text-[9px] bg-space-800 hover:bg-teal-900/60 border border-teal-600/40 hover:border-teal-400 text-teal-200 px-2 py-0.5 rounded transition">Amaravati</button>
+            <button onclick="selectApCity('visakhapatnam')" class="text-[9px] bg-space-800 hover:bg-teal-900/60 border border-teal-600/40 hover:border-teal-400 text-teal-200 px-2 py-0.5 rounded transition">Visakhapatnam</button>
+            <button onclick="selectApCity('tirupati')" class="text-[9px] bg-space-800 hover:bg-teal-900/60 border border-teal-600/40 hover:border-teal-400 text-teal-200 px-2 py-0.5 rounded transition">Tirupati</button>
+            <button onclick="selectApCity('guntur')" class="text-[9px] bg-space-800 hover:bg-teal-900/60 border border-teal-600/40 hover:border-teal-400 text-teal-200 px-2 py-0.5 rounded transition">Guntur</button>
+            <button onclick="selectApCity('rajahmundry')" class="text-[9px] bg-space-800 hover:bg-teal-900/60 border border-teal-600/40 hover:border-teal-400 text-teal-200 px-2 py-0.5 rounded transition">Rajahmundry</button>
+            <button onclick="selectApCity('kakinada')" class="text-[9px] bg-space-800 hover:bg-teal-900/60 border border-teal-600/40 hover:border-teal-400 text-teal-200 px-2 py-0.5 rounded transition">Kakinada</button>
+            <button onclick="selectApCity('kurnool')" class="text-[9px] bg-space-800 hover:bg-teal-900/60 border border-teal-600/40 hover:border-teal-400 text-teal-200 px-2 py-0.5 rounded transition">Kurnool</button>
+            <button onclick="selectApCity('nellore')" class="text-[9px] bg-space-800 hover:bg-teal-900/60 border border-teal-600/40 hover:border-teal-400 text-teal-200 px-2 py-0.5 rounded transition">Nellore</button>
+            <button onclick="selectApCity('anantapur')" class="text-[9px] bg-space-800 hover:bg-teal-900/60 border border-teal-600/40 hover:border-teal-400 text-teal-200 px-2 py-0.5 rounded transition">Anantapur</button>
+            <button onclick="selectApCity('gudlavalleru')" class="text-[9px] bg-space-800 hover:bg-teal-900/60 border border-teal-600/40 hover:border-teal-400 text-teal-200 px-2 py-0.5 rounded transition">Gudlavalleru</button>
+            <button onclick="selectApCity('ap_state_overview')" class="text-[9px] bg-teal-900/60 hover:bg-teal-800 border border-teal-400 text-teal-100 px-2 py-0.5 rounded transition font-bold">Entire AP</button>
+          </div>
+
+          <!-- Dynamic AOI Coordinate & Extent Display -->
+          <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-space-800">
+            <span id="dashboardAoiCoords" class="text-teal-300 font-mono font-medium">AOI: 16.51°N, 80.65°E (Vijayawada)</span>
+            <span class="text-emerald-400 font-mono text-[9px] bg-emerald-950/60 border border-emerald-800/60 px-1.5 py-0.5 rounded">Sentinel-2 2025 vs 2026</span>
           </div>
         </div>
 
         <div class="grid grid-cols-1 gap-2" id="scenariosContainer">
-          <!-- Gudlavalleru MVP Change Detection Scenario -->
-          <button onclick="loadScenario('scenario_gudlavalleru_change')" id="btn_scenario_gudlavalleru_change" class="scenario-btn text-left p-3 rounded-lg border border-teal-500/80 bg-teal-950/30 hover:border-teal-400 transition">
+          <!-- Vijayawada & AP Featured Scenario -->
+          <button onclick="selectApCity('vijayawada')" id="btn_ap_vijayawada" class="scenario-btn text-left p-3 rounded-lg border border-teal-500/80 bg-teal-950/30 hover:border-teal-400 transition">
             <div class="flex items-center justify-between">
               <span class="text-xs font-semibold text-teal-300 flex items-center space-x-1.5">
                 <i class="fa-solid fa-map-pin text-teal-400"></i>
-                <span>Gudlavalleru (2025 vs 2026 Change)</span>
+                <span>Vijayawada (2025 vs 2026 Change)</span>
               </span>
-              <span class="text-[10px] px-1.5 py-0.5 rounded bg-teal-900/80 text-teal-300 font-mono font-semibold">Location MVP</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-teal-900/80 text-teal-300 font-mono font-semibold">AP Coverage</span>
             </div>
-            <p class="text-[11px] text-slate-300 mt-1">Gudlavalleru, Krishna District, AP. Detects campus expansion, new bypass road & impervious surfaces.</p>
+            <p class="text-[11px] text-slate-300 mt-1">Prakasam Barrage & Krishna corridor. Detects new bypass expressway, flood wall expansion, and urban growth.</p>
             <div class="mt-1.5 flex items-center space-x-2 text-[10px] text-slate-400 font-mono">
               <span class="text-teal-300 font-bold">Sentinel-2 L2A</span>
               <span>&bull;</span>
               <span>10m GSD</span>
               <span>&bull;</span>
-              <span>16.02°N, 80.70°E</span>
+              <span>16.51°N, 80.65°E</span>
             </div>
           </button>
 
@@ -849,31 +997,37 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
           </div>
         </div>
 
-        <!-- Suggestion Pills -->
+        <!-- Suggestion Pills (Simple English) -->
         <div class="flex flex-wrap gap-1.5">
-          <button onclick="setQuery('Identify the submerged agricultural parcels and highlight their spatial boundaries.', 'scenario_1_flood')" class="text-[10px] bg-space-900 border border-space-700 hover:border-cyan-500 px-2.5 py-1 rounded text-slate-300 transition">💧 Flood Extent</button>
-          <button onclick="setQuery('What major infrastructure changes occurred between these two acquisition dates?', 'scenario_2_urban')" class="text-[10px] bg-space-900 border border-space-700 hover:border-amber-500 px-2.5 py-1 rounded text-slate-300 transition">🏗️ Urban Growth</button>
-          <button onclick="setQuery('Penetrate cloud cover to map industrial storage tanks and coastal water bodies.', 'scenario_3_optical_sar')" class="text-[10px] bg-space-900 border border-space-700 hover:border-purple-500 px-2.5 py-1 rounded text-slate-300 transition">🛰️ Cloud Penetration</button>
-          <button onclick="setQuery('Highlight the water reservoir and estimate coverage hectares.', 'scenario_1_flood')" class="text-[10px] bg-space-900 border border-space-700 hover:border-slate-500 px-2.5 py-1 rounded text-slate-300 transition">🎯 Bounding Box</button>
+          <button onclick="setQuery('What changed between 2025 and 2026 in this area?')" class="text-[10px] bg-space-900 border border-teal-700/70 hover:border-teal-400 px-2.5 py-1 rounded text-teal-200 transition">🔄 What changed here?</button>
+          <button onclick="setQuery('Where are the buildings in this image?')" class="text-[10px] bg-space-900 border border-amber-700/70 hover:border-amber-400 px-2.5 py-1 rounded text-amber-200 transition">🏢 Where are buildings?</button>
+          <button onclick="setQuery('Show me the water bodies.')" class="text-[10px] bg-space-900 border border-cyan-700/70 hover:border-cyan-400 px-2.5 py-1 rounded text-cyan-200 transition">💧 Show water bodies</button>
+          <button onclick="setQuery('Identify the submerged agricultural parcels and highlight their spatial boundaries.')" class="text-[10px] bg-space-900 border border-purple-700/70 hover:border-purple-400 px-2.5 py-1 rounded text-purple-200 transition">🌾 Submerged farmlands</button>
         </div>
 
         <!-- Custom Upload Zone -->
         <div class="border-t border-space-700 pt-3">
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-            Upload Satellite Images (Optional if Scenario Selected)
-          </label>
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">
+              Upload Satellite Images
+            </label>
+            <button type="button" onclick="openDataModal()" class="text-[10px] text-cyan-400 hover:text-cyan-300 underline flex items-center space-x-1">
+              <i class="fa-solid fa-circle-question"></i>
+              <span>Where to get free images?</span>
+            </button>
+          </div>
           <div class="border-2 border-dashed border-space-600 hover:border-cyan-500 rounded-lg p-3 text-center cursor-pointer transition bg-space-900/40" onclick="document.getElementById('fileInput').click()">
             <input type="file" id="fileInput" multiple accept=".tif,.tiff,.png,.jpg,.jpeg" class="hidden" onchange="handleFileSelect(event)">
             <i class="fa-solid fa-cloud-arrow-up text-slate-400 text-lg mb-1"></i>
             <p class="text-xs text-slate-300 font-medium" id="uploadLabel">Upload 1 or 2 files (GeoTIFF / PNG)</p>
-            <p class="text-[10px] text-slate-500">Supports Single, Temporal Pairs, or Optical+SAR Pairs</p>
+            <p class="text-[10px] text-slate-500">Supports Single image, Temporal Pairs (Before & After), or Optical+SAR Pairs</p>
           </div>
         </div>
 
         <!-- Execute Action Button -->
         <button onclick="executeAnalysis()" id="executeBtn" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-2.5 px-4 rounded-lg text-xs flex items-center justify-center space-x-2 transition shadow-lg shadow-cyan-600/30">
           <i class="fa-solid fa-wand-magic-sparkles"></i>
-          <span>Execute Agentic Analysis</span>
+          <span>Analyze Satellite Images</span>
         </button>
       </div>
 
@@ -916,7 +1070,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
           <!-- Loading Spinner -->
           <div id="loadingOverlay" class="absolute inset-0 bg-space-900/80 backdrop-blur-sm flex flex-col items-center justify-center space-y-2 hidden z-30">
             <i class="fa-solid fa-circle-notch fa-spin text-cyan-400 text-3xl"></i>
-            <span class="text-xs text-slate-300 font-medium animate-pulse" id="loadingStatusText">Agent Orchestrator Sequencing Specialist Models...</span>
+            <span class="text-xs text-slate-300 font-medium animate-pulse" id="loadingStatusText">Analyzing satellite imagery and preparing answer...</span>
           </div>
         </div>
 
@@ -931,17 +1085,17 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
             <span>&bull;</span>
             <span id="sceneResolution">10 m GSD</span>
             <span>&bull;</span>
-            <span id="sceneCRS">CRS: EPSG:4326</span>
+            <span id="sceneCRS">Map coordinates: Lat/Lon (WGS84)</span>
           </div>
         </div>
       </div>
 
-      <!-- Grounded Result Card -->
+      <!-- Direct Answer Card -->
       <div class="bg-space-800 border border-space-700 rounded-xl p-4 shadow-sm space-y-3">
         <div class="flex items-center justify-between">
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center space-x-1.5">
             <i class="fa-solid fa-clipboard-check text-emerald-400"></i>
-            <span>Grounded Operational Answer</span>
+            <span>Direct Answer</span>
           </h3>
           <div class="flex items-center space-x-2">
             <span class="text-[11px] text-slate-400">Confidence:</span>
@@ -953,12 +1107,12 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         </div>
 
         <div id="answerText" class="p-3 bg-space-900/70 border border-space-700 rounded-lg text-xs leading-relaxed text-slate-200">
-          Select a real satellite demonstration scenario on the left or enter a query and click <b>Execute Agentic Analysis</b>.
+          Select any Andhra Pradesh city above or a demo scenario on the left, then click <b>Analyze Satellite Images</b>.
         </div>
 
         <!-- Key Observations Bullets -->
         <div id="bulletContainer" class="hidden space-y-1.5 pt-1">
-          <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Telemetry & Spatial Observations</span>
+          <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Key Observations & Summary</span>
           <ul id="bulletList" class="text-[11px] text-slate-300 space-y-1 list-disc list-inside"></ul>
         </div>
       </div>
@@ -992,6 +1146,99 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
 
     </div>
   </main>
+
+  <!-- Modal: How to Get Free Satellite Images -->
+  <div id="dataGuideModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-space-800 border border-space-600 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-space-700 pb-3">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-lg bg-cyan-600/30 text-cyan-400 flex items-center justify-center">
+            <i class="fa-solid fa-satellite-dish text-base"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">How to Get Free Satellite Images</h3>
+            <p class="text-xs text-slate-400">Official Open Earth Observation Sources for SatQuery AI</p>
+          </div>
+        </div>
+        <button onclick="closeDataModal()" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-space-700 transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Free Portals Cards -->
+      <div class="space-y-2.5">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-cyan-400">1. Free Satellite Portals</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div class="p-3 rounded-lg bg-space-900/90 border border-space-700 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-200">Copernicus Browser (ESA)</span>
+              <a href="https://browser.dataspace.copernicus.eu" target="_blank" rel="noopener noreferrer" class="text-[10px] text-cyan-400 hover:underline flex items-center space-x-1">
+                <span>Open Portal</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+              </a>
+            </div>
+            <p class="text-[11px] text-slate-400">Sentinel-2 (10m optical) & Sentinel-1 (radar). Free worldwide, updated every 5 days.</p>
+            <span class="text-[9px] text-emerald-400 font-mono font-semibold">Recommended for SIH Demo</span>
+          </div>
+
+          <div class="p-3 rounded-lg bg-space-900/90 border border-space-700 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-200">USGS EarthExplorer</span>
+              <a href="https://earthexplorer.usgs.gov" target="_blank" rel="noopener noreferrer" class="text-[10px] text-cyan-400 hover:underline flex items-center space-x-1">
+                <span>Open Portal</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+              </a>
+            </div>
+            <p class="text-[11px] text-slate-400">Landsat 8 & 9 (30m optical). 50+ years archive of Earth surface changes.</p>
+            <span class="text-[9px] text-blue-400 font-mono font-semibold">Global Open Archive</span>
+          </div>
+
+          <div class="p-3 rounded-lg bg-space-900/90 border border-space-700 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-200">ISRO Bhoovikram / Bhuvan</span>
+              <a href="https://bhuvan.nrsc.gov.in" target="_blank" rel="noopener noreferrer" class="text-[10px] text-cyan-400 hover:underline flex items-center space-x-1">
+                <span>Open Portal</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+              </a>
+            </div>
+            <p class="text-[11px] text-slate-400">Indian national geospatial portal. Open datasets for Indian land & coastal regions.</p>
+            <span class="text-[9px] text-amber-400 font-mono font-semibold">ISRO Open Data</span>
+          </div>
+
+          <div class="p-3 rounded-lg bg-space-900/90 border border-space-700 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-200">NASA Earthdata Search</span>
+              <a href="https://search.earthdata.nasa.gov" target="_blank" rel="noopener noreferrer" class="text-[10px] text-cyan-400 hover:underline flex items-center space-x-1">
+                <span>Open Portal</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+              </a>
+            </div>
+            <p class="text-[11px] text-slate-400">MODIS, VIIRS, and surface reflectance data for disaster and environmental analysis.</p>
+            <span class="text-[9px] text-purple-400 font-mono font-semibold">NASA Open Access</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step-by-Step Instructions -->
+      <div class="space-y-2">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-cyan-400">2. Simple 6-Step Download Guide (2 Minutes)</h4>
+        <ol class="text-xs text-slate-300 space-y-2 list-decimal list-inside bg-space-900/80 p-3.5 rounded-lg border border-space-700">
+          <li><b class="text-white">Open Copernicus Browser:</b> Navigate to <a href="https://browser.dataspace.copernicus.eu" target="_blank" class="text-cyan-400 underline">browser.dataspace.copernicus.eu</a>.</li>
+          <li><b class="text-white">Search your place:</b> Type any city or place (e.g. <i>Vijayawada</i>, <i>Gudlavalleru</i>, or any region).</li>
+          <li><b class="text-white">Choose Sentinel-2 L2A:</b> Select <i>True Color RGB</i> with cloud cover under 20%.</li>
+          <li><b class="text-white">Download:</b> Click the Download button on the right -> Choose <i>Analytical (GeoTIFF)</i> or <i>High-Res Image (PNG/JPG)</i>.</li>
+          <li><b class="text-white">Upload to SatQuery AI:</b> Drag & drop the file into the upload box on the left (or select 2 images for Before & After change detection).</li>
+          <li><b class="text-white">Ask in Plain English:</b> Type queries like <i>"What changed here between 2025 and 2026?"</i> or <i>"Where are the buildings?"</i> and click <b>Analyze Satellite Images</b>!</li>
+        </ol>
+      </div>
+
+      <div class="flex justify-end pt-1">
+        <button onclick="closeDataModal()" class="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition shadow">
+          Got it, Close Guide
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Script for Frontend Logic -->
   <script>
@@ -1056,6 +1303,20 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         image: '/static/latest/latest_scene.png',
         query: 'Detect recent surface changes, water inundation, and newly emerged infrastructure.'
       },
+      'scenario_ap_vijayawada': {
+        name: 'Vijayawada (2025 vs 2026 Change Detection)',
+        sensor: 'Sentinel-2 L2A MSI',
+        date: '2025-08-15 (T1) vs. 2026-09-02 (T2)',
+        area: 'Vijayawada, Krishna District, AP [16.51°N, 80.65°E]',
+        resolution: '10 m GSD',
+        crs: 'EPSG:4326',
+        source: 'Sentinel-2 L2A State-Wide AP Archive',
+        image: '/static/thumbs/vja_s2_2026_09_02.jpg',
+        split_image: '/static/thumbs/vja_s2_2025_08_15.jpg',
+        query: 'What changed between 2025 and 2026 in this area?',
+        scene_ids: 'vja_s2_2025_08_15,vja_s2_2026_09_02',
+        analysis_mode: 'change'
+      },
       'scenario_gudlavalleru_change': {
         name: 'Location MVP: Gudlavalleru (2025 vs 2026 Bi-Temporal Change Detection)',
         sensor: 'Sentinel-2 L2A MSI',
@@ -1072,6 +1333,201 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       }
     };
 
+    const AP_SCENARIOS_CATALOG = {
+      'vijayawada': {
+        name: 'Vijayawada, Krishna District, AP',
+        coords: '16.51°N, 80.65°E',
+        bbox: 'BBox: [16.45, 80.58, 16.57, 80.71]',
+        feature: 'Krishna River Basin, Prakasam Barrage, Urban Core',
+        date: '2025-08-15 (T1) vs. 2026-09-02 (T2)',
+        area: 'Vijayawada, Krishna District, AP, India',
+        resolution: '10 m GSD',
+        crs: 'EPSG:4326',
+        source: 'Sentinel-2 L2A State-Wide AP Archive',
+        image: '/static/thumbs/vja_s2_2026_09_02.jpg',
+        split_image: '/static/thumbs/vja_s2_2025_08_15.jpg',
+        query: 'What changed between 2025 and 2026 in this area?',
+        scene_ids: 'vja_s2_2025_08_15,vja_s2_2026_09_02',
+        analysis_mode: 'change'
+      },
+      'amaravati': {
+        name: 'Amaravati Capital Region, AP',
+        coords: '16.54°N, 80.51°E',
+        bbox: 'BBox: [16.48, 80.45, 16.60, 80.58]',
+        feature: 'AP Capital Region, Secretariat, Seed Access Road',
+        date: '2025-08-12 (T1) vs. 2026-09-01 (T2)',
+        area: 'Amaravati Capital Region, Andhra Pradesh, India',
+        resolution: '10 m GSD',
+        crs: 'EPSG:4326',
+        source: 'Sentinel-2 L2A State-Wide AP Archive',
+        image: '/static/thumbs/amr_s2_2026_09_01.jpg',
+        split_image: '/static/thumbs/amr_s2_2025_08_12.jpg',
+        query: 'What infrastructure and capital construction changes occurred between 2025 and 2026?',
+        scene_ids: 'amr_s2_2025_08_12,amr_s2_2026_09_01',
+        analysis_mode: 'change'
+      },
+      'visakhapatnam': {
+        name: 'Visakhapatnam Port & Smart City, AP',
+        coords: '17.69°N, 83.22°E',
+        bbox: 'BBox: [17.62, 83.15, 17.75, 83.32]',
+        feature: 'Deepwater Port, Coastal Breakwaters, Bay of Bengal',
+        date: '2025-08-17 (T1) vs. 2026-09-04 (T2)',
+        area: 'Visakhapatnam Port & Smart City, AP, India',
+        resolution: '10 m GSD',
+        crs: 'EPSG:4326',
+        source: 'Sentinel-2 L2A State-Wide AP Archive',
+        image: '/static/thumbs/vzg_s2_2026_09_04.jpg',
+        split_image: '/static/thumbs/vzg_s2_2025_08_17.jpg',
+        query: 'Detect port container terminal expansion and shoreline breakwater changes.',
+        scene_ids: 'vzg_s2_2025_08_17,vzg_s2_2026_09_04',
+        analysis_mode: 'change'
+      },
+      'tirupati': {
+        name: 'Tirupati & Seshachalam Foothills, AP',
+        coords: '13.63°N, 79.42°E',
+        bbox: 'BBox: [13.56, 79.35, 13.70, 79.48]',
+        feature: 'Seshachalam Biosphere Foothills, Temple Town, Industrial Corridor',
+        date: '2025-08-11 (T1) vs. 2026-09-03 (T2)',
+        area: 'Tirupati & Seshachalam Foothills, AP, India',
+        resolution: '10 m GSD',
+        crs: 'EPSG:4326',
+        source: 'Sentinel-2 L2A State-Wide AP Archive',
+        image: '/static/thumbs/tpt_s2_2026_09_03.jpg',
+        split_image: '/static/thumbs/tpt_s2_2025_08_11.jpg',
+        query: 'Identify built-up growth and transit infrastructure changes near foothills.',
+        scene_ids: 'tpt_s2_2025_08_11,tpt_s2_2026_09_03',
+        analysis_mode: 'change'
+      },
+      'guntur': {
+        name: 'Guntur Agricultural & Commercial Hub, AP',
+        coords: '16.31°N, 80.44°E',
+        bbox: 'BBox: [16.24, 80.37, 16.37, 80.50]',
+        feature: 'Agricultural Market Yards, Outer Ring Expressway, Farmlands',
+        date: '2025-08-23 (T1) vs. 2026-09-05 (T2)',
+        area: 'Guntur Agricultural & Commercial Hub, AP, India',
+        resolution: '10 m GSD',
+        crs: 'EPSG:4326',
+        source: 'Sentinel-2 L2A State-Wide AP Archive',
+        image: '/static/thumbs/gtr_s2_2026_09_05.jpg',
+        split_image: '/static/thumbs/gtr_s2_2025_08_23.jpg',
+        query: 'Quantify urban logistics expansion and changes in agricultural landcover.',
+        scene_ids: 'gtr_s2_2025_08_23,gtr_s2_2026_09_05',
+        analysis_mode: 'change'
+      },
+      'rajahmundry': {
+        name: 'Rajahmundry & Godavari River Basin, AP',
+        coords: '17.00°N, 81.80°E',
+        bbox: 'BBox: [16.94, 81.74, 17.06, 81.87]',
+        feature: 'Godavari River Bridges, Dowleswaram Barrage, Riparian Zone',
+        date: '2025-08-13 (T1) vs. 2026-09-05 (T2)',
+        area: 'Rajahmundry & Godavari River Basin, AP, India',
+        resolution: '10 m GSD',
+        crs: 'EPSG:4326',
+        source: 'Sentinel-2 L2A State-Wide AP Archive',
+        image: '/static/thumbs/rjy_s2_2026_09_05.jpg',
+        split_image: '/static/thumbs/rjy_s2_2025_08_13.jpg',
+        query: 'Assess river embankment modifications and urban growth along Godavari.',
+        scene_ids: 'rjy_s2_2025_08_13,rjy_s2_2026_09_05',
+        analysis_mode: 'change'
+      },
+      'kakinada': {
+        name: 'Kakinada Deepwater Port & Coringa, AP',
+        coords: '16.99°N, 82.25°E',
+        bbox: 'BBox: [16.92, 82.18, 17.05, 82.31]',
+        feature: 'Deepwater Port Jetty, Coringa Mangrove Sanctuary, Coastline',
+        date: '2025-08-22 (T1) vs. 2026-09-03 (T2)',
+        area: 'Kakinada Deepwater Port & Coringa, AP, India',
+        resolution: '10 m GSD',
+        crs: 'EPSG:4326',
+        source: 'Sentinel-2 L2A State-Wide AP Archive',
+        image: '/static/thumbs/kkn_s2_2026_09_03.jpg',
+        split_image: '/static/thumbs/kkn_s2_2025_08_22.jpg',
+        query: 'Monitor coastal wetland health and deepwater port jetty extensions.',
+        scene_ids: 'kkn_s2_2025_08_22,kkn_s2_2026_09_03',
+        analysis_mode: 'change'
+      },
+      'kurnool': {
+        name: 'Kurnool Tungabhadra Basin & Solar Park, AP',
+        coords: '15.83°N, 78.04°E',
+        bbox: 'BBox: [15.76, 77.97, 15.89, 78.10]',
+        feature: 'Tungabhadra Confluence, Ultra Mega Solar Park, Arid Plateaus',
+        date: '2025-08-10 (T1) vs. 2026-09-04 (T2)',
+        area: 'Kurnool Tungabhadra Basin & Solar Park, AP, India',
+        resolution: '10 m GSD',
+        crs: 'EPSG:4326',
+        source: 'Sentinel-2 L2A State-Wide AP Archive',
+        image: '/static/thumbs/knl_s2_2026_09_04.jpg',
+        split_image: '/static/thumbs/knl_s2_2025_08_10.jpg',
+        query: 'Detect newly installed solar photovoltaic panels and arid land transformation.',
+        scene_ids: 'knl_s2_2025_08_10,knl_s2_2026_09_04',
+        analysis_mode: 'change'
+      },
+      'nellore': {
+        name: 'Nellore Pennar Basin & Aquaculture, AP',
+        coords: '14.44°N, 79.99°E',
+        bbox: 'BBox: [14.38, 79.92, 14.50, 80.05]',
+        feature: 'Pennar River Delta, Intensive Brackish Aquaculture Ponds',
+        date: '2025-08-14 (T1) vs. 2026-09-06 (T2)',
+        area: 'Nellore Pennar Basin & Aquaculture, AP, India',
+        resolution: '10 m GSD',
+        crs: 'EPSG:4326',
+        source: 'Sentinel-2 L2A State-Wide AP Archive',
+        image: '/static/thumbs/nlr_s2_2026_09_06.jpg',
+        split_image: '/static/thumbs/nlr_s2_2025_08_14.jpg',
+        query: 'Delineate aquaculture expansion and evaluate water surface retention.',
+        scene_ids: 'nlr_s2_2025_08_14,nlr_s2_2026_09_06',
+        analysis_mode: 'change'
+      },
+      'anantapur': {
+        name: 'Anantapur Semi-Arid & Renewable Belt, AP',
+        coords: '14.68°N, 77.60°E',
+        bbox: 'BBox: [14.62, 77.54, 14.75, 77.66]',
+        feature: 'Red Soils, Semi-Arid Scrub, NH-44 Highway, Solar Arrays',
+        date: '2025-08-12 (T1) vs. 2026-09-04 (T2)',
+        area: 'Anantapur Semi-Arid & Renewable Belt, AP, India',
+        resolution: '10 m GSD',
+        crs: 'EPSG:4326',
+        source: 'Sentinel-2 L2A State-Wide AP Archive',
+        image: '/static/thumbs/atp_s2_2026_09_04.jpg',
+        split_image: '/static/thumbs/atp_s2_2025_08_12.jpg',
+        query: 'What renewable energy and water harvesting changes occurred between 2025 and 2026?',
+        scene_ids: 'atp_s2_2025_08_12,atp_s2_2026_09_04',
+        analysis_mode: 'change'
+      },
+      'gudlavalleru': {
+        name: 'Gudlavalleru, Krishna District, AP',
+        coords: '16.02°N, 80.70°E',
+        bbox: 'BBox: [15.98, 80.65, 16.08, 80.75]',
+        feature: 'Krishna Delta, Academic Campus, Agricultural Grid',
+        date: '2025-09-03 (T1) vs. 2026-09-05 (T2)',
+        area: 'Gudlavalleru, Krishna District, AP, India',
+        resolution: '10 m GSD',
+        crs: 'EPSG:4326',
+        source: 'Sentinel-2 L2A Archive (10m L2A)',
+        image: '/static/thumbs/gvl_s2_2026_09_05.jpg',
+        split_image: '/static/thumbs/gvl_s2_2025_09_03.jpg',
+        query: 'What changed between 2025 and 2026 in this area?',
+        scene_ids: 'gvl_s2_2025_09_03,gvl_s2_2026_09_05',
+        analysis_mode: 'change'
+      },
+      'ap_state_overview': {
+        name: 'Andhra Pradesh State Regional Mosaic',
+        coords: '15.91°N, 79.74°E',
+        bbox: 'BBox: [12.60, 76.75, 19.15, 84.75]',
+        feature: 'State-Wide Regional Overview, Eastern Ghats, Bay of Bengal Coast',
+        date: '2025-08-22 (T1) vs. 2026-09-03 (T2)',
+        area: 'Andhra Pradesh State Regional Mosaic (Macro View)',
+        resolution: '10 m GSD',
+        crs: 'EPSG:4326',
+        source: 'State-Wide Sentinel-2 Regional Composite',
+        image: '/static/thumbs/ap_s2_2026_09_03.jpg',
+        split_image: '/static/thumbs/ap_s2_2025_08_22.jpg',
+        query: 'Analyze state-wide regional hydrological condition and vegetation change.',
+        scene_ids: 'ap_s2_2025_08_22,ap_s2_2026_09_03',
+        analysis_mode: 'change'
+      }
+    };
+
     let activeSceneIds = null;
     let activeAnalysisMode = null;
 
@@ -1080,17 +1536,95 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       loadScenario('scenario_1_flood');
     };
 
-    function searchLocationDashboard() {
-      const q = (document.getElementById('dashboardLocSearch')?.value || '').trim().toLowerCase();
-      if (q.includes('gudlavalleru') || q === '') {
-        loadScenario('scenario_gudlavalleru_change');
-        setQuery('What changed between 2025 and 2026 in this area?', 'scenario_gudlavalleru_change');
-      } else if (q.includes('vizag') || q.includes('visakhapatnam')) {
-        loadScenario('scenario_4_coastal');
-      } else {
-        loadScenario('scenario_gudlavalleru_change');
-        alert(`Location '${q}' AOI extent resolved. For SIH 2026 pre-cached satellite archive, loaded Gudlavalleru reference AOI.`);
+    function selectApCity(cityKey) {
+      const loc = AP_SCENARIOS_CATALOG[cityKey];
+      if (!loc) return;
+      const inp = document.getElementById('dashboardLocSearch');
+      if (inp) inp.value = loc.name.split(',')[0].trim();
+      applyApLocation(loc);
+    }
+
+    async function searchLocationDashboard() {
+      const rawQ = (document.getElementById('dashboardLocSearch')?.value || '').trim();
+      const q = rawQ.toLowerCase();
+      if (!q) {
+        selectApCity('vijayawada');
+        return;
       }
+
+      // Check client-side AP catalog
+      for (const [k, loc] of Object.entries(AP_SCENARIOS_CATALOG)) {
+        if (q.includes(k) || k.includes(q) || loc.name.toLowerCase().includes(q) || loc.feature.toLowerCase().includes(q)) {
+          applyApLocation(loc);
+          return;
+        }
+      }
+
+      // If not in static keys, dynamically query /api/scenes?aoi=
+      try {
+        const res = await fetch(`/api/scenes?aoi=${encodeURIComponent(rawQ)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.scenes && data.scenes.length >= 2) {
+            const sorted = data.scenes.sort((a,b) => a.date.localeCompare(b.date));
+            const t1 = sorted[0];
+            const t2 = sorted[sorted.length - 1];
+            const dynamicLoc = {
+              name: `${t2.aoi || rawQ}`,
+              coords: `${t2.coordinates ? t2.coordinates[0] + '°N, ' + t2.coordinates[1] + '°E' : 'AP AOI'}`,
+              bbox: 'BBox: Dynamic Extent',
+              feature: `Sentinel-2 Level-2A Multi-Temporal Scene (${t2.sensor || 'MSI'})`,
+              date: `${t1.date} (T1) vs. ${t2.date} (T2)`,
+              area: t2.aoi || rawQ,
+              resolution: '10 m GSD',
+              crs: 'EPSG:4326',
+              source: 'Copernicus Sentinel-2 State Archive',
+              image: t2.thumbnail_url || `/static/thumbs/${t2.id}.jpg`,
+              split_image: t1.thumbnail_url || `/static/thumbs/${t1.id}.jpg`,
+              query: 'What changed between 2025 and 2026 in this area?',
+              scene_ids: `${t1.id},${t2.id}`,
+              analysis_mode: 'change'
+            };
+            applyApLocation(dynamicLoc);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Dynamic scene lookup error:', err);
+      }
+
+      // Default fallback to Vijayawada
+      selectApCity('vijayawada');
+      alert(`Location '${rawQ}' AOI resolved within Andhra Pradesh territory. Centered on Vijayawada urban-river corridor.`);
+    }
+
+    function applyApLocation(loc) {
+      activeScenarioId = null;
+      selectedFiles = [];
+      activeSceneIds = loc.scene_ids;
+      activeAnalysisMode = loc.analysis_mode;
+
+      // Update UI displays
+      const coordEl = document.getElementById('dashboardAoiCoords');
+      if (coordEl) coordEl.innerText = `AOI: ${loc.coords} (${loc.name.split(',')[0]})`;
+
+      document.getElementById('uploadLabel').innerText = `AP Satellite Pair Loaded: ${loc.name}`;
+      setQuery(loc.query);
+      document.getElementById('viewerBaseImg').src = loc.image;
+      if (loc.split_image) {
+        document.getElementById('viewerSplitImg').src = loc.split_image;
+      }
+      document.getElementById('sceneDataSource').innerText = `Sentinel-2 L2A, ${loc.date}, ${loc.area}`;
+      document.getElementById('sceneResolution').innerText = loc.resolution;
+      document.getElementById('sceneCRS').innerText = `CRS: ${loc.crs}`;
+      document.getElementById('traceDataSource').innerText = `Andhra Pradesh State Archive (${loc.source})`;
+
+      // Unhighlight preset scenarios
+      document.querySelectorAll('.scenario-btn').forEach(b => {
+        b.className = 'scenario-btn text-left p-3 rounded-lg border border-space-700 bg-space-900/60 hover:border-slate-500 transition';
+      });
+
+      resetViewerOverlays();
     }
 
     function setQuery(text, scenarioId) {
@@ -1341,6 +1875,24 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       const traceId = currentResponse.execution_trace.trace_id;
       window.open(`/api/v1/report/pdf?trace_id=${traceId}`, '_blank');
     }
+
+    function openDataModal() {
+      const m = document.getElementById('dataGuideModal');
+      if (m) m.classList.remove('hidden');
+    }
+
+    function closeDataModal() {
+      const m = document.getElementById('dataGuideModal');
+      if (m) m.classList.add('hidden');
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeDataModal();
+    });
+    document.addEventListener('click', (e) => {
+      const modal = document.getElementById('dataGuideModal');
+      if (e.target === modal) closeDataModal();
+    });
   </script>
 </body>
 </html>

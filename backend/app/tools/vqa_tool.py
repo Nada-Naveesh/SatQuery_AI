@@ -70,15 +70,13 @@ class RSVqaTool(BaseSpecialistTool):
             cov_pct = water_metrics["coverage_percentage"]
             
             text_ans = (
-                f"Identified major water/submerged surface coverage across {area_ha:.1f} hectares "
-                f"({cov_pct:.1f}% of the scene extent). The primary inundation aligns with low-lying drainage parcels. "
-                f"Physical rationale: Deep solar infrared absorption (mean NDWI: {mean_ndwi:.2f}) differentiates floodwater from surrounding soils."
+                f"The blue areas in the map are water bodies. They cover about {area_ha:.1f} hectares "
+                f"({cov_pct:.1f}% of the scene). Low-lying drainage areas and rivers show surface water accumulation."
             )
             bullets = [
-                f"Water body extent: {area_ha:.1f} hectares ({water_metrics['pixel_count']} verified pixels).",
-                f"Spectral delineation: Normalized Difference Water Index (NDWI) confirms standing surface water.",
-                f"Physical Rationale: Strong specular absorption in infrared/red bands confirms fluid presence.",
-                f"Ground Sampling Distance: {water_metrics['gsd_meters']} meters/pixel (EPSG:4326 projected)."
+                f"Total water surface area: about {area_ha:.1f} hectares.",
+                f"Blue highlighted areas on the map mark rivers, lakes, and submerged land.",
+                f"The water is clearly separated from surrounding agricultural fields and dry land."
             ]
             overlay = create_color_mask_overlay(img, water_mask, color_rgb=(0, 140, 255), alpha=0.55)
             overlay_type = "segmentation_mask"
@@ -89,15 +87,13 @@ class RSVqaTool(BaseSpecialistTool):
             conf = calibrate_conf(1.30)  # calibrated ~0.925
             area_ha = urban_metrics["area_hectares"]
             text_ans = (
-                f"Detected dense built-up and impervious structures occupying {area_ha:.1f} hectares "
-                f"({urban_metrics['coverage_percentage']:.1f}% of the observed region). "
-                f"Physical rationale: High diffuse surface scattering and low chlorophyll absorption identify paved/engineered materials."
+                f"The highlighted areas in the map show buildings, roads, and concrete structures. "
+                f"They occupy about {area_ha:.1f} hectares ({urban_metrics['coverage_percentage']:.1f}% of the area)."
             )
             bullets = [
-                f"Built-up footprint: {area_ha:.1f} hectares.",
-                f"High-reflectance structural clusters identified with moderate-to-high building density.",
-                f"Physical Rationale: Elevated albedo across red/green bands without NIR vegetation peak.",
-                f"Pattern matches commercial and residential settlement layouts."
+                f"Built-up footprint: about {area_ha:.1f} hectares.",
+                f"Golden-amber areas on the map show buildings, industrial structures, and roads.",
+                f"The pattern matches towns, commercial zones, and residential settlements."
             ]
             overlay = create_color_mask_overlay(img, urban_mask, color_rgb=(255, 180, 0), alpha=0.5)
             overlay_type = "segmentation_mask"
@@ -108,15 +104,13 @@ class RSVqaTool(BaseSpecialistTool):
             conf = calibrate_conf(1.38)  # calibrated ~0.938
             area_ha = veg_metrics["area_hectares"]
             text_ans = (
-                f"Healthy vegetative canopy and agricultural parcels cover {area_ha:.1f} hectares "
-                f"({veg_metrics['coverage_percentage']:.1f}% of total area). "
-                f"Physical rationale: Strong photosynthetic chlorophyll absorption in blue/red with high green/NIR reflectance."
+                f"The green areas in the map show crops, trees, and green land. "
+                f"They cover about {area_ha:.1f} hectares ({veg_metrics['coverage_percentage']:.1f}% of the scene)."
             )
             bullets = [
-                f"Vegetation canopy: {area_ha:.1f} hectares.",
-                f"Mean vegetation proxy index: {mean_ndvi:.2f}.",
-                f"Physical Rationale: Selective green reflectance confirms vigorous cellular structure.",
-                f"Parcel boundaries exhibit active agricultural cultivation patterns."
+                f"Green land and crops cover about {area_ha:.1f} hectares.",
+                f"Green highlighted areas mark healthy agricultural fields and vegetation.",
+                f"Surrounding plots follow active farming patterns."
             ]
             overlay = create_color_mask_overlay(img, veg_mask, color_rgb=(34, 197, 94), alpha=0.5)
             overlay_type = "segmentation_mask"
@@ -129,17 +123,18 @@ class RSVqaTool(BaseSpecialistTool):
             urb_cov = float(np.mean(urban_mask)) * 100
             conf = calibrate_conf(1.22)  # calibrated ~0.910
             
-            dominant = "Agricultural / Vegetative" if veg_cov >= max(water_cov, urb_cov) else (
-                "Water / Wetland" if water_cov >= urb_cov else "Urban / Developed"
+            dominant = "Green agricultural land" if veg_cov >= max(water_cov, urb_cov) else (
+                "Water bodies" if water_cov >= urb_cov else "Buildings and built-up land"
             )
             text_ans = (
-                f"The remote-sensing scene is predominantly composed of {dominant} terrain. "
-                f"Land-use breakdown: {veg_cov:.1f}% Vegetation, {urb_cov:.1f}% Built-up/Bare, and {water_cov:.1f}% Water surface."
+                f"This satellite scene is mainly composed of {dominant.lower()}. "
+                f"Breakdown: {veg_cov:.1f}% Green land/crops, {urb_cov:.1f}% Buildings/roads, and {water_cov:.1f}% Water bodies."
             )
             bullets = [
-                f"Dominant class: {dominant}.",
-                f"Spectral distribution: Green canopy ({veg_cov:.1f}%), Impervious ({urb_cov:.1f}%), Hydrological ({water_cov:.1f}%).",
-                f"Atmospheric calibration and radiometric normalization verified."
+                f"Main landscape type: {dominant}.",
+                f"Green crops & trees: {veg_cov:.1f}% of the area.",
+                f"Buildings & roads: {urb_cov:.1f}% of the area.",
+                f"Water bodies: {water_cov:.1f}% of the area."
             ]
             # Combined multi-class heatmap
             overlay = create_color_mask_overlay(img, veg_mask, color_rgb=(34, 197, 94), alpha=0.35)

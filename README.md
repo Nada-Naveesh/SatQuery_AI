@@ -9,13 +9,13 @@
 
 > **"An operational, agentic geospatial intelligence platform that turns multi-sensor satellite archives (optical, SAR, temporal) into evidence-grounded, natural-language insights with auditable decision traces — engineered for ISRO, SAC, disaster management, and urban planning."**
 
-📘 **Quick Links:** [Official Operator Manual (Evaluation Guide)](docs/OPERATOR_MANUAL.md) | [SIH 2026 Alignment Matrix](docs/sih_alignment.md) | [Technical Whitepaper & System Report](docs/technical_report.md) | [Benchmark Results Scorecard](docs/benchmark_results.md) | [SIH 6-Slide Pitch Deck](docs/sih2026_pitch_deck.md)
+📘 **Quick Links:** [Simple User Guide & Judge Demo](docs/user_guide.md) | [Where to Get Free Satellite Data](docs/how_to_get_data.md) | [Official Operator Manual](docs/OPERATOR_MANUAL.md) | [SIH 2026 Alignment Matrix](docs/sih_alignment.md) | [Technical Whitepaper](docs/technical_report.md) | [Benchmark Results](docs/benchmark_results.md) | [SIH Pitch Deck](docs/sih2026_pitch_deck.md)
 
 ---
 
 ## 1. Executive Summary
 
-**SatQuery AI** is an evidence-grounded, agentic remote-sensing operations assistant engineered by **Team Code Cosmos** for **Smart India Hackathon 2026 (Problem Statement ID: 26167)** under the **ISRO / Department of Space (Space Applications Centre - SAC)** theme. Traditional satellite data exploitation requires domain expertise in geographic information systems (GIS), multi-band sensor calibration, and specialized computer vision pipelines. SatQuery AI democratizes satellite imagery analysis by allowing non-expert decision makers, disaster response commanders, and urban planners to interrogate single, multispectral, Synthetic Aperture Radar (SAR), and multitemporal satellite data using everyday natural language.
+**SatQuery AI** is an evidence-grounded, agentic remote-sensing operations assistant engineered by **Team Code Cosmos** for **Smart India Hackathon 2026 (Problem Statement ID: 26167)** under the **ISRO / Department of Space (Space Applications Centre - SAC)** theme. Traditional satellite data exploitation requires domain expertise in geographic information systems (GIS), multi-band sensor calibration, and specialized computer vision pipelines. SatQuery AI democratizes satellite imagery analysis by allowing non-expert decision makers, disaster response commanders, and hackathon judges to interrogate single, multispectral, Synthetic Aperture Radar (SAR), and multitemporal satellite data using **everyday plain English**.
 
 Rather than relying on a brittle, hallucination-prone monolithic Vision-Language Model (VLM), SatQuery AI introduces an **auditable Agentic Orchestrator**. The orchestrator parses complex user queries, inspects sensor modalities and spatial metadata (GeoTIFF, CRS, ground sampling distance), and sequences a registry of specialized remote-sensing AI tools (VQA, text-guided grounding, bi-temporal change detection, and Optical–SAR cross-modal fusion). Every textual insight is strictly linked to spatial proof (bounding boxes, segmentation masks, change heatmaps) and accompanied by an auditable execution trace and one-click PDF mission report.
 
@@ -218,7 +218,12 @@ npm run dev
 
 ## 7. SIH 2026 Winning Demonstration Scenarios
 
-SatQuery AI includes 4 pre-configured scenarios and a near-real-time operational stream tailored for judges:
+SatQuery AI includes state-wide Andhra Pradesh coverage, 4 pre-configured scenarios, and a near-real-time operational stream tailored for judges:
+- **State-Wide Andhra Pradesh Location Intelligence (11 Regions &bull; 2025 vs 2026)**:
+   - *Regions Covered*: **Vijayawada, Amaravati, Visakhapatnam, Tirupati, Guntur, Rajahmundry, Kakinada, Kurnool, Nellore, Anantapur, Gudlavalleru**, and Entire AP State Overview.
+   - *Data*: Authentic Sentinel-2 Level-2A multi-band GeoTIFF chips across both 2025 and 2026.
+   - *Query*: `"What changed between 2025 and 2026 in this area?"`
+   - *Output*: Change detection heatmap, dynamic coordinate display, split comparison slider, and plain English executive report.
 0. **Today's Operational Surveillance Feed (Near-Real-Time Stream)**:
    - *Input*: Freshly ingested Sentinel-2 L2A scene from the Copernicus Data Space Ecosystem.
    - *Query*: `"Detect recent surface changes, water inundation, and newly emerged infrastructure."`

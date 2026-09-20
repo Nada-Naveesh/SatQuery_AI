@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "last_updated": "2026-09-11T08:19:59.440502+00:00",
+  "last_updated": "2026-09-11T09:17:40.580753+00:00",
   "organization": "ISRO / SAC & Team Code Cosmos",
   "project": "SatQuery AI",
   "scenes": [
@@ -250,6 +250,1031 @@
       "preview_path": "/static/thumbs/gvl_s2_2026_09_05.jpg",
       "thumbnail_url": "/static/thumbs/gvl_s2_2026_09_05.jpg",
       "metadata_url": "/api/scenes/gvl_s2_2026_09_05"
+    },
+    {
+      "id": "vja_s2_2025_08_15",
+      "scene_id": "vja_s2_2025_08_15",
+      "aoi": "Vijayawada, Krishna District, Andhra Pradesh",
+      "region_id": "vijayawada",
+      "search_keys": [
+        "vijayawada",
+        "bezawada",
+        "krishna river",
+        "prakasam barrage"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2025-08-15",
+      "year": 2025,
+      "cloud_cover": 6.8,
+      "cloud_cover_pct": 6.8,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        16.5062,
+        80.648
+      ],
+      "bbox": [
+        16.45,
+        80.58,
+        16.57,
+        80.71
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "Pre-monsoon optical survey showing Prakasam Barrage flow and urban Krishna corridor.",
+      "path_rgb": "data/andhra_pradesh/vijayawada/s2_2025_08_15/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/vijayawada/s2_2025_08_15/multi_band.tif",
+      "file_path": "data/andhra_pradesh/vijayawada/s2_2025_08_15/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/vijayawada/s2_2025_08_15/thumb.jpg",
+      "preview_path": "/static/thumbs/vja_s2_2025_08_15.jpg",
+      "thumbnail_url": "/static/thumbs/vja_s2_2025_08_15.jpg",
+      "metadata_url": "/api/scenes/vja_s2_2025_08_15"
+    },
+    {
+      "id": "vja_s2_2026_09_02",
+      "scene_id": "vja_s2_2026_09_02",
+      "aoi": "Vijayawada, Krishna District, Andhra Pradesh",
+      "region_id": "vijayawada",
+      "search_keys": [
+        "vijayawada",
+        "bezawada",
+        "krishna river",
+        "prakasam barrage"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2026-09-02",
+      "year": 2026,
+      "cloud_cover": 5.5,
+      "cloud_cover_pct": 5.5,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        16.5062,
+        80.648
+      ],
+      "bbox": [
+        16.45,
+        80.58,
+        16.57,
+        80.71
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "Post-expansion survey highlighting new floodwall defense, bypass highway, and canal infrastructure.",
+      "path_rgb": "data/andhra_pradesh/vijayawada/s2_2026_09_02/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/vijayawada/s2_2026_09_02/multi_band.tif",
+      "file_path": "data/andhra_pradesh/vijayawada/s2_2026_09_02/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/vijayawada/s2_2026_09_02/thumb.jpg",
+      "preview_path": "/static/thumbs/vja_s2_2026_09_02.jpg",
+      "thumbnail_url": "/static/thumbs/vja_s2_2026_09_02.jpg",
+      "metadata_url": "/api/scenes/vja_s2_2026_09_02"
+    },
+    {
+      "id": "amr_s2_2025_08_12",
+      "scene_id": "amr_s2_2025_08_12",
+      "aoi": "Amaravati Capital Region, Andhra Pradesh",
+      "region_id": "amaravati",
+      "search_keys": [
+        "amaravati",
+        "amaravathi",
+        "ap capital",
+        "thullur",
+        "secretariat"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2025-08-12",
+      "year": 2025,
+      "cloud_cover": 5.7,
+      "cloud_cover_pct": 5.7,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        16.5415,
+        80.515
+      ],
+      "bbox": [
+        16.48,
+        80.45,
+        16.6,
+        80.58
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "Baseline optical acquisition showing initial seed access road and administrative plots.",
+      "path_rgb": "data/andhra_pradesh/amaravati/s2_2025_08_12/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/amaravati/s2_2025_08_12/multi_band.tif",
+      "file_path": "data/andhra_pradesh/amaravati/s2_2025_08_12/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/amaravati/s2_2025_08_12/thumb.jpg",
+      "preview_path": "/static/thumbs/amr_s2_2025_08_12.jpg",
+      "thumbnail_url": "/static/thumbs/amr_s2_2025_08_12.jpg",
+      "metadata_url": "/api/scenes/amr_s2_2025_08_12"
+    },
+    {
+      "id": "amr_s2_2026_09_01",
+      "scene_id": "amr_s2_2026_09_01",
+      "aoi": "Amaravati Capital Region, Andhra Pradesh",
+      "region_id": "amaravati",
+      "search_keys": [
+        "amaravati",
+        "amaravathi",
+        "ap capital",
+        "thullur",
+        "secretariat"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2026-09-01",
+      "year": 2026,
+      "cloud_cover": 4.5,
+      "cloud_cover_pct": 4.5,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        16.5415,
+        80.515
+      ],
+      "bbox": [
+        16.48,
+        80.45,
+        16.6,
+        80.58
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "Active infrastructure expansion, paved multi-lane corridors, and new structural foundations.",
+      "path_rgb": "data/andhra_pradesh/amaravati/s2_2026_09_01/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/amaravati/s2_2026_09_01/multi_band.tif",
+      "file_path": "data/andhra_pradesh/amaravati/s2_2026_09_01/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/amaravati/s2_2026_09_01/thumb.jpg",
+      "preview_path": "/static/thumbs/amr_s2_2026_09_01.jpg",
+      "thumbnail_url": "/static/thumbs/amr_s2_2026_09_01.jpg",
+      "metadata_url": "/api/scenes/amr_s2_2026_09_01"
+    },
+    {
+      "id": "vzg_s2_2025_08_17",
+      "scene_id": "vzg_s2_2025_08_17",
+      "aoi": "Visakhapatnam Port & Smart City, Andhra Pradesh",
+      "region_id": "visakhapatnam",
+      "search_keys": [
+        "visakhapatnam",
+        "vizag",
+        "visakha",
+        "gangavaram",
+        "rk beach"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2025-08-17",
+      "year": 2025,
+      "cloud_cover": 6.7,
+      "cloud_cover_pct": 6.7,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        17.6868,
+        83.2185
+      ],
+      "bbox": [
+        17.62,
+        83.15,
+        17.75,
+        83.32
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "Deepwater port container terminal and outer harbour baseline.",
+      "path_rgb": "data/andhra_pradesh/visakhapatnam/s2_2025_08_17/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/visakhapatnam/s2_2025_08_17/multi_band.tif",
+      "file_path": "data/andhra_pradesh/visakhapatnam/s2_2025_08_17/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/visakhapatnam/s2_2025_08_17/thumb.jpg",
+      "preview_path": "/static/thumbs/vzg_s2_2025_08_17.jpg",
+      "thumbnail_url": "/static/thumbs/vzg_s2_2025_08_17.jpg",
+      "metadata_url": "/api/scenes/vzg_s2_2025_08_17"
+    },
+    {
+      "id": "vzg_s2_2026_09_04",
+      "scene_id": "vzg_s2_2026_09_04",
+      "aoi": "Visakhapatnam Port & Smart City, Andhra Pradesh",
+      "region_id": "visakhapatnam",
+      "search_keys": [
+        "visakhapatnam",
+        "vizag",
+        "visakha",
+        "gangavaram",
+        "rk beach"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2026-09-04",
+      "year": 2026,
+      "cloud_cover": 3.2,
+      "cloud_cover_pct": 3.2,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        17.6868,
+        83.2185
+      ],
+      "bbox": [
+        17.62,
+        83.15,
+        17.75,
+        83.32
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "Port modernization, expanded breakwater reclamation, and coastal highway extensions.",
+      "path_rgb": "data/andhra_pradesh/visakhapatnam/s2_2026_09_04/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/visakhapatnam/s2_2026_09_04/multi_band.tif",
+      "file_path": "data/andhra_pradesh/visakhapatnam/s2_2026_09_04/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/visakhapatnam/s2_2026_09_04/thumb.jpg",
+      "preview_path": "/static/thumbs/vzg_s2_2026_09_04.jpg",
+      "thumbnail_url": "/static/thumbs/vzg_s2_2026_09_04.jpg",
+      "metadata_url": "/api/scenes/vzg_s2_2026_09_04"
+    },
+    {
+      "id": "tpt_s2_2025_08_11",
+      "scene_id": "tpt_s2_2025_08_11",
+      "aoi": "Tirupati & Seshachalam Foothills, Andhra Pradesh",
+      "region_id": "tirupati",
+      "search_keys": [
+        "tirupati",
+        "tirumala",
+        "seshachalam",
+        "renigunta",
+        "chittoor"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2025-08-11",
+      "year": 2025,
+      "cloud_cover": 6.6,
+      "cloud_cover_pct": 6.6,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        13.6288,
+        79.4192
+      ],
+      "bbox": [
+        13.56,
+        79.35,
+        13.7,
+        79.48
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "Seshachalam biosphere foothills and temple city transit hub.",
+      "path_rgb": "data/andhra_pradesh/tirupati/s2_2025_08_11/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/tirupati/s2_2025_08_11/multi_band.tif",
+      "file_path": "data/andhra_pradesh/tirupati/s2_2025_08_11/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/tirupati/s2_2025_08_11/thumb.jpg",
+      "preview_path": "/static/thumbs/tpt_s2_2025_08_11.jpg",
+      "thumbnail_url": "/static/thumbs/tpt_s2_2025_08_11.jpg",
+      "metadata_url": "/api/scenes/tpt_s2_2025_08_11"
+    },
+    {
+      "id": "tpt_s2_2026_09_03",
+      "scene_id": "tpt_s2_2026_09_03",
+      "aoi": "Tirupati & Seshachalam Foothills, Andhra Pradesh",
+      "region_id": "tirupati",
+      "search_keys": [
+        "tirupati",
+        "tirumala",
+        "seshachalam",
+        "renigunta",
+        "chittoor"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2026-09-03",
+      "year": 2026,
+      "cloud_cover": 1.5,
+      "cloud_cover_pct": 1.5,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        13.6288,
+        79.4192
+      ],
+      "bbox": [
+        13.56,
+        79.35,
+        13.7,
+        79.48
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "Expanded electronics manufacturing corridor and elevated pilgrim transit infrastructure.",
+      "path_rgb": "data/andhra_pradesh/tirupati/s2_2026_09_03/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/tirupati/s2_2026_09_03/multi_band.tif",
+      "file_path": "data/andhra_pradesh/tirupati/s2_2026_09_03/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/tirupati/s2_2026_09_03/thumb.jpg",
+      "preview_path": "/static/thumbs/tpt_s2_2026_09_03.jpg",
+      "thumbnail_url": "/static/thumbs/tpt_s2_2026_09_03.jpg",
+      "metadata_url": "/api/scenes/tpt_s2_2026_09_03"
+    },
+    {
+      "id": "gtr_s2_2025_08_23",
+      "scene_id": "gtr_s2_2025_08_23",
+      "aoi": "Guntur Agricultural & Commercial Hub, Andhra Pradesh",
+      "region_id": "guntur",
+      "search_keys": [
+        "guntur",
+        "tenali",
+        "mirchi yard",
+        "chilli market"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2025-08-23",
+      "year": 2025,
+      "cloud_cover": 2.8,
+      "cloud_cover_pct": 2.8,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        16.3067,
+        80.4365
+      ],
+      "bbox": [
+        16.24,
+        80.37,
+        16.37,
+        80.5
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "Commercial agri-logistics hub and surrounding intensive cropping zones.",
+      "path_rgb": "data/andhra_pradesh/guntur/s2_2025_08_23/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/guntur/s2_2025_08_23/multi_band.tif",
+      "file_path": "data/andhra_pradesh/guntur/s2_2025_08_23/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/guntur/s2_2025_08_23/thumb.jpg",
+      "preview_path": "/static/thumbs/gtr_s2_2025_08_23.jpg",
+      "thumbnail_url": "/static/thumbs/gtr_s2_2025_08_23.jpg",
+      "metadata_url": "/api/scenes/gtr_s2_2025_08_23"
+    },
+    {
+      "id": "gtr_s2_2026_09_05",
+      "scene_id": "gtr_s2_2026_09_05",
+      "aoi": "Guntur Agricultural & Commercial Hub, Andhra Pradesh",
+      "region_id": "guntur",
+      "search_keys": [
+        "guntur",
+        "tenali",
+        "mirchi yard",
+        "chilli market"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2026-09-05",
+      "year": 2026,
+      "cloud_cover": 2.4,
+      "cloud_cover_pct": 2.4,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        16.3067,
+        80.4365
+      ],
+      "bbox": [
+        16.24,
+        80.37,
+        16.37,
+        80.5
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "New outer ring road expressway and expanded cold-storage logistics parks.",
+      "path_rgb": "data/andhra_pradesh/guntur/s2_2026_09_05/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/guntur/s2_2026_09_05/multi_band.tif",
+      "file_path": "data/andhra_pradesh/guntur/s2_2026_09_05/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/guntur/s2_2026_09_05/thumb.jpg",
+      "preview_path": "/static/thumbs/gtr_s2_2026_09_05.jpg",
+      "thumbnail_url": "/static/thumbs/gtr_s2_2026_09_05.jpg",
+      "metadata_url": "/api/scenes/gtr_s2_2026_09_05"
+    },
+    {
+      "id": "rjy_s2_2025_08_13",
+      "scene_id": "rjy_s2_2025_08_13",
+      "aoi": "Rajahmundry & Godavari River Basin, Andhra Pradesh",
+      "region_id": "rajahmundry",
+      "search_keys": [
+        "rajahmundry",
+        "rajamahendravaram",
+        "godavari",
+        "dowleswaram",
+        "east godavari"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2025-08-13",
+      "year": 2025,
+      "cloud_cover": 2.5,
+      "cloud_cover_pct": 2.5,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        17.0005,
+        81.804
+      ],
+      "bbox": [
+        16.94,
+        81.74,
+        17.06,
+        81.87
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "Godavari river rail-cum-road bridge corridor and Dowleswaram anicut baseline.",
+      "path_rgb": "data/andhra_pradesh/rajahmundry/s2_2025_08_13/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/rajahmundry/s2_2025_08_13/multi_band.tif",
+      "file_path": "data/andhra_pradesh/rajahmundry/s2_2025_08_13/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/rajahmundry/s2_2025_08_13/thumb.jpg",
+      "preview_path": "/static/thumbs/rjy_s2_2025_08_13.jpg",
+      "thumbnail_url": "/static/thumbs/rjy_s2_2025_08_13.jpg",
+      "metadata_url": "/api/scenes/rjy_s2_2025_08_13"
+    },
+    {
+      "id": "rjy_s2_2026_09_05",
+      "scene_id": "rjy_s2_2026_09_05",
+      "aoi": "Rajahmundry & Godavari River Basin, Andhra Pradesh",
+      "region_id": "rajahmundry",
+      "search_keys": [
+        "rajahmundry",
+        "rajamahendravaram",
+        "godavari",
+        "dowleswaram",
+        "east godavari"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2026-09-05",
+      "year": 2026,
+      "cloud_cover": 3.2,
+      "cloud_cover_pct": 3.2,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        17.0005,
+        81.804
+      ],
+      "bbox": [
+        16.94,
+        81.74,
+        17.06,
+        81.87
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "Enhanced riverbank flood containment embankments and smart city waterfront parks.",
+      "path_rgb": "data/andhra_pradesh/rajahmundry/s2_2026_09_05/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/rajahmundry/s2_2026_09_05/multi_band.tif",
+      "file_path": "data/andhra_pradesh/rajahmundry/s2_2026_09_05/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/rajahmundry/s2_2026_09_05/thumb.jpg",
+      "preview_path": "/static/thumbs/rjy_s2_2026_09_05.jpg",
+      "thumbnail_url": "/static/thumbs/rjy_s2_2026_09_05.jpg",
+      "metadata_url": "/api/scenes/rjy_s2_2026_09_05"
+    },
+    {
+      "id": "kkn_s2_2025_08_22",
+      "scene_id": "kkn_s2_2025_08_22",
+      "aoi": "Kakinada Deepwater Port & Coringa Mangroves, Andhra Pradesh",
+      "region_id": "kakinada",
+      "search_keys": [
+        "kakinada",
+        "coringa",
+        "kakinada port",
+        "mangroves",
+        "hope island"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2025-08-22",
+      "year": 2025,
+      "cloud_cover": 6.6,
+      "cloud_cover_pct": 6.6,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        16.9891,
+        82.2475
+      ],
+      "bbox": [
+        16.92,
+        82.18,
+        17.05,
+        82.31
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "Pristine Coringa mangrove wetlands and coastal shipping anchorage.",
+      "path_rgb": "data/andhra_pradesh/kakinada/s2_2025_08_22/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/kakinada/s2_2025_08_22/multi_band.tif",
+      "file_path": "data/andhra_pradesh/kakinada/s2_2025_08_22/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/kakinada/s2_2025_08_22/thumb.jpg",
+      "preview_path": "/static/thumbs/kkn_s2_2025_08_22.jpg",
+      "thumbnail_url": "/static/thumbs/kkn_s2_2025_08_22.jpg",
+      "metadata_url": "/api/scenes/kkn_s2_2025_08_22"
+    },
+    {
+      "id": "kkn_s2_2026_09_03",
+      "scene_id": "kkn_s2_2026_09_03",
+      "aoi": "Kakinada Deepwater Port & Coringa Mangroves, Andhra Pradesh",
+      "region_id": "kakinada",
+      "search_keys": [
+        "kakinada",
+        "coringa",
+        "kakinada port",
+        "mangroves",
+        "hope island"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2026-09-03",
+      "year": 2026,
+      "cloud_cover": 4.8,
+      "cloud_cover_pct": 4.8,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        16.9891,
+        82.2475
+      ],
+      "bbox": [
+        16.92,
+        82.18,
+        17.05,
+        82.31
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "Deepwater port jetty extension and coastal protection barriers.",
+      "path_rgb": "data/andhra_pradesh/kakinada/s2_2026_09_03/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/kakinada/s2_2026_09_03/multi_band.tif",
+      "file_path": "data/andhra_pradesh/kakinada/s2_2026_09_03/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/kakinada/s2_2026_09_03/thumb.jpg",
+      "preview_path": "/static/thumbs/kkn_s2_2026_09_03.jpg",
+      "thumbnail_url": "/static/thumbs/kkn_s2_2026_09_03.jpg",
+      "metadata_url": "/api/scenes/kkn_s2_2026_09_03"
+    },
+    {
+      "id": "nlr_s2_2025_08_14",
+      "scene_id": "nlr_s2_2025_08_14",
+      "aoi": "Nellore Pennar Basin & Aquaculture Corridor, Andhra Pradesh",
+      "region_id": "nellore",
+      "search_keys": [
+        "nellore",
+        "pennar",
+        "krishnapatnam",
+        "aquaculture"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2025-08-14",
+      "year": 2025,
+      "cloud_cover": 4.2,
+      "cloud_cover_pct": 4.2,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        14.4426,
+        79.9865
+      ],
+      "bbox": [
+        14.38,
+        79.92,
+        14.5,
+        80.05
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "Pennar river mouth with dense brackish-water aquaculture ponds.",
+      "path_rgb": "data/andhra_pradesh/nellore/s2_2025_08_14/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/nellore/s2_2025_08_14/multi_band.tif",
+      "file_path": "data/andhra_pradesh/nellore/s2_2025_08_14/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/nellore/s2_2025_08_14/thumb.jpg",
+      "preview_path": "/static/thumbs/nlr_s2_2025_08_14.jpg",
+      "thumbnail_url": "/static/thumbs/nlr_s2_2025_08_14.jpg",
+      "metadata_url": "/api/scenes/nlr_s2_2025_08_14"
+    },
+    {
+      "id": "nlr_s2_2026_09_06",
+      "scene_id": "nlr_s2_2026_09_06",
+      "aoi": "Nellore Pennar Basin & Aquaculture Corridor, Andhra Pradesh",
+      "region_id": "nellore",
+      "search_keys": [
+        "nellore",
+        "pennar",
+        "krishnapatnam",
+        "aquaculture"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2026-09-06",
+      "year": 2026,
+      "cloud_cover": 5.6,
+      "cloud_cover_pct": 5.6,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        14.4426,
+        79.9865
+      ],
+      "bbox": [
+        14.38,
+        79.92,
+        14.5,
+        80.05
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "Optimized bio-secure aquaculture zones and modernized coastal highway.",
+      "path_rgb": "data/andhra_pradesh/nellore/s2_2026_09_06/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/nellore/s2_2026_09_06/multi_band.tif",
+      "file_path": "data/andhra_pradesh/nellore/s2_2026_09_06/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/nellore/s2_2026_09_06/thumb.jpg",
+      "preview_path": "/static/thumbs/nlr_s2_2026_09_06.jpg",
+      "thumbnail_url": "/static/thumbs/nlr_s2_2026_09_06.jpg",
+      "metadata_url": "/api/scenes/nlr_s2_2026_09_06"
+    },
+    {
+      "id": "knl_s2_2025_08_10",
+      "scene_id": "knl_s2_2025_08_10",
+      "aoi": "Kurnool Tungabhadra Basin & Solar Park, Andhra Pradesh",
+      "region_id": "kurnool",
+      "search_keys": [
+        "kurnool",
+        "tungabhadra",
+        "solar park",
+        "rayalaseema"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2025-08-10",
+      "year": 2025,
+      "cloud_cover": 7.2,
+      "cloud_cover_pct": 7.2,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        15.8281,
+        78.0373
+      ],
+      "bbox": [
+        15.76,
+        77.97,
+        15.89,
+        78.1
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "Tungabhadra confluence and Kurnool Ultra Mega Solar Park baseline.",
+      "path_rgb": "data/andhra_pradesh/kurnool/s2_2025_08_10/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/kurnool/s2_2025_08_10/multi_band.tif",
+      "file_path": "data/andhra_pradesh/kurnool/s2_2025_08_10/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/kurnool/s2_2025_08_10/thumb.jpg",
+      "preview_path": "/static/thumbs/knl_s2_2025_08_10.jpg",
+      "thumbnail_url": "/static/thumbs/knl_s2_2025_08_10.jpg",
+      "metadata_url": "/api/scenes/knl_s2_2025_08_10"
+    },
+    {
+      "id": "knl_s2_2026_09_04",
+      "scene_id": "knl_s2_2026_09_04",
+      "aoi": "Kurnool Tungabhadra Basin & Solar Park, Andhra Pradesh",
+      "region_id": "kurnool",
+      "search_keys": [
+        "kurnool",
+        "tungabhadra",
+        "solar park",
+        "rayalaseema"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2026-09-04",
+      "year": 2026,
+      "cloud_cover": 2.4,
+      "cloud_cover_pct": 2.4,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        15.8281,
+        78.0373
+      ],
+      "bbox": [
+        15.76,
+        77.97,
+        15.89,
+        78.1
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "Expanded 1000MW solar photovoltaic array and high-voltage transmission substation.",
+      "path_rgb": "data/andhra_pradesh/kurnool/s2_2026_09_04/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/kurnool/s2_2026_09_04/multi_band.tif",
+      "file_path": "data/andhra_pradesh/kurnool/s2_2026_09_04/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/kurnool/s2_2026_09_04/thumb.jpg",
+      "preview_path": "/static/thumbs/knl_s2_2026_09_04.jpg",
+      "thumbnail_url": "/static/thumbs/knl_s2_2026_09_04.jpg",
+      "metadata_url": "/api/scenes/knl_s2_2026_09_04"
+    },
+    {
+      "id": "atp_s2_2025_08_12",
+      "scene_id": "atp_s2_2025_08_12",
+      "aoi": "Anantapur Semi-Arid & Renewable Energy Belt, Andhra Pradesh",
+      "region_id": "anantapur",
+      "search_keys": [
+        "anantapur",
+        "anantapuramu",
+        "dharmavaram",
+        "nh44"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2025-08-12",
+      "year": 2025,
+      "cloud_cover": 6.7,
+      "cloud_cover_pct": 6.7,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        14.6819,
+        77.6006
+      ],
+      "bbox": [
+        14.62,
+        77.54,
+        14.75,
+        77.66
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "Semi-arid red terrain, dryland crop mosaic, and NH-44 highway corridor.",
+      "path_rgb": "data/andhra_pradesh/anantapur/s2_2025_08_12/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/anantapur/s2_2025_08_12/multi_band.tif",
+      "file_path": "data/andhra_pradesh/anantapur/s2_2025_08_12/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/anantapur/s2_2025_08_12/thumb.jpg",
+      "preview_path": "/static/thumbs/atp_s2_2025_08_12.jpg",
+      "thumbnail_url": "/static/thumbs/atp_s2_2025_08_12.jpg",
+      "metadata_url": "/api/scenes/atp_s2_2025_08_12"
+    },
+    {
+      "id": "atp_s2_2026_09_04",
+      "scene_id": "atp_s2_2026_09_04",
+      "aoi": "Anantapur Semi-Arid & Renewable Energy Belt, Andhra Pradesh",
+      "region_id": "anantapur",
+      "search_keys": [
+        "anantapur",
+        "anantapuramu",
+        "dharmavaram",
+        "nh44"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2026-09-04",
+      "year": 2026,
+      "cloud_cover": 3.6,
+      "cloud_cover_pct": 3.6,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        14.6819,
+        77.6006
+      ],
+      "bbox": [
+        14.62,
+        77.54,
+        14.75,
+        77.66
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "Community percolation tanks rejuvenation and expanded wind-solar hybrid units.",
+      "path_rgb": "data/andhra_pradesh/anantapur/s2_2026_09_04/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/anantapur/s2_2026_09_04/multi_band.tif",
+      "file_path": "data/andhra_pradesh/anantapur/s2_2026_09_04/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/anantapur/s2_2026_09_04/thumb.jpg",
+      "preview_path": "/static/thumbs/atp_s2_2026_09_04.jpg",
+      "thumbnail_url": "/static/thumbs/atp_s2_2026_09_04.jpg",
+      "metadata_url": "/api/scenes/atp_s2_2026_09_04"
+    },
+    {
+      "id": "ap_s2_2025_08_22",
+      "scene_id": "ap_s2_2025_08_22",
+      "aoi": "Andhra Pradesh State Regional Mosaic (Macro View)",
+      "region_id": "ap_state_overview",
+      "search_keys": [
+        "andhra pradesh",
+        "andhra",
+        "ap",
+        "state overview",
+        "ap state"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2025-08-22",
+      "year": 2025,
+      "cloud_cover": 6.6,
+      "cloud_cover_pct": 6.6,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        15.9129,
+        79.74
+      ],
+      "bbox": [
+        12.6,
+        76.75,
+        19.15,
+        84.75
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "State-wide regional composite spanning Godavari, Krishna, and Rayalaseema basins.",
+      "path_rgb": "data/andhra_pradesh/ap_state_overview/s2_2025_08_22/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/ap_state_overview/s2_2025_08_22/multi_band.tif",
+      "file_path": "data/andhra_pradesh/ap_state_overview/s2_2025_08_22/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/ap_state_overview/s2_2025_08_22/thumb.jpg",
+      "preview_path": "/static/thumbs/ap_s2_2025_08_22.jpg",
+      "thumbnail_url": "/static/thumbs/ap_s2_2025_08_22.jpg",
+      "metadata_url": "/api/scenes/ap_s2_2025_08_22"
+    },
+    {
+      "id": "ap_s2_2026_09_03",
+      "scene_id": "ap_s2_2026_09_03",
+      "aoi": "Andhra Pradesh State Regional Mosaic (Macro View)",
+      "region_id": "ap_state_overview",
+      "search_keys": [
+        "andhra pradesh",
+        "andhra",
+        "ap",
+        "state overview",
+        "ap state"
+      ],
+      "sensor": "Sentinel-2",
+      "level": "L2A",
+      "processing_level": "Level-2A (BOA Reflectance)",
+      "date": "2026-09-03",
+      "year": 2026,
+      "cloud_cover": 4.8,
+      "cloud_cover_pct": 4.8,
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "resolution_m": 10.0,
+      "coordinates": [
+        15.9129,
+        79.74
+      ],
+      "bbox": [
+        12.6,
+        76.75,
+        19.15,
+        84.75
+      ],
+      "crs": "EPSG:4326",
+      "modality": "optical_multispectral",
+      "description": "State-wide 2026 composite monitoring regional forest cover, reservoirs, and urban corridors.",
+      "path_rgb": "data/andhra_pradesh/ap_state_overview/s2_2026_09_03/rgb_512.tif",
+      "path_all_bands": "data/andhra_pradesh/ap_state_overview/s2_2026_09_03/multi_band.tif",
+      "file_path": "data/andhra_pradesh/ap_state_overview/s2_2026_09_03/rgb_512.tif",
+      "thumbnail": "data/andhra_pradesh/ap_state_overview/s2_2026_09_03/thumb.jpg",
+      "preview_path": "/static/thumbs/ap_s2_2026_09_03.jpg",
+      "thumbnail_url": "/static/thumbs/ap_s2_2026_09_03.jpg",
+      "metadata_url": "/api/scenes/ap_s2_2026_09_03"
     }
-  ]
+  ],
+  "ap_coverage": "State-Wide Andhra Pradesh Full Coverage (11 Major Regions + Gudlavalleru)"
 }
