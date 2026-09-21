@@ -18,13 +18,16 @@ def load_image_from_bytes(file_bytes: bytes, filename: str = "") -> Tuple[np.nda
             try:
                 import tifffile
                 arr = tifffile.imread(io.BytesIO(file_bytes))
+                is_sar_img = any(k in filename.lower() for k in ["sar", "s1", "risat"])
                 if arr.ndim == 2:
-                    arr = normalize_remote_sensing_bands(arr, is_sar=any(k in filename.lower() for k in ["sar", "s1", "risat"]))
+                    if arr.dtype != np.uint8 or is_sar_img:
+                        arr = normalize_remote_sensing_bands(arr, is_sar=is_sar_img)
                 elif arr.ndim >= 3:
                     if arr.shape[0] in (1, 2, 3, 4, 12) and arr.shape[0] < arr.shape[1]:
                         # Channel-first format (C, H, W) -> (H, W, C)
                         arr = np.transpose(arr, (1, 2, 0))
-                    arr = normalize_remote_sensing_bands(arr, is_sar=any(k in filename.lower() for k in ["sar", "s1", "risat"]))
+                    if arr.dtype != np.uint8 or is_sar_img:
+                        arr = normalize_remote_sensing_bands(arr, is_sar=is_sar_img)
                 return arr, "TIFF"
             except Exception:
                 pass  # Fall back to PIL

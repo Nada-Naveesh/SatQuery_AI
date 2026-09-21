@@ -1,0 +1,32 @@
+{
+  "area_of_interest_ha": 2621.4,
+  "valid_area_ha": 2621.4,
+  "changed_area_ha": 627.5,
+  "changed_percentage": 23.94,
+  "classes": {
+    "new_builtup_ha": 0.0,
+    "vegetation_increase_ha": 0.0,
+    "vegetation_decrease_ha": 0.0,
+    "water_increase_ha": 627.5,
+    "water_decrease_ha": 0.0
+  },
+  "pixel_counts": {
+    "new_builtup": 0,
+    "vegetation_increase": 0,
+    "vegetation_decrease": 0,
+    "water_increase": 62745,
+    "water_decrease": 0,
+    "unchanged": 199399
+  },
+  "quality": {
+    "valid_pixel_percentage": 100.0,
+    "cloud_masked_percentage": 0.0,
+    "registration_quality": "good",
+    "overlap_percentage": 100.0,
+    "ground_sample_distance_m": 10.0
+  },
+  "confidence_score": 0.94,
+  "confidence_label": "High confidence",
+  "confidence_explanation": "High confidence (94.0%): Both scenes have clear atmospheric conditions (100.0% valid pixels), solid overlap (100.0%), and good spatial co-registration.",
+  "simple_explanation": "We compared satellite scenes from 2025-08-13 and 2026-09-05 over Rajahmundry & Godavari River Basin, AP. About 23.94% of the valid land area (627.5 hectares) shows noticeable difference. Water surface expansion covers about 627.5 hectares (shown in cyan-blue). These indicators should be confirmed with local on-ground knowledge before making official decisions."
+}

@@ -1,0 +1,32 @@
+{
+  "area_of_interest_ha": 2621.4,
+  "valid_area_ha": 2621.4,
+  "changed_area_ha": 158.3,
+  "changed_percentage": 6.04,
+  "classes": {
+    "new_builtup_ha": 0.0,
+    "vegetation_increase_ha": 0.0,
+    "vegetation_decrease_ha": 0.0,
+    "water_increase_ha": 93.4,
+    "water_decrease_ha": 65.0
+  },
+  "pixel_counts": {
+    "new_builtup": 0,
+    "vegetation_increase": 0,
+    "vegetation_decrease": 0,
+    "water_increase": 9337,
+    "water_decrease": 6496,
+    "unchanged": 246311
+  },
+  "quality": {
+    "valid_pixel_percentage": 100.0,
+    "cloud_masked_percentage": 0.0,
+    "registration_quality": "good",
+    "overlap_percentage": 100.0,
+    "ground_sample_distance_m": 10.0
+  },
+  "confidence_score": 0.94,
+  "confidence_label": "High confidence",
+  "confidence_explanation": "High confidence (94.0%): Both scenes have clear atmospheric conditions (100.0% valid pixels), solid overlap (100.0%), and good spatial co-registration.",
+  "simple_explanation": "We compared satellite scenes from 2025-08-20 and 2026-09-04 over Machilipatnam Deepwater Port, AP. About 6.04% of the valid land area (158.3 hectares) shows noticeable difference. Water surface expansion covers about 93.4 hectares (shown in cyan-blue). These indicators should be confirmed with local on-ground knowledge before making official decisions."
+}

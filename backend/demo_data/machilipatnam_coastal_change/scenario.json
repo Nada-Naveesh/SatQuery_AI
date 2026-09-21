@@ -1,0 +1,34 @@
+{
+  "id": "machilipatnam_coastal_change",
+  "name": "Coastal Port Infrastructure & Breakwater Expansion (Machilipatnam)",
+  "category": "Bi-Temporal Change Analysis (CDVQA)",
+  "description": "Sentinel-2 Level-2A multi-band acquisition over Machilipatnam Deepwater Port & Krishna Coast. Evaluates breakwater jetty extensions, paved container yards, and dredged harbour basins.",
+  "sensor": "Sentinel-2 Level-2A (MSI)",
+  "resolution": "10 m GSD",
+  "crs": "EPSG:4326",
+  "date": "2025-08-20 (T1) vs. 2026-09-04 (T2)",
+  "area": "Machilipatnam Deepwater Port & Coast, Krishna District, AP, India",
+  "coordinates": [
+    16.1871,
+    81.1348
+  ],
+  "bbox": [
+    16.14,
+    81.08,
+    16.24,
+    81.19
+  ],
+  "default_query": "What new coastal infrastructure or breakwater structures were constructed in Machilipatnam?",
+  "suggested_queries": [
+    "What new coastal infrastructure or breakwater structures were constructed in Machilipatnam?",
+    "Quantify the area of newly paved port container terminal in hectares.",
+    "Did the water boundary shift along the coastline?"
+  ],
+  "real_data_source": "Copernicus Open Access Hub / ESA Sentinel-2 L2A (Tile: 44QND)",
+  "image_paths": [
+    "/backend/demo_data/machilipatnam_coastal_change/pre.png",
+    "/backend/demo_data/machilipatnam_coastal_change/post.png"
+  ],
+  "overlay_path": "/backend/demo_data/machilipatnam_coastal_change/change_overlay.png",
+  "mask_path": "/backend/demo_data/machilipatnam_coastal_change/change_mask.png"
+}

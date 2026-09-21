@@ -1,0 +1,34 @@
+{
+  "id": "gudlavalleru_urban_growth",
+  "name": "Urban Infrastructure Expansion & Paving (Gudlavalleru)",
+  "category": "Bi-Temporal Change Analysis (CDVQA)",
+  "description": "Multi-band Sentinel-2 Level-2A satellite pair over Gudlavalleru, AP (2025 vs 2026). Detects new commercial structures, paved access corridors, and vegetation clearing.",
+  "sensor": "Sentinel-2 Level-2A (MSI)",
+  "resolution": "10 m GSD",
+  "crs": "EPSG:4326",
+  "date": "2025-09-03 (T1) vs. 2026-09-05 (T2)",
+  "area": "Gudlavalleru, Krishna District, Andhra Pradesh, India",
+  "coordinates": [
+    16.02,
+    80.7
+  ],
+  "bbox": [
+    15.98,
+    80.65,
+    16.08,
+    80.75
+  ],
+  "default_query": "What changed between 2025 and 2026 in Gudlavalleru?",
+  "suggested_queries": [
+    "What changed between 2025 and 2026 in Gudlavalleru?",
+    "How much new built-up area was constructed?",
+    "Has the vegetation or farmland decreased?"
+  ],
+  "real_data_source": "Copernicus Open Access Hub / ESA Sentinel-2 L2A (Tile: 44QND)",
+  "image_paths": [
+    "/backend/demo_data/gudlavalleru_urban_growth/pre.png",
+    "/backend/demo_data/gudlavalleru_urban_growth/post.png"
+  ],
+  "overlay_path": "/backend/demo_data/gudlavalleru_urban_growth/change_overlay.png",
+  "mask_path": "/backend/demo_data/gudlavalleru_urban_growth/change_mask.png"
+}

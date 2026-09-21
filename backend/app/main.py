@@ -53,6 +53,17 @@ if GVL_STATIC_DIR.exists():
 AP_STATIC_DIR = settings.DATA_DIR / "andhra_pradesh"
 if AP_STATIC_DIR.exists():
     app.mount("/static/andhra_pradesh", StaticFiles(directory=str(AP_STATIC_DIR)), name="andhra_pradesh")
+
+DEMO_DATA_STATIC_DIR = settings.ROOT_DIR / "backend" / "demo_data"
+DEMO_DATA_STATIC_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/demo_data", StaticFiles(directory=str(DEMO_DATA_STATIC_DIR)), name="demo_data")
+app.mount("/static/demo_data", StaticFiles(directory=str(DEMO_DATA_STATIC_DIR)), name="static_demo_data")
+
+OUTPUTS_STATIC_DIR = settings.ROOT_DIR / "outputs"
+OUTPUTS_STATIC_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/outputs", StaticFiles(directory=str(OUTPUTS_STATIC_DIR)), name="outputs")
+app.mount("/static/outputs", StaticFiles(directory=str(OUTPUTS_STATIC_DIR)), name="static_outputs")
+
 app.mount("/static", StaticFiles(directory=str(settings.STATIC_DIR)), name="static")
 
 # In-memory store for session traces and cached payloads
@@ -61,11 +72,45 @@ SESSION_TRACES: Dict[str, Dict[str, Any]] = {}
 def get_all_scenarios() -> List[DemoScenario]:
     """
     Dynamically loads all pre-configured real satellite demonstration scenarios
-    from data/demo_scenarios/ with metadata.json files.
+    from backend/demo_data/ and data/demo_scenarios/ with metadata.
     """
     scenarios: List[DemoScenario] = []
-    demo_dir = settings.DEMO_SCENARIOS_DIR
 
+    # 1. Primary: 3 Verified Demo Packages in backend/demo_data/
+    demo_pkg_dir = settings.ROOT_DIR / "backend" / "demo_data"
+    if demo_pkg_dir.exists():
+        for pkg in sorted(demo_pkg_dir.iterdir()):
+            if pkg.is_dir():
+                s_file = pkg / "scenario.json"
+                if s_file.exists():
+                    try:
+                        with open(s_file, "r") as f:
+                            meta = json.load(f)
+                        img_paths = [
+                            f"/demo_data/{pkg.name}/pre.png",
+                            f"/demo_data/{pkg.name}/post.png"
+                        ]
+                        scenarios.append(DemoScenario(
+                            id=meta.get("id", pkg.name),
+                            title=meta.get("name", pkg.name.replace("_", " ").title()),
+                            category=meta.get("category", "Bi-Temporal Change Analysis"),
+                            description=meta.get("description", "Authentic Sentinel-2 Level-2A satellite scene."),
+                            default_query=meta.get("default_query", meta.get("suggested_queries", ["Analyze satellite scene"])[0]),
+                            image_paths=img_paths,
+                            input_type=meta.get("input_type", "bitemporal_pair"),
+                            sensor=meta.get("sensor", "Sentinel-2 Level-2A (MSI)"),
+                            date=meta.get("date", "2025 vs 2026"),
+                            area=meta.get("area", "Monitored Target AOI"),
+                            resolution=meta.get("resolution", "10 m GSD"),
+                            crs=meta.get("crs", "EPSG:4326"),
+                            suggested_queries=meta.get("suggested_queries", []),
+                            real_data_source=meta.get("real_data_source", "Copernicus Sentinel-2 L2A Archive")
+                        ))
+                    except Exception as err:
+                        print(f"Warning: Failed to load demo package {pkg.name}: {err}")
+
+    # 2. Secondary: Pre-existing scenarios under data/demo_scenarios/
+    demo_dir = settings.DEMO_SCENARIOS_DIR
     if demo_dir.exists():
         for s_folder in sorted(demo_dir.iterdir()):
             if s_folder.is_dir():
@@ -74,7 +119,6 @@ def get_all_scenarios() -> List[DemoScenario]:
                     try:
                         with open(meta_file, "r") as f:
                             meta = json.load(f)
-                        # Build web-accessible image paths (prefer preview png for browser)
                         preview_files = meta.get("preview_files", [])
                         if not preview_files:
                             preview_files = [p.name for p in sorted(s_folder.glob("*.png"))]
@@ -223,6 +267,59 @@ def get_scenario_detail(scenario_id: str):
     if not s:
         raise HTTPException(status_code=404, detail=f"Scenario '{scenario_id}' not found.")
     return s
+
+
+@app.get("/api/demo-packages")
+@app.get("/api/v1/demo-packages")
+def list_demo_packages():
+    """Returns all verified offline/competition demo packages."""
+    demo_dir = settings.ROOT_DIR / "backend" / "demo_data"
+    packages = []
+    if demo_dir.exists():
+        for pkg in sorted(demo_dir.iterdir()):
+            if pkg.is_dir():
+                s_file = pkg / "scenario.json"
+                st_file = pkg / "statistics.json"
+                q_file = pkg / "quality.json"
+                pkg_data = {"id": pkg.name, "folder": pkg.name}
+                if s_file.exists():
+                    with open(s_file, "r") as f:
+                        pkg_data["scenario"] = json.load(f)
+                if st_file.exists():
+                    with open(st_file, "r") as f:
+                        pkg_data["statistics"] = json.load(f)
+                if q_file.exists():
+                    with open(q_file, "r") as f:
+                        pkg_data["quality"] = json.load(f)
+                pkg_data["preview_url"] = f"/demo_data/{pkg.name}/pre.png"
+                pkg_data["post_url"] = f"/demo_data/{pkg.name}/post.png"
+                pkg_data["overlay_url"] = f"/demo_data/{pkg.name}/change_overlay.png"
+                packages.append(pkg_data)
+    return {"packages": packages, "count": len(packages)}
+
+
+@app.get("/api/analysis/{trace_id}")
+@app.get("/api/v1/analysis/{trace_id}")
+def get_analysis_output(trace_id: str):
+    """Retrieves full persisted analysis output package for a given trace_id."""
+    session = SESSION_TRACES.get(trace_id)
+    if session:
+        return session
+    out_dir = settings.ROOT_DIR / "outputs" / trace_id
+    if out_dir.exists() and (out_dir / "trace.json").exists():
+        with open(out_dir / "trace.json", "r") as f:
+            tr = json.load(f)
+        stats = {}
+        if (out_dir / "statistics.json").exists():
+            with open(out_dir / "statistics.json", "r") as f:
+                stats = json.load(f)
+        return {
+            "trace_id": trace_id,
+            "execution_trace": tr,
+            "statistics": stats,
+            "overlay_url": f"/outputs/{trace_id}/change_overlay.png" if (out_dir / "change_overlay.png").exists() else None
+        }
+    raise HTTPException(status_code=404, detail=f"Analysis trace '{trace_id}' not found.")
 
 
 AOI_REGISTRY = {
@@ -613,14 +710,23 @@ async def analyze_remote_sensing_query(
                 raise HTTPException(status_code=404, detail=f"Scenario or scene '{target_scenario_id}' not found.")
             
             scenario_meta = scenario.model_dump()
-            s_dir = settings.DEMO_SCENARIOS_DIR / target_scenario_id
+            demo_pkg_cand = settings.ROOT_DIR / "backend" / "demo_data" / target_scenario_id
+            if demo_pkg_cand.exists():
+                s_dir = demo_pkg_cand
+            else:
+                s_dir = settings.DEMO_SCENARIOS_DIR / target_scenario_id
 
         # Safely read from s_dir only if s_dir was assigned and exists
         if s_dir is not None:
             if s_dir.exists():
-                tif_files = sorted(s_dir.glob("*.tif"))
-                png_files = sorted(s_dir.glob("*.png"))
-                load_targets = tif_files if tif_files else png_files
+                if (s_dir / "pre.tif").exists() and (s_dir / "post.tif").exists():
+                    load_targets = [s_dir / "pre.tif", s_dir / "post.tif"]
+                elif (s_dir / "pre.png").exists() and (s_dir / "post.png").exists():
+                    load_targets = [s_dir / "pre.png", s_dir / "post.png"]
+                else:
+                    tif_files = sorted(s_dir.glob("*.tif"))
+                    png_files = sorted(s_dir.glob("*.png"))
+                    load_targets = tif_files if tif_files else png_files
                 for fpath in load_targets:
                     arr, _ = load_image_from_path(fpath)
                     raw_images.append(arr)
@@ -707,6 +813,23 @@ async def analyze_remote_sensing_query(
         "comparison_image": comp_image,
         "evidence_overlay_b64": response.result.visual_evidence.overlay_base64 if response.result.visual_evidence else None
     }
+
+    # Persist verifiable output package to disk under outputs/{trace_id}
+    try:
+        out_dir = settings.ROOT_DIR / "outputs" / trace_id
+        out_dir.mkdir(parents=True, exist_ok=True)
+        if response.result.visual_evidence and response.result.visual_evidence.overlay_base64:
+            import base64
+            ov_data = response.result.visual_evidence.overlay_base64.split(",")[-1]
+            with open(out_dir / "change_overlay.png", "wb") as f:
+                f.write(base64.b64decode(ov_data))
+        with open(out_dir / "trace.json", "w") as f:
+            json.dump(response.execution_trace.model_dump(), f, indent=2)
+        if response.result.visual_evidence and response.result.visual_evidence.metric_summary:
+            with open(out_dir / "statistics.json", "w") as f:
+                json.dump(response.result.visual_evidence.metric_summary, f, indent=2)
+    except Exception as err:
+        print(f"Warning: Failed to persist output package for {trace_id}: {err}")
 
     return response
 

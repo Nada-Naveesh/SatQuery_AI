@@ -4,17 +4,22 @@ import numpy as np
 from PIL import Image
 
 from backend.app.tools.base_tool import BaseSpecialistTool, ToolResult
-from backend.app.utils.image_io import (
-    numpy_to_base64,
-    create_color_mask_overlay
+from backend.app.processing import (
+    load_raster_scene,
+    align_scenes,
+    compute_joint_cloud_mask,
+    compute_spectral_indices,
+    detect_surface_changes,
+    render_evidence_overlay,
+    compute_change_statistics
 )
-from backend.app.utils.geo_utils import estimate_spatial_metrics
+
 
 class BiTemporalChangeTool(BaseSpecialistTool):
     """
     Bi-Temporal Remote Sensing Change Analysis & CDVQA Specialist.
-    Evaluates temporal image pairs (T1 and T2) to isolate surface transitions,
-    urban expansion, deforestation, and water level changes.
+    Calculates surface transitions, urban expansion, vegetation shifts,
+    and water boundary changes using physical spectral indices (NDVI, NDWI, NDBI).
     """
     @property
     def name(self) -> str:
@@ -35,147 +40,153 @@ class BiTemporalChangeTool(BaseSpecialistTool):
         parameters: Optional[Dict[str, Any]] = None
     ) -> ToolResult:
         start_t = time.perf_counter()
-        
         if len(images) < 2:
             raise ValueError("Bi-Temporal Change Analysis requires at least 2 co-registered images (T1 and T2).")
-            
+
         img1 = images[0]
         img2 = images[1]
-        
-        # Ensure identical spatial dimensions
-        h1, w1 = img1.shape[:2]
-        h2, w2 = img2.shape[:2]
-        if (h1, w1) != (h2, w2):
-            pil_img2 = Image.fromarray(img2).resize((w1, h1), Image.BILINEAR)
-            img2 = np.array(pil_img2)
-            
-        h, w = img1.shape[:2]
+        params = parameters or {}
         q = (query or "").lower().strip()
 
-        # Compute multi-channel difference
-        diff_rgb = np.abs(img2.astype(np.float32) - img1.astype(np.float32))
-        l1_diff = diff_rgb.mean(axis=2)
+        # 1. Load standardized raster scenes
+        scene1 = load_raster_scene(img1, filename=params.get("filename1", "t1.tif"))
+        scene2 = load_raster_scene(img2, filename=params.get("filename2", "t2.tif"))
 
-        # Spectral index delta proxies
-        ndvi1 = (img1[:, :, 1].astype(np.float32) - img1[:, :, 0].astype(np.float32)) / (
-            img1[:, :, 1].astype(np.float32) + img1[:, :, 0].astype(np.float32) + 1e-5
+        # 2. Align spatial grid
+        aligned = align_scenes(scene1, scene2)
+
+        # 3. Compute joint atmospheric & cloud mask
+        cloud_res = compute_joint_cloud_mask(aligned.scene1, aligned.scene2)
+
+        # 4. Compute spectral indices (NDVI, NDWI, NDBI)
+        indices1 = compute_spectral_indices(aligned.scene1)
+        indices2 = compute_spectral_indices(aligned.scene2)
+
+        # 5. Detect surface changes with MMU filtering
+        change_result = detect_surface_changes(
+            aligned.scene1,
+            aligned.scene2,
+            indices1,
+            indices2,
+            valid_mask=cloud_res.valid_mask
         )
-        ndvi2 = (img2[:, :, 1].astype(np.float32) - img2[:, :, 0].astype(np.float32)) / (
-            img2[:, :, 1].astype(np.float32) + img2[:, :, 0].astype(np.float32) + 1e-5
+
+        # 6. Compute ground-truth hectare statistics & quality-aware confidence
+        date1 = params.get("date1") or params.get("date_t1") or "2025"
+        date2 = params.get("date2") or params.get("date_t2") or "2026"
+        loc_name = params.get("location_name") or params.get("area") or "this monitored area"
+
+        stats = compute_change_statistics(
+            change_result,
+            resolution_m=aligned.scene2.resolution_m or 10.0,
+            registration_quality=aligned.registration_quality,
+            overlap_percentage=aligned.overlap_percentage,
+            date_labels=(date1, date2),
+            location_name=loc_name
         )
-        delta_ndvi = ndvi2 - ndvi1
 
-        # High difference threshold (adaptive)
-        thresh = np.percentile(l1_diff, 82)
-        change_mask = l1_diff > max(30.0, thresh)
-
-        # Categorize spectral deltas
-        mean_delta_ndvi = float(np.mean(delta_ndvi[change_mask])) if np.any(change_mask) else 0.0
-        brightness2 = img2.mean(axis=2)
-        brightness1 = img1.mean(axis=2)
-        delta_bright = float(np.mean(brightness2[change_mask] - brightness1[change_mask])) if np.any(change_mask) else 0.0
-
-        # Semantic sub-class delta analysis
-        builtup_expansion_mask = change_mask & (diff_rgb.mean(axis=2) > 25.0) & (delta_ndvi < -0.04)
-        veg_loss_mask = change_mask & (delta_ndvi < -0.12)
-        water_inundation_mask = change_mask & (delta_bright < -15.0)
-
-        builtup_exp_metrics = estimate_spatial_metrics(builtup_expansion_mask)
-        veg_loss_metrics = estimate_spatial_metrics(veg_loss_mask)
-
-        if delta_bright > 15.0 and mean_delta_ndvi < -0.05:
-            change_category = "Urban Infrastructure Expansion & Vegetation Clearing"
-            primary_desc = f"Direct conversion of green parcels into paved impervious structures ({builtup_exp_metrics['area_hectares']:.1f} ha new built-up footprint)."
-        elif mean_delta_ndvi < -0.12:
-            change_category = "Vegetation Canopy Loss / Deforestation"
-            primary_desc = f"Substantial decline in vegetative canopy across {veg_loss_metrics['area_hectares']:.1f} hectares."
-        elif delta_bright < -15.0:
-            change_category = "Surface Inundation / Water Level Increase"
-            primary_desc = "Expansion of surface water boundaries resulting in lower optical reflectance."
-        else:
-            change_category = "Land-Cover Surface Modification"
-            primary_desc = "Noticeable spectral shifts and structural alterations detected between acquisition dates."
-
-        metrics = estimate_spatial_metrics(change_mask)
-        area_ha = metrics["area_hectares"]
-        cov_pct = metrics["coverage_percentage"]
-
-        # Create explainable multi-color semantic overlay
-        veg_growth_mask = change_mask & (delta_ndvi > 0.05)
-        water_metrics = estimate_spatial_metrics(water_inundation_mask)
-        overlay_img = img2.copy().astype(np.float32)
-        alpha = 0.65
-
-        # Layer 1: General change (Amber)
-        overlay_img[change_mask] = (1.0 - alpha) * overlay_img[change_mask] + alpha * np.array([245, 158, 11], dtype=np.float32)
-        # Layer 2: Water surface / inundation changes (Cyan-Blue)
-        overlay_img[water_inundation_mask] = (1.0 - alpha) * overlay_img[water_inundation_mask] + alpha * np.array([6, 182, 212], dtype=np.float32)
-        # Layer 3: Vegetation / canopy growth (Emerald Green)
-        overlay_img[veg_growth_mask] = (1.0 - alpha) * overlay_img[veg_growth_mask] + alpha * np.array([16, 185, 129], dtype=np.float32)
-        # Layer 4: New built-up & infrastructure (Crimson Red)
-        overlay_img[builtup_expansion_mask] = (1.0 - alpha) * overlay_img[builtup_expansion_mask] + alpha * np.array([239, 68, 68], dtype=np.float32)
-
-        overlay = np.clip(overlay_img, 0, 255).astype(np.uint8)
-        overlay_b64 = numpy_to_base64(overlay)
+        # 7. Render authentic multi-color evidence overlay
+        rendered = render_evidence_overlay(
+            aligned.scene2.true_color,
+            change_result,
+            alpha=0.65,
+            add_decorations=True,
+            date_labels=(date1, date2),
+            resolution_m=aligned.scene2.resolution_m or 10.0
+        )
 
         elapsed_ms = (time.perf_counter() - start_t) * 1000.0
-        conf = 0.932
 
-        # Query-specific change captioning in simple, clear English
-        if "increase" in q or "built" in q or "expand" in q:
-            qa_prefix = f"Yes, the built-up area increased by about {builtup_exp_metrics['area_hectares']:.1f} hectares. "
-        elif "flood" in q or "water" in q:
-            qa_prefix = "Water body and flood boundary changes were observed between the two dates. "
+        builtup_ha = stats.classes.get("new_builtup_ha", 0.0)
+        veg_inc_ha = stats.classes.get("vegetation_increase_ha", 0.0)
+        veg_dec_ha = stats.classes.get("vegetation_decrease_ha", 0.0)
+        water_inc_ha = stats.classes.get("water_increase_ha", 0.0)
+        water_dec_ha = stats.classes.get("water_decrease_ha", 0.0)
+
+        # Query-specific natural language answering
+        if any(w in q for w in ["built", "building", "urban", "construction", "road", "paved", "infrastructure"]):
+            if builtup_ha > 0:
+                lead_answer = f"Yes, new built-up and paved infrastructure increased by approximately {builtup_ha:.1f} hectares between {date1} and {date2} (highlighted in red)."
+            else:
+                lead_answer = f"No significant new built-up construction was detected in this area between {date1} and {date2}."
+        elif any(w in q for w in ["flood", "water", "submerge", "river", "lake", "inundat"]):
+            if water_inc_ha > 0:
+                lead_answer = f"Yes, surface water and inundation expanded by about {water_inc_ha:.1f} hectares between {date1} and {date2} (highlighted in blue)."
+            elif water_dec_ha > 0:
+                lead_answer = f"Water levels receded by approximately {water_dec_ha:.1f} hectares between {date1} and {date2} (highlighted in purple)."
+            else:
+                lead_answer = f"Water bodies remained stable with no major flood inundation between {date1} and {date2}."
+        elif any(w in q for w in ["tree", "forest", "green", "crop", "vegetation", "farm", "deforest"]):
+            if veg_dec_ha > 0:
+                lead_answer = f"Vegetation canopy decline / crop clearing affected about {veg_dec_ha:.1f} hectares (highlighted in yellow)."
+            elif veg_inc_ha > 0:
+                lead_answer = f"Vegetation growth / greening was observed across about {veg_inc_ha:.1f} hectares (highlighted in green)."
+            else:
+                lead_answer = f"Vegetation coverage remained stable across the monitored area between {date1} and {date2}."
         else:
-            qa_prefix = ""
+            lead_answer = stats.simple_explanation
 
+        # Compose full text answer
         text_ans = (
-            f"{qa_prefix}Between the two dates, some land in this area changed ({change_category.lower()}). "
-            f"The built-up area (buildings and roads) increased by about {builtup_exp_metrics['area_hectares']:.1f} hectares. "
-            f"In total, about {area_ha:.1f} hectares ({cov_pct:.1f}% of the monitored area) shows visible change. "
-            f"The color-coded map highlights exactly where changes happened: red for new buildings/roads, green for vegetation growth, and blue for water changes."
+            f"{lead_answer}\n\n"
+            f"Overall, {stats.changed_area_ha:.1f} hectares ({stats.changed_percentage:.1f}% of the {stats.area_of_interest_ha:.1f} ha monitored area) "
+            f"experienced visible surface changes between {date1} and {date2}. "
+            f"The evidence overlay highlights changes by type: red for new buildings and paved roads, "
+            f"green for vegetation growth, yellow for vegetation loss, blue for water increase, and purple for water decrease. "
+            f"Atmospheric quality indicates {stats.quality['valid_pixel_percentage']}% cloud-free visibility ({stats.confidence_label}, {stats.confidence_score*100:.1f}% confidence)."
         )
 
         bullets = [
-            f"Between the two acquisition dates, some land in this area changed ({change_category}).",
-            f"Built-up area (buildings, roads) increased by about {builtup_exp_metrics['area_hectares']:.1f} hectares (shown in red).",
-            f"Total changed land area is about {area_ha:.1f} hectares (about {cov_pct:.1f}% of the monitored area).",
-            f"Color Legend: Red = New Built-up, Green = Vegetation Growth, Blue = Water Changes."
+            f"Total surface area changed: {stats.changed_area_ha:.1f} hectares ({stats.changed_percentage:.1f}% of monitored AOI).",
+            f"New built-up & infrastructure: {builtup_ha:.1f} ha (highlighted in red).",
+            f"Vegetation canopy loss / clearing: {veg_dec_ha:.1f} ha (highlighted in yellow).",
+            f"Vegetation growth / greening: {veg_inc_ha:.1f} ha (highlighted in green).",
+            f"Water surface expansion: {water_inc_ha:.1f} ha (blue); Water surface decline: {water_dec_ha:.1f} ha (purple).",
+            f"Data Quality: {stats.quality['valid_pixel_percentage']}% clear optical pixels ({stats.confidence_label}, {stats.confidence_score*100:.1f}% score)."
         ]
+
+        metric_summary = {
+            "pixel_count": int(np.sum(change_result.classified_mask != 0)),
+            "area_hectares": stats.changed_area_ha,
+            "valid_area_hectares": stats.valid_area_ha,
+            "total_area_hectares": stats.area_of_interest_ha,
+            "coverage_pct": stats.changed_percentage,
+            "builtup_expansion_hectares": builtup_ha,
+            "vegetation_loss_hectares": veg_dec_ha,
+            "vegetation_growth_hectares": veg_inc_ha,
+            "water_increase_hectares": water_inc_ha,
+            "water_decrease_hectares": water_dec_ha,
+            "quality": stats.quality,
+            "confidence_score": stats.confidence_score,
+            "confidence_label": stats.confidence_label,
+            "rgba_overlay_b64": rendered.rgba_base64,
+            "explainable_legend": {
+                "red": "New Built-up & Paved Roads",
+                "green": "Vegetation / Canopy Growth",
+                "yellow": "Vegetation Loss / Clearing",
+                "blue": "Water Surface / Inundation",
+                "purple": "Water Body Decline / Drying"
+            }
+        }
 
         return ToolResult(
             tool_name=self.name,
             task_type=self.task_type,
             text_output=text_ans,
-            visual_overlay_b64=overlay_b64,
+            visual_overlay_b64=rendered.overlay_base64,
             visual_overlay_type="change_heatmap",
-            confidence=conf,
+            confidence=stats.confidence_score,
             execution_time_ms=round(elapsed_ms, 2),
             parameters={
-                "siamese_backbone": "resnet50_siamese_cd",
-                "delta_ndvi_mean": round(mean_delta_ndvi, 4),
-                "delta_brightness_mean": round(delta_bright, 2),
-                "threshold_p82": round(float(thresh), 2),
-                "change_category": change_category,
-                "explainable_legend": {
-                    "red": "New Built-up / Paved Structures",
-                    "green": "Vegetation / Agriculture Growth",
-                    "blue": "Water Surface / Inundation Changes",
-                    "amber": "General Land Surface Shifts"
-                }
+                "processing_engine": "SatQuery_Raster_Pipeline_v2",
+                "resolution_m": stats.quality.get("ground_sample_distance_m", 10.0),
+                "registration_quality": stats.quality.get("registration_quality", "good"),
+                "overlap_pct": stats.quality.get("overlap_percentage", 100.0),
+                "valid_pixel_pct": stats.quality.get("valid_pixel_percentage", 100.0),
+                "date_t1": date1,
+                "date_t2": date2,
+                "location": loc_name
             },
-            metric_summary={
-                "area_hectares": area_ha,
-                "coverage_pct": cov_pct,
-                "pixel_count": int(metrics["pixel_count"]),
-                "builtup_expansion_hectares": builtup_exp_metrics["area_hectares"],
-                "vegetation_loss_hectares": veg_loss_metrics["area_hectares"],
-                "water_change_hectares": water_metrics["area_hectares"],
-                "explainable_legend": {
-                    "red": "New Built-up",
-                    "green": "Vegetation Growth",
-                    "blue": "Water Bodies"
-                }
-            },
+            metric_summary=metric_summary,
             summary_bullet_points=bullets
         )

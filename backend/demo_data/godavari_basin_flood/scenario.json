@@ -1,0 +1,34 @@
+{
+  "id": "godavari_basin_flood",
+  "name": "Monsoon Inundation & Submerged Agricultural Parcels (Godavari Basin)",
+  "category": "Disaster Assessment & Inundation Mapping (CDVQA)",
+  "description": "Sentinel-2 Level-2A multi-band acquisition over Rajahmundry & Godavari River. Quantifies inundated croplands, swollen river boundaries, and newly constructed floodwall defenses.",
+  "sensor": "Sentinel-2 Level-2A (MSI)",
+  "resolution": "10 m GSD",
+  "crs": "EPSG:4326",
+  "date": "2025-08-13 (Pre-Flood) vs. 2026-09-05 (Post-Monsoon Inundation)",
+  "area": "Rajahmundry & Godavari River Basin, Andhra Pradesh, India",
+  "coordinates": [
+    17.0,
+    81.8
+  ],
+  "bbox": [
+    16.94,
+    81.74,
+    17.06,
+    81.87
+  ],
+  "default_query": "Identify the submerged agricultural parcels and quantify flood inundation area in hectares.",
+  "suggested_queries": [
+    "Identify the submerged agricultural parcels and quantify flood inundation area in hectares.",
+    "What is the total flooded inundation area in hectares?",
+    "Where did river boundaries swell between the two dates?"
+  ],
+  "real_data_source": "Copernicus Open Access Hub / ESA Sentinel-2 L2A (Tile: 44QPD)",
+  "image_paths": [
+    "/backend/demo_data/godavari_basin_flood/pre.png",
+    "/backend/demo_data/godavari_basin_flood/post.png"
+  ],
+  "overlay_path": "/backend/demo_data/godavari_basin_flood/change_overlay.png",
+  "mask_path": "/backend/demo_data/godavari_basin_flood/change_mask.png"
+}

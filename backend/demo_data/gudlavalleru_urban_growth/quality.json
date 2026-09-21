@@ -1,0 +1,7 @@
+{
+  "valid_pixel_percentage": 100.0,
+  "cloud_masked_percentage": 0.0,
+  "registration_quality": "good",
+  "overlap_percentage": 100.0,
+  "ground_sample_distance_m": 10.0
+}

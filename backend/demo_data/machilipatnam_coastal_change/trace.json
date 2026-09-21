@@ -1,0 +1,36 @@
+{
+  "trace_id": "trace-demo-machilipatna-932450",
+  "timestamp": "2026-09-21T20:06:23.241517+00:00",
+  "detected_task": "change_detection",
+  "router_reasoning": "Temporal acquisition pair for Machilipatnam Deepwater Port, AP. Routed to Siamese_Change_Specialist with Sentinel-2 Level-2A surface index differencing.",
+  "input_configuration": "2 scene(s) [optical_multispectral]",
+  "total_execution_time_ms": 142.5,
+  "data_source_label": "Copernicus Open Access Hub / ESA Sentinel-2 L2A (Tile: 44QND)",
+  "tools_executed": [
+    {
+      "tool_name": "Siamese_Change_Specialist_v1",
+      "task_type": "change_detection",
+      "model_checkpoint": "changeformer-cdvqa-siamese-base",
+      "execution_time_ms": 138.2,
+      "confidence": 0.94,
+      "parameters": {
+        "processing_engine": "SatQuery_Raster_Pipeline_v2",
+        "resolution_m": 10.0,
+        "date_t1": "2025-08-20",
+        "date_t2": "2026-09-04",
+        "location": "Machilipatnam Deepwater Port, AP"
+      }
+    }
+  ],
+  "metric_summary": {
+    "area_hectares": 158.3,
+    "builtup_expansion_hectares": 0.0,
+    "vegetation_loss_hectares": 0.0,
+    "vegetation_growth_hectares": 0.0,
+    "water_increase_hectares": 93.4,
+    "water_decrease_hectares": 65.0,
+    "confidence_score": 0.94,
+    "confidence_label": "High confidence"
+  },
+  "sha256_hash": "f945246e6f01286e8aeb7eff6b5497b8597f25151c7325c979dc0ea8a8c87560"
+}

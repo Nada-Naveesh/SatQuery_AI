@@ -96,21 +96,33 @@ SatQuery AI includes authentic bi-temporal (2025 vs. 2026) Sentinel-2 satellite 
 
 ---
 
-## 5. Understanding the Visual Viewport Controls
+## 5. Understanding the Visual Viewport Controls & 4 View Modes
 
-In the right-hand panel, you can control how satellite images are displayed:
+In the right-hand panel, you can control how satellite evidence is displayed:
 
-- **Base Button:** Shows the natural satellite photo without any overlays.
-- **Evidence Overlay Button:** Overlays colored highlights over detected features (e.g., green/amber for new construction, blue for water, red for changed parcels).
-- **Split Comparison Button:** Activates a side-by-side comparison slider. Drag the handle horizontally to slide between the 2025 and 2026 images.
-- **Confidence Bar:** Shows the calibrated mathematical confidence score (e.g. 94%) computed by the model.
-- **Key Observations & Summary:** Plain-English bullet points summarizing key findings and estimated surface area in hectares.
+- **4 View Modes:**
+  - **Base (T2):** Displays the post-change acquisition satellite scene without overlays.
+  - **Evidence Overlay:** Overlays the physical calculated change mask on top of the satellite image.
+  - **Split Comparison:** Activates an interactive swipe wiper. Drag the central red handle left or right across the canvas to compare before (T1) and after (T2) views in real time.
+  - **Quality View:** Visualizes the joint atmospheric cloud mask and data validity layer, reporting clear optical transmission percentage and registration quality.
+- **Layer Opacity Slider (10% - 100%):** Dynamically adjusts overlay transparency so underlying ground features remain clearly visible beneath the evidence layer.
+- **Calculated Change Legend:**
+  - 🔴 **Red (`#EF4444`):** New Built-up & Paved Infrastructure ($\Delta\text{NDBI} > +0.20 \land \Delta\text{NDVI} < -0.10$)
+  - 🟢 **Green (`#22C55E`):** Vegetation Growth / Canopy Expansion ($\Delta\text{NDVI} > +0.20$)
+  - 🟡 **Yellow (`#EAB308`):** Vegetation Loss / Land Clearing ($\Delta\text{NDVI} < -0.20$)
+  - 🔵 **Cyan (`#06B6D4`):** Water Inundation / Flood Expansion ($\Delta\text{NDWI} > +0.25$)
+  - 🟣 **Purple (`#A855F7`):** Water Body Decline / Drying ($\Delta\text{NDWI} < -0.25$)
+- **Ground-Truth Physical Area Breakdown Card:**
+  - Displays dynamic hectare statistics calculated directly from pixel counts at $10\text{m}$ GSD ($1\text{ px} = 0.01\text{ ha}$).
+  - Shows Total Changed Hectares, Percentage of AOI, New Built-up ha, Vegetation Loss ha, and Water Changes ha.
+- **Tactical Coordinates HUD:**
+  - Real-time overlay in the top-left of the viewport displaying location name, latitude/longitude, and WGS84 bounding box.
 
 ---
 
 ## 6. How to Upload Your Own Satellite Images
 
-1. Download a satellite photo (GeoTIFF, PNG, or JPG) from [Copernicus Browser](https://browser.dataspace.copernicus.eu) or USGS EarthExplorer (see [How to Get Free Satellite Data](file:///docs/how_to_get_data.md)).
+1. Download satellite imagery (GeoTIFF, PNG, or JPG) from [Copernicus Browser](https://browser.dataspace.copernicus.eu) or USGS EarthExplorer (see [How to Get Free Satellite Data](file:///docs/how_to_get_data.md)).
 2. Click the **Upload Satellite Images** box on the left panel (or drag and drop your file).
    - For single image analysis: upload 1 image.
    - For before-and-after change detection: select both the 2025 and 2026 images simultaneously.
@@ -123,13 +135,14 @@ In the right-hand panel, you can control how satellite images are displayed:
 
 After running any analysis, you can download an official mission report:
 
-1. Click the **Download Mission PDF** button in the top navigation bar.
+1. Click the **PDF Report** button in the top navigation bar.
 2. The system generates a clean, executive PDF report (`SatQuery_MissionReport_<ID>.pdf`).
 3. **What is inside the report:**
    - **Main Findings:** Plain English summary of what was detected, suitable for non-technical officials or judges.
-   - **Visual Comparison Table:** Displays the **2025 Base Image**, **2026 Target Image**, and the **Colored Change Overlay** side-by-side.
+   - **Calculated Evidence Overlay:** The exact same colorized change mask rendered in the browser viewport.
+   - **Ground-Truth Hectare Statistics Table:** Full breakdown of new built-up area, vegetation changes, and water coverage in hectares.
    - **Confidence Score & Audit ID:** Uniquely verifiable trace ID confirming that results are grounded in real satellite telemetry.
-   - **Technical Notes:** Compact metadata table at the end (sensor, resolution, coordinates, and execution latency in milliseconds).
+   - **Technical Notes:** Sensor type, resolution (10m GSD), geographic coordinates, CRS (EPSG:4326), and execution latency.
 
 ---
 
@@ -137,10 +150,11 @@ After running any analysis, you can download an official mission report:
 
 | Evaluation Criteria | How SatQuery AI Fulfills It | Verified In |
 | :--- | :--- | :--- |
-| **Multimodal Satellite Support** | Supports optical reflectance (Sentinel-2, Cartosat) and Synthetic Aperture Radar (Sentinel-1 C-SAR). | Scenario 1, 3, 4 & Custom Upload |
-| **Natural Language Queries** | Operators ask in everyday English; queries are auto-routed without requiring code or parameters. | Query Panel & Agent Router |
-| **Bi-Temporal Change Reasoning** | Accurately compares two dates (2025 vs. 2026) and quantifies area changes in hectares. | All 11 AP Cities + LEVIR-CD |
-| **State-Wide Regional Coverage** | Complete multi-temporal data across 11 key regions in Andhra Pradesh + entire state overview. | AP Location Intelligence |
-| **Zero Hallucination Grounding** | Every answer is backed by pixel-level colored segmentation masks and bounding boxes. | Satellite Viewport & PDF Report |
-| **Executive Reporting** | One-click PDF mission report with 3-image visual comparison table and plain English findings. | PDF Report Generator |
-| **Test Coverage & Reliability** | 100% test pass rate across 40 unit and integration tests. | PyTest Suite (`pytest -v`) |
+| **Evidence-Based Raster Overlays** | Every colored pixel is derived from physical multi-band calculations ($\text{NDVI}, \text{NDWI}, \text{NDBI}$ + MMU=9), not synthetic graphics. | `backend/app/processing/` & Viewport |
+| **Dynamic Hectare Area Quantification** | True physical area calculated at $10\text{m}$ GSD ($0.01\,\text{ha}/\text{px}$) with zero static placeholders. | Hectare Stats Card & PDF Report |
+| **Honest Quality-Aware Confidence** | Mathematically calibrated from atmospheric valid pixels, cloud cover, and spatial registration (never hardcoded 93%). | `statistics.py` & Quality View |
+| **4 Interactive View Modes** | Base, Evidence Overlay, Draggable Split Comparison Slider, and Atmospheric Quality View. | Satellite Viewport Controls |
+| **3 Verified Competition Packages** | Gudlavalleru (+242.1 ha built-up), Machilipatnam (+158.3 ha port), and Godavari (+627.5 ha flood). | Featured Scenarios & `backend/demo_data/` |
+| **Live Place Search & Copernicus Ingestion** | OpenStreetMap Nominatim geocoding paired with live Copernicus CDSE Sentinel-2 STAC search. | Location Search & Copernicus Tab |
+| **Auditable Execution Trace & Telemetry** | Full trace with router reasoning, tool execution latency, and downloadable machine-readable JSON. | Trace Accordion & Trace Modal |
+| **Executive Defense-Grade PDF Reporting** | Print-ready PDF report matching the exact browser overlay, hectare numbers, and metadata. | `/api/v1/report/pdf` |
