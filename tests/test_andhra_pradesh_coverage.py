@@ -143,6 +143,10 @@ def test_mission_control_html_serves_ap_coverage():
     assert "Visakhapatnam" in html
     assert "Tirupati" in html
     assert "Kurnool" in html
+    assert "Avanigadda" in html
+    assert "viewerCoordsOverlay" in html
+    assert "hudLatLon" in html
+    assert "sceneCoordinatesBadge" in html
     assert "dataGuideModal" in html
     assert "How to Get Free Satellite Images" in html
 

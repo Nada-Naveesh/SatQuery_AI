@@ -298,6 +298,12 @@ AOI_REGISTRY = {
         "center": {"lat": 14.68, "lon": 77.60},
         "bbox": [14.62, 77.54, 14.75, 77.66]
     },
+    "avanigadda": {
+        "aoi": "avanigadda",
+        "display_name": "Avanigadda, Krishna River Delta, Andhra Pradesh, India",
+        "center": {"lat": 16.0193, "lon": 80.9151},
+        "bbox": [15.95, 80.85, 16.08, 80.98]
+    },
     "andhra pradesh": {
         "aoi": "andhra_pradesh",
         "display_name": "Andhra Pradesh State Regional Mosaic, India",
@@ -327,12 +333,13 @@ def search_area_of_interest(q: str = Query(..., description="Location place name
         if cleaned == key or key in cleaned or cleaned in key:
             return entry
     
-    # Fallback response for any queried location
+    # Dynamic geocoding via copernicus_service for arbitrary global/Indian locations
+    disp_name, bbox, center = copernicus_service.geocode_place(cleaned)
     return {
         "aoi": cleaned.replace(" ", "_"),
-        "display_name": f"{q.strip().title()}, Andhra Pradesh, India",
-        "center": {"lat": 16.02, "lon": 80.70},
-        "bbox": [15.97, 80.65, 16.07, 80.75]
+        "display_name": disp_name,
+        "center": center,
+        "bbox": bbox
     }
 
 

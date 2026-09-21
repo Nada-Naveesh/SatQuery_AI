@@ -201,6 +201,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
           <!-- Quick City Pills -->
           <div class="flex flex-wrap gap-1 pt-0.5">
             <button onclick="selectApCity('gudlavalleru')" class="text-[9px] bg-void-950 hover:bg-crimson-950/60 border border-crimson-900/60 hover:border-crimson-500 text-slate-300 hover:text-white px-2 py-0.5 rounded transition">Gudlavalleru</button>
+            <button onclick="selectApCity('avanigadda')" class="text-[9px] bg-void-950 hover:bg-crimson-950/60 border border-crimson-900/60 hover:border-crimson-500 text-slate-300 hover:text-white px-2 py-0.5 rounded transition">Avanigadda</button>
             <button onclick="selectApCity('vijayawada')" class="text-[9px] bg-void-950 hover:bg-crimson-950/60 border border-crimson-900/60 hover:border-crimson-500 text-slate-300 hover:text-white px-2 py-0.5 rounded transition">Vijayawada</button>
             <button onclick="selectApCity('amaravati')" class="text-[9px] bg-void-950 hover:bg-crimson-950/60 border border-crimson-900/60 hover:border-crimson-500 text-slate-300 hover:text-white px-2 py-0.5 rounded transition">Amaravati</button>
             <button onclick="selectApCity('visakhapatnam')" class="text-[9px] bg-void-950 hover:bg-crimson-950/60 border border-crimson-900/60 hover:border-crimson-500 text-slate-300 hover:text-white px-2 py-0.5 rounded transition">Visakhapatnam</button>
@@ -407,6 +408,21 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
           
           <img id="viewerOverlayImg" src="" alt="Evidence Overlay" class="absolute inset-0 w-full h-full object-contain hidden opacity-90 transition-opacity">
 
+          <!-- Real-Time Tactical Coordinates HUD Overlay -->
+          <div id="viewerCoordsOverlay" class="absolute top-2.5 left-2.5 bg-void-950/90 border border-crimson-600/70 rounded-md px-2.5 py-1.5 text-[11px] font-mono backdrop-blur-md shadow-lg z-20 pointer-events-none flex flex-col space-y-0.5">
+            <div class="flex items-center space-x-1.5 text-crimson-400 font-bold tracking-wider uppercase text-[10px]">
+              <i class="fa-solid fa-crosshairs animate-pulse"></i>
+              <span id="hudLocationName">GUDLAVALLERU, AP</span>
+            </div>
+            <div class="text-slate-200 font-semibold tracking-wide flex items-center space-x-1 text-[11px]">
+              <span class="text-slate-400 text-[10px]">COORDS:</span>
+              <span id="hudLatLon" class="text-emerald-400 font-bold">16.0200° N, 80.7000° E</span>
+            </div>
+            <div class="text-[9px] text-slate-400">
+              <span>BBOX:</span> <span id="hudBbox" class="text-slate-300">[15.98, 80.65, 16.08, 80.75]</span>
+            </div>
+          </div>
+
           <!-- Split Screen Slider Container -->
           <div id="splitContainer" class="absolute inset-0 hidden pointer-events-none">
             <div id="splitClip" class="absolute inset-0 overflow-hidden w-1/2 border-r-2 border-crimson-500 shadow-2xl">
@@ -439,11 +455,13 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
             <span id="sceneDataSource" class="text-crimson-300 font-medium">Sentinel-2 L2A MSI, Gudlavalleru, AP (2025 vs 2026)</span>
           </div>
           <div class="flex items-center space-x-2 text-slate-400 font-mono text-[10px]">
+            <span id="sceneCoordinatesBadge" class="text-crimson-400 font-bold bg-crimson-950/60 px-2 py-0.5 rounded border border-crimson-900/60">LAT: 16.0200° N • LON: 80.7000° E</span>
+            <span>&bull;</span>
             <span id="sceneDimensions">512 x 512 px</span>
             <span>&bull;</span>
             <span id="sceneResolution">10 m GSD</span>
             <span>&bull;</span>
-            <span id="sceneCRS">Map coordinates: Lat/Lon (WGS84)</span>
+            <span id="sceneCRS">EPSG:4326 (WGS84)</span>
           </div>
         </div>
       </div>
@@ -663,10 +681,12 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       'scenario_1_flood': {
         name: 'Godavari Basin Flood & Inundation',
         sensor: 'Sentinel-2 L2A (MSI)',
+        coords: '16.8900°N, 81.7900°E',
+        bbox: '[16.50, 81.40, 17.20, 82.10]',
         date: '2023-07-28',
         area: 'Godavari River Basin, AP/Telangana, India',
         resolution: '10 m GSD',
-        crs: 'Map coordinates: Lat/Lon (WGS84)',
+        crs: 'EPSG:4326 (WGS84)',
         source: 'Copernicus Open Access Hub / ESA Sentinel-2 L2A',
         image: '/static/demo_scenarios/scenario_1_flood/image1.png',
         query: 'Identify the submerged agricultural parcels and highlight their spatial boundaries.'
@@ -674,10 +694,12 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       'scenario_2_urban': {
         name: 'Bi-Temporal Urban Expansion',
         sensor: 'High-Res Optical Satellite (LEVIR-CD Benchmark)',
+        coords: '39.9042°N, 116.4074°E',
+        bbox: '[39.85, 116.35, 39.95, 116.45]',
         date: '2022-04-12 (T1) vs. 2024-05-18 (T2)',
         area: 'Suburban Industrial Development Zone',
         resolution: '0.5 m GSD',
-        crs: 'Map coordinates: Lat/Lon (WGS84)',
+        crs: 'EPSG:4326 (WGS84)',
         source: 'LEVIR-CD Large-Scale Change Detection Archive',
         image: '/static/demo_scenarios/scenario_2_urban/t2.png',
         split_image: '/static/demo_scenarios/scenario_2_urban/t1.png',
@@ -686,10 +708,12 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       'scenario_3_optical_sar': {
         name: 'All-Weather Fusion: Cloud Penetration (Cartosat + RISAT / Sentinel-1)',
         sensor: 'Cartosat-2S Optical + Sentinel-1 C-band SAR',
+        coords: '17.6868°N, 83.2185°E',
+        bbox: '[17.62, 83.15, 17.75, 83.32]',
         date: '2023-08-20 (Co-registered window)',
         area: 'Coastal Industrial Port & Oil Storage Terminal',
         resolution: 'Optical 0.65m / SAR 10m GSD',
-        crs: 'Map coordinates: Lat/Lon (WGS84)',
+        crs: 'EPSG:4326 (WGS84)',
         source: 'ISRO SAC / ESA Sentinel-1 GRD SAR + Optical Archive',
         image: '/static/demo_scenarios/scenario_3_optical_sar/optical.png',
         query: 'Penetrate cloud cover to map industrial storage tanks and coastal water bodies.'
@@ -697,10 +721,12 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       'scenario_4_coastal': {
         name: 'Visakhapatnam Coastal Port Sprawl',
         sensor: 'Sentinel-2 L2A MSI',
+        coords: '17.6900°N, 83.2200°E',
+        bbox: '[17.62, 83.15, 17.75, 83.32]',
         date: '2023-02-15 (T1) vs. 2024-09-05 (T2)',
         area: 'Visakhapatnam Port & Coastal Corridor, AP, India',
         resolution: '10 m GSD',
-        crs: 'Map coordinates: Lat/Lon (WGS84)',
+        crs: 'EPSG:4326 (WGS84)',
         source: 'Copernicus Open Access Hub / ESA Sentinel-2 L2A',
         image: '/static/demo_scenarios/scenario_4_coastal/t2.png',
         split_image: '/static/demo_scenarios/scenario_4_coastal/t1.png',
@@ -709,10 +735,12 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       'scenario_today_near_real_time': {
         name: "Today's Operational Surveillance Feed (Near-Real-Time Stream)",
         sensor: 'Sentinel-2 L2A MSI',
+        coords: '16.0200°N, 80.7000°E',
+        bbox: '[15.98, 80.65, 16.08, 80.75]',
         date: '2026-09-22 (Acquired & Ingested Today)',
         area: 'National Space Operational Surveillance Corridor',
         resolution: '10 m GSD',
-        crs: 'Map coordinates: Lat/Lon (WGS84)',
+        crs: 'EPSG:4326 (WGS84)',
         source: 'Copernicus Data Space Ecosystem (Direct Near-Real-Time Stream)',
         image: '/static/latest/latest_scene.png',
         query: 'Detect recent surface changes, water inundation, and newly emerged infrastructure.'
@@ -722,7 +750,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
     const AP_SCENARIOS_CATALOG = {
       'gudlavalleru': {
         name: 'Gudlavalleru, Krishna District, AP',
-        coords: '16.02°N, 80.70°E',
+        coords: '16.0200°N, 80.7000°E',
         bbox: 'BBox: [15.98, 80.65, 16.08, 80.75]',
         feature: 'Krishna Delta, Academic Campus, Agricultural Grid',
         date: '2025-09-03 (T1) vs. 2026-09-05 (T2)',
@@ -735,9 +763,24 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         scene_ids: 'gvl_s2_2025_09_03,gvl_s2_2026_09_05',
         analysis_mode: 'change'
       },
+      'avanigadda': {
+        name: 'Avanigadda, Krishna River Delta, AP',
+        coords: '16.0193°N, 80.9151°E',
+        bbox: 'BBox: [15.98, 80.88, 16.06, 80.96]',
+        feature: 'Krishna Delta Estuary, Mangroves, Aquaculture & River Islands',
+        date: '2025-08-20 (T1) vs. 2026-09-02 (T2)',
+        area: 'Avanigadda, Krishna River Delta, AP, India',
+        resolution: '10 m GSD',
+        source: 'Copernicus Sentinel-2 Delta Archive',
+        image: '/static/thumbs/avanigadda_s2_2026.jpg',
+        split_image: '/static/thumbs/avanigadda_s2_2025.jpg',
+        query: 'What environmental and aquaculture changes occurred in Avanigadda between 2025 and 2026?',
+        scene_ids: 'avanigadda_s2_2025,avanigadda_s2_2026',
+        analysis_mode: 'change'
+      },
       'vijayawada': {
         name: 'Vijayawada, Krishna District, AP',
-        coords: '16.51°N, 80.65°E',
+        coords: '16.5100°N, 80.6500°E',
         bbox: 'BBox: [16.45, 80.58, 16.57, 80.71]',
         feature: 'Krishna River Basin, Prakasam Barrage, Urban Core',
         date: '2025-08-15 (T1) vs. 2026-09-02 (T2)',
@@ -875,6 +918,18 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       executeCopernicusSearch();
     }
 
+    function updateCoordinatesHUD(locationName, coordsStr, bboxStr) {
+      const hudLoc = document.getElementById('hudLocationName');
+      const hudCoords = document.getElementById('hudLatLon');
+      const hudB = document.getElementById('hudBbox');
+      const badge = document.getElementById('sceneCoordinatesBadge');
+
+      if (hudLoc) hudLoc.innerText = (locationName || 'TARGET AOI').toUpperCase();
+      if (hudCoords) hudCoords.innerText = coordsStr || '16.0200° N, 80.7000° E';
+      if (hudB) hudB.innerText = bboxStr || '[15.98, 80.65, 16.08, 80.75]';
+      if (badge) badge.innerText = 'LAT/LON: ' + (coordsStr || '16.0200° N, 80.7000° E');
+    }
+
     function applyLocation(loc) {
       activeScenarioId = null;
       selectedFiles = [];
@@ -883,6 +938,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
 
       const coordEl = document.getElementById('dashboardAoiCoords');
       if (coordEl) coordEl.innerText = `AOI: ${loc.coords} (${loc.name.split(',')[0]})`;
+      updateCoordinatesHUD(loc.name.split(',')[0], loc.coords, loc.bbox);
 
       setQuery(loc.query);
       document.getElementById('viewerBaseImg').src = loc.image;
@@ -916,6 +972,8 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       activeSceneIds = meta.scene_ids || null;
       activeAnalysisMode = meta.analysis_mode || null;
 
+      updateCoordinatesHUD(meta.name, meta.coords || '16.0200°N, 80.7000°E', meta.bbox || '[15.98, 80.65, 16.08, 80.75]');
+
       setQuery(meta.query);
       document.getElementById('viewerBaseImg').src = meta.image;
       if (meta.split_image) {
@@ -947,6 +1005,20 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         if (!res.ok) throw new Error('Copernicus query failed');
         const data = await res.json();
         renderCopernicusScenes(data);
+
+        // Auto-load discovered satellite scene immediately into viewport
+        if (data.scenes && data.scenes.length > 0) {
+          const latLon = data.coordinates_display || `${data.latitude ? data.latitude.toFixed(4) + '° N' : ''}, ${data.longitude ? data.longitude.toFixed(4) + '° E' : ''}`;
+          const bboxStr = data.bbox_display || (data.bbox ? `[${data.bbox.join(', ')}]` : '');
+          if (data.scenes.length >= 2) {
+            const s1 = data.scenes[0];
+            const s2 = data.scenes[1];
+            loadCopernicusPair(s1.id, s2.id, s2.thumbnail_url || '', s1.thumbnail_url || '', data.aoi, s1.date, s2.date, latLon, bboxStr);
+          } else {
+            const s0 = data.scenes[0];
+            loadCopernicusScene(s0.id, s0.thumbnail_url || '', data.aoi, s0.date, latLon, bboxStr);
+          }
+        }
       } catch (err) {
         resultsContainer.innerHTML = `<div class="p-3 text-xs text-crimson-300 bg-crimson-950/40 border border-crimson-800 rounded-lg">Unable to reach Copernicus CDSE endpoint: ${err.message}. Displaying local cached scenes.</div>`;
       }
@@ -960,9 +1032,13 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         return;
       }
 
+      const latLon = data.coordinates_display || `${data.latitude ? data.latitude.toFixed(4) + '° N' : ''}, ${data.longitude ? data.longitude.toFixed(4) + '° E' : ''}`;
+      const bboxStr = data.bbox_display || (data.bbox ? `[${data.bbox.join(', ')}]` : '');
+      const safeAoi = (data.aoi || 'Target Area').replace(/'/g, "\\'");
+
       const headerDiv = document.createElement('div');
       headerDiv.className = 'text-[11px] text-slate-400 mb-1 flex items-center justify-between';
-      headerDiv.innerHTML = `<span>Found <b>${data.scenes.length}</b> Sentinel-2 scenes for <i>${data.aoi}</i>:</span><span class="text-[9px] text-crimson-400 font-mono font-bold">${data.provider}</span>`;
+      headerDiv.innerHTML = `<span>Found <b>${data.scenes.length}</b> Sentinel-2 scenes for <i>${data.aoi}</i>:</span><span class="text-[9px] text-emerald-400 font-mono font-bold">${latLon}</span>`;
       container.appendChild(headerDiv);
 
       // Bi-Temporal Comparison Card if at least 2 scenes
@@ -979,7 +1055,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
             </span>
             <span class="text-[9px] font-mono bg-crimson-900 px-1.5 py-0.5 rounded text-white">${s1.date} vs ${s2.date}</span>
           </div>
-          <button onclick="loadCopernicusPair('${s1.id}', '${s2.id}', '${s2.thumbnail_url || ''}', '${s1.thumbnail_url || ''}', '${data.aoi}', '${s1.date}', '${s2.date}')" class="w-full bg-crimson-600 hover:bg-crimson-500 text-white font-semibold text-xs py-1.5 px-3 rounded shadow transition flex items-center justify-center space-x-1.5">
+          <button onclick="loadCopernicusPair('${s1.id}', '${s2.id}', '${s2.thumbnail_url || ''}', '${s1.thumbnail_url || ''}', '${safeAoi}', '${s1.date}', '${s2.date}', '${latLon}', '${bboxStr}')" class="w-full bg-crimson-600 hover:bg-crimson-500 text-white font-semibold text-xs py-1.5 px-3 rounded shadow transition flex items-center justify-center space-x-1.5">
             <i class="fa-solid fa-layer-group text-[10px]"></i>
             <span>Load Both Scenes for Change Detection</span>
           </button>
@@ -990,6 +1066,8 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       data.scenes.forEach((sc, idx) => {
         const item = document.createElement('div');
         item.className = 'p-2 rounded-lg bg-void-950 border border-void-800 hover:border-crimson-700/80 transition flex items-center justify-between text-xs gap-2';
+        const scLatLon = sc.coordinates_display || latLon;
+        const scBbox = sc.bbox_display || bboxStr;
         item.innerHTML = `
           <div class="flex items-center space-x-2.5 overflow-hidden">
             <img src="${sc.thumbnail_url || '/static/thumbs/vja_s2_2026_09_02.jpg'}" onerror="this.src='/static/thumbs/gvl_s2_2026_09_05.jpg'" class="w-10 h-10 rounded object-cover border border-void-700 flex-shrink-0">
@@ -998,12 +1076,14 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
               <div class="text-[10px] text-slate-400 flex items-center space-x-2">
                 <span>Date: <b class="text-white">${sc.date}</b></span>
                 <span>&bull;</span>
+                <span class="text-emerald-400 font-mono text-[9px]">${scLatLon}</span>
+                <span>&bull;</span>
                 <span>Cloud: <b class="${sc.cloud_cover <= 10 ? 'text-emerald-400' : 'text-amber-400'}">${sc.cloud_cover}%</b></span>
               </div>
             </div>
           </div>
           <div class="flex items-center space-x-1 flex-shrink-0">
-            <button onclick="loadCopernicusScene('${sc.id}', '${sc.thumbnail_url || ''}', '${data.aoi}', '${sc.date}')" class="bg-crimson-600 hover:bg-crimson-500 text-white text-[10px] font-semibold px-2.5 py-1 rounded transition shadow flex items-center space-x-1">
+            <button onclick="loadCopernicusScene('${sc.id}', '${sc.thumbnail_url || ''}', '${safeAoi}', '${sc.date}', '${scLatLon}', '${scBbox}')" class="bg-crimson-600 hover:bg-crimson-500 text-white text-[10px] font-semibold px-2.5 py-1 rounded transition shadow flex items-center space-x-1">
               <i class="fa-solid fa-satellite text-[9px]"></i>
               <span>Load Scene</span>
             </button>
@@ -1013,7 +1093,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       });
     }
 
-    function loadCopernicusScene(sceneId, thumbUrl, aoi, date) {
+    function loadCopernicusScene(sceneId, thumbUrl, aoi, date, latLon, bboxStr) {
       activeScenarioId = null;
       activeSceneIds = sceneId;
       activeAnalysisMode = 'single';
@@ -1023,17 +1103,19 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       document.getElementById('viewerBaseImg').src = targetThumb;
       document.getElementById('sceneDataSource').innerText = `Copernicus Sentinel-2 (${date}), ${aoi}`;
       document.getElementById('sceneResolution').innerText = '10 m GSD';
+      updateCoordinatesHUD(aoi, latLon || '16.0200° N, 80.7000° E', bboxStr || 'Copernicus Sentinel-2 BBox');
+
       setQuery(`Analyze surface features, land use, and infrastructure in ${aoi}.`);
       resetViewerOverlays();
 
       const toast = document.getElementById('toastNotice');
       if (toast) {
-        toast.innerHTML = `<span class="flex items-center space-x-1.5"><i class="fa-solid fa-circle-check text-emerald-400"></i><span>Loaded Sentinel-2 scene for <b>${aoi}</b> (${date}). Click <b>Analyze Satellite Images</b> below!</span></span>`;
+        toast.innerHTML = `<span class="flex items-center space-x-1.5"><i class="fa-solid fa-circle-check text-emerald-400"></i><span>Loaded Sentinel-2 scene for <b>${aoi}</b> [${latLon || ''}]. Click <b>Analyze Satellite Images</b> below!</span></span>`;
         toast.classList.remove('hidden');
       }
     }
 
-    function loadCopernicusPair(sid1, sid2, thumb2, thumb1, aoi, date1, date2) {
+    function loadCopernicusPair(sid1, sid2, thumb2, thumb1, aoi, date1, date2, latLon, bboxStr) {
       activeScenarioId = null;
       activeSceneIds = `${sid1},${sid2}`;
       activeAnalysisMode = 'change';
@@ -1045,12 +1127,14 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       }
       document.getElementById('sceneDataSource').innerText = `Copernicus Sentinel-2 (${date1} vs ${date2}), ${aoi}`;
       document.getElementById('sceneResolution').innerText = '10 m GSD';
+      updateCoordinatesHUD(aoi, latLon || '16.0200° N, 80.7000° E', bboxStr || 'Copernicus Sentinel-2 BBox');
+
       setQuery(`What infrastructure and environmental changes occurred in ${aoi} between ${date1} and ${date2}?`);
       resetViewerOverlays();
 
       const toast = document.getElementById('toastNotice');
       if (toast) {
-        toast.innerHTML = `<span class="flex items-center space-x-1.5"><i class="fa-solid fa-code-compare text-crimson-400"></i><span>Loaded bi-temporal Sentinel-2 pair for <b>${aoi}</b> (${date1} vs ${date2}). Click <b>Analyze Satellite Images</b> below!</span></span>`;
+        toast.innerHTML = `<span class="flex items-center space-x-1.5"><i class="fa-solid fa-code-compare text-crimson-400"></i><span>Loaded bi-temporal Sentinel-2 pair for <b>${aoi}</b> [${latLon || ''}]. Click <b>Analyze Satellite Images</b> below!</span></span>`;
         toast.classList.remove('hidden');
       }
     }

@@ -167,3 +167,55 @@ def test_copernicus_scene_analyze_single_and_bitemporal():
     assert data_change["result"]["confidence_score"] > 0.5
     assert data_change["result"]["visual_evidence"]["overlay_base64"] is not None
 
+
+def test_copernicus_distinct_imagery_and_coordinates_per_location():
+    """
+    Verifies that Avanigadda, Gudlavalleru, and Vijayawada:
+    1. Return their exact distinct Latitude & Longitude coordinates.
+    2. Serve completely distinct satellite imagery/thumbnails (not the same static image).
+    3. Return valid coordinates_display and bbox_display metadata.
+    """
+    places = ["Avanigadda", "Gudlavalleru", "Vijayawada"]
+    results = {}
+    for place in places:
+        resp = client.get(f"/api/copernicus/scenes?aoi_name={place}&limit=2")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "latitude" in data
+        assert "longitude" in data
+        assert "coordinates_display" in data
+        assert "bbox_display" in data
+        assert len(data["scenes"]) >= 2
+        results[place] = {
+            "coords": (data["latitude"], data["longitude"]),
+            "coords_disp": data["coordinates_display"],
+            "thumb": data["scenes"][0]["thumbnail_url"],
+            "id": data["scenes"][0]["id"]
+        }
+
+    # Verify coordinates are unique
+    assert results["Avanigadda"]["coords"] != results["Gudlavalleru"]["coords"]
+    assert results["Avanigadda"]["coords"] != results["Vijayawada"]["coords"]
+    assert results["Gudlavalleru"]["coords"] != results["Vijayawada"]["coords"]
+
+    # Verify thumbnails are distinct (no duplicate static images)
+    assert results["Avanigadda"]["thumb"] != results["Gudlavalleru"]["thumb"]
+    assert results["Avanigadda"]["thumb"] != results["Vijayawada"]["thumb"]
+    assert results["Gudlavalleru"]["thumb"] != results["Vijayawada"]["thumb"]
+
+    # Verify exact known coordinates
+    assert abs(results["Avanigadda"]["coords"][0] - 16.0193) < 0.01
+    assert abs(results["Avanigadda"]["coords"][1] - 80.9151) < 0.01
+    assert "80.9151" in results["Avanigadda"]["coords_disp"]
+
+
+def test_aoi_search_avanigadda_and_hud_coordinates():
+    """Verifies that /api/aoi/search resolves Avanigadda with accurate coordinates."""
+    resp = client.get("/api/aoi/search?q=avanigadda")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["aoi"] == "avanigadda"
+    assert abs(data["center"]["lat"] - 16.0193) < 0.01
+    assert abs(data["center"]["lon"] - 80.9151) < 0.01
+
+
