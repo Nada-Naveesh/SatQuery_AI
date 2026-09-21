@@ -100,8 +100,22 @@ class BiTemporalChangeTool(BaseSpecialistTool):
         area_ha = metrics["area_hectares"]
         cov_pct = metrics["coverage_percentage"]
 
-        # Create dual overlay: crimson red for altered surfaces on T2 image
-        overlay = create_color_mask_overlay(img2, change_mask, color_rgb=(239, 68, 68), alpha=0.6)
+        # Create explainable multi-color semantic overlay
+        veg_growth_mask = change_mask & (delta_ndvi > 0.05)
+        water_metrics = estimate_spatial_metrics(water_inundation_mask)
+        overlay_img = img2.copy().astype(np.float32)
+        alpha = 0.65
+
+        # Layer 1: General change (Amber)
+        overlay_img[change_mask] = (1.0 - alpha) * overlay_img[change_mask] + alpha * np.array([245, 158, 11], dtype=np.float32)
+        # Layer 2: Water surface / inundation changes (Cyan-Blue)
+        overlay_img[water_inundation_mask] = (1.0 - alpha) * overlay_img[water_inundation_mask] + alpha * np.array([6, 182, 212], dtype=np.float32)
+        # Layer 3: Vegetation / canopy growth (Emerald Green)
+        overlay_img[veg_growth_mask] = (1.0 - alpha) * overlay_img[veg_growth_mask] + alpha * np.array([16, 185, 129], dtype=np.float32)
+        # Layer 4: New built-up & infrastructure (Crimson Red)
+        overlay_img[builtup_expansion_mask] = (1.0 - alpha) * overlay_img[builtup_expansion_mask] + alpha * np.array([239, 68, 68], dtype=np.float32)
+
+        overlay = np.clip(overlay_img, 0, 255).astype(np.uint8)
         overlay_b64 = numpy_to_base64(overlay)
 
         elapsed_ms = (time.perf_counter() - start_t) * 1000.0
@@ -119,17 +133,15 @@ class BiTemporalChangeTool(BaseSpecialistTool):
             f"{qa_prefix}Between the two dates, some land in this area changed ({change_category.lower()}). "
             f"The built-up area (buildings and roads) increased by about {builtup_exp_metrics['area_hectares']:.1f} hectares. "
             f"In total, about {area_ha:.1f} hectares ({cov_pct:.1f}% of the monitored area) shows visible change. "
-            f"The red highlighted areas on the map show exactly where these physical changes happened."
+            f"The color-coded map highlights exactly where changes happened: red for new buildings/roads, green for vegetation growth, and blue for water changes."
         )
 
         bullets = [
             f"Between the two acquisition dates, some land in this area changed ({change_category}).",
-            f"Built-up area (buildings, roads) increased by about {builtup_exp_metrics['area_hectares']:.1f} hectares.",
+            f"Built-up area (buildings, roads) increased by about {builtup_exp_metrics['area_hectares']:.1f} hectares (shown in red).",
             f"Total changed land area is about {area_ha:.1f} hectares (about {cov_pct:.1f}% of the monitored area).",
-            f"Red highlighted areas on the map mark the exact locations of these changes."
+            f"Color Legend: Red = New Built-up, Green = Vegetation Growth, Blue = Water Changes."
         ]
-        if veg_loss_metrics['area_hectares'] > 0.5:
-            bullets.append(f"Green land (vegetation) decreased by about {veg_loss_metrics['area_hectares']:.1f} hectares.")
 
         return ToolResult(
             tool_name=self.name,
@@ -140,18 +152,30 @@ class BiTemporalChangeTool(BaseSpecialistTool):
             confidence=conf,
             execution_time_ms=round(elapsed_ms, 2),
             parameters={
-                "threshold_l1": round(float(thresh), 2),
-                "delta_ndvi_mean": round(mean_delta_ndvi, 3),
+                "siamese_backbone": "resnet50_siamese_cd",
+                "delta_ndvi_mean": round(mean_delta_ndvi, 4),
                 "delta_brightness_mean": round(delta_bright, 2),
-                "builtup_expansion_ha": builtup_exp_metrics["area_hectares"],
-                "registration": "bi-temporal_coregistered"
+                "threshold_p82": round(float(thresh), 2),
+                "change_category": change_category,
+                "explainable_legend": {
+                    "red": "New Built-up / Paved Structures",
+                    "green": "Vegetation / Agriculture Growth",
+                    "blue": "Water Surface / Inundation Changes",
+                    "amber": "General Land Surface Shifts"
+                }
             },
             metric_summary={
-                "pixel_count": metrics["pixel_count"],
                 "area_hectares": area_ha,
-                "total_change_hectares": area_ha,
+                "coverage_pct": cov_pct,
+                "pixel_count": int(metrics["pixel_count"]),
                 "builtup_expansion_hectares": builtup_exp_metrics["area_hectares"],
-                "coverage_pct": cov_pct
+                "vegetation_loss_hectares": veg_loss_metrics["area_hectares"],
+                "water_change_hectares": water_metrics["area_hectares"],
+                "explainable_legend": {
+                    "red": "New Built-up",
+                    "green": "Vegetation Growth",
+                    "blue": "Water Bodies"
+                }
             },
             summary_bullet_points=bullets
         )

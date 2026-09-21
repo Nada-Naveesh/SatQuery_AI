@@ -58,6 +58,7 @@ class ExecutionTrace(BaseModel):
 class AnalysisResult(BaseModel):
     text_answer: str
     confidence_score: float
+    confidence_explanation: Optional[str] = None
     visual_evidence: Optional[VisualEvidence] = None
     summary_bullet_points: Optional[List[str]] = None
 
