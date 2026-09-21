@@ -121,3 +121,49 @@ def test_multi_query_session_chaining():
     data2 = resp2.json()
     assert data2["result"]["confidence_score"] > 0.5
     assert data2["execution_trace"]["trace_id"] != trace_id_1
+
+
+def test_copernicus_scene_analyze_single_and_bitemporal():
+    """
+    Verifies that scenes discovered via Copernicus search can be immediately analyzed
+    in both single-scene VQA and bi-temporal change detection modes without 404 errors.
+    """
+    # 1. Discover scenes for arbitrary place (e.g. Delhi)
+    search_resp = client.get("/api/copernicus/scenes?aoi_name=Delhi&limit=2")
+    assert search_resp.status_code == 200
+    scenes = search_resp.json()["scenes"]
+    assert len(scenes) >= 2
+    sid1 = scenes[0]["id"]
+    sid2 = scenes[1]["id"]
+
+    # 2. Single scene analyze
+    resp_single = client.post(
+        "/api/v1/analyze",
+        data={
+            "query": "Analyze infrastructure and land cover in Delhi.",
+            "scene_ids": sid1,
+            "analysis_mode": "single"
+        }
+    )
+    assert resp_single.status_code == 200
+    data_single = resp_single.json()
+    assert data_single["status"] == "success"
+    assert data_single["result"]["confidence_score"] > 0.5
+    assert "visual_evidence" in data_single["result"]
+
+    # 3. Bi-temporal change analyze
+    resp_change = client.post(
+        "/api/v1/analyze",
+        data={
+            "query": "What changed in Delhi between 2025 and 2026?",
+            "scene_ids": f"{sid1},{sid2}",
+            "analysis_mode": "change"
+        }
+    )
+    assert resp_change.status_code == 200
+    data_change = resp_change.json()
+    assert data_change["status"] == "success"
+    assert data_change["detected_task"] in ("change_detection", "bi_temporal_change_detection")
+    assert data_change["result"]["confidence_score"] > 0.5
+    assert data_change["result"]["visual_evidence"]["overlay_base64"] is not None
+

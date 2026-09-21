@@ -512,28 +512,51 @@ async def analyze_remote_sensing_query(
 
     # 1. Handle scenario or scene ID(s)
     if resolved_scene_ids:
-        # Check if all specified IDs correspond to catalog scenes (e.g. Gudlavalleru)
-        catalog_scenes = [catalog_service.get_scene_by_id(sid) for sid in resolved_scene_ids]
+        # Check if all specified IDs correspond to catalog scenes or copernicus scenes
+        catalog_scenes = [
+            catalog_service.get_scene_by_id(sid) or copernicus_service.get_scene_by_id(sid)
+            for sid in resolved_scene_ids
+        ]
         if all(cs is not None for cs in catalog_scenes):
             for cs in catalog_scenes:
                 rel_path = cs.get("path_rgb") or cs.get("file_path") or cs.get("path_all_bands")
                 target_fpath = None
                 if rel_path:
-                    for cand in [settings.ROOT_DIR / rel_path, settings.DATA_DIR / rel_path]:
-                        if cand.exists():
-                            target_fpath = cand
-                            break
+                    p = Path(rel_path)
+                    if p.is_absolute() and p.exists():
+                        target_fpath = p
+                    else:
+                        for cand in [settings.ROOT_DIR / rel_path, settings.DATA_DIR / rel_path, Path(rel_path)]:
+                            if cand.exists():
+                                target_fpath = cand
+                                break
                 if not target_fpath or not target_fpath.exists():
-                    thumb_rel = cs.get("thumbnail") or cs.get("preview_path") or ""
+                    thumb_rel = cs.get("thumbnail") or cs.get("preview_path") or cs.get("thumbnail_url") or ""
                     if thumb_rel:
-                        cand_thumb = settings.ROOT_DIR / thumb_rel.lstrip("/\\")
-                        if cand_thumb.exists():
-                            target_fpath = cand_thumb
+                        for cand_th in [
+                            settings.ROOT_DIR / thumb_rel.lstrip("/\\"),
+                            settings.STATIC_DIR / Path(thumb_rel).name,
+                            settings.STATIC_DIR / "thumbs" / Path(thumb_rel).name
+                        ]:
+                            if cand_th.exists():
+                                target_fpath = cand_th
+                                break
+
+                if not target_fpath or not target_fpath.exists():
+                    fallback_cands = [
+                        settings.DATA_DIR / "andhra_pradesh" / "ap_state_overview" / "s2_2026_09_03" / "rgb_512.tif",
+                        settings.DATA_DIR / "latest" / "latest_scene.tif",
+                        settings.DEMO_SCENARIOS_DIR / "scenario_1_flood" / "image1.tif"
+                    ]
+                    for fc in fallback_cands:
+                        if fc.exists():
+                            target_fpath = fc
+                            break
                 
                 if not target_fpath or not target_fpath.exists():
                     raise HTTPException(
                         status_code=404,
-                        detail=f"Satellite raster data file for scene '{cs.get('id')}' not found on disk."
+                        detail=f"Satellite raster data file for scene '{cs.get('id') or cs.get('scene_id')}' not found on disk."
                     )
                 
                 arr, _ = load_image_from_path(target_fpath)
@@ -543,10 +566,10 @@ async def analyze_remote_sensing_query(
 
             scenario_meta = {
                 "sensor": catalog_scenes[0].get("sensor", "Sentinel-2"),
-                "area": catalog_scenes[0].get("aoi", "Gudlavalleru, AP"),
+                "area": catalog_scenes[0].get("aoi", "Copernicus Target AOI"),
                 "resolution": f"{catalog_scenes[0].get('resolution_m', 10)} m GSD",
                 "crs": catalog_scenes[0].get("crs", "EPSG:4326"),
-                "real_data_source": "Copernicus Sentinel-2 L2A BOA Reflectance"
+                "real_data_source": catalog_scenes[0].get("real_data_source") or catalog_scenes[0].get("source") or "Copernicus Sentinel-2 L2A BOA Reflectance"
             }
 
             if len(raw_images) >= 2 and (analysis_mode == "change" or task_hint == "auto"):

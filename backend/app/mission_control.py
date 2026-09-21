@@ -360,6 +360,9 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
           </div>
         </div>
 
+        <!-- Notification Banner -->
+        <div id="toastNotice" class="hidden p-2 rounded-lg bg-void-950 border border-crimson-700/80 text-crimson-200 text-xs font-medium"></div>
+
         <!-- Suggestion Pills -->
         <div class="flex flex-wrap gap-1.5">
           <button onclick="setQuery('What changed between 2025 and 2026 in this area?')" class="text-[10px] bg-void-950 border border-crimson-900/80 hover:border-crimson-500 px-2.5 py-1 rounded text-crimson-300 transition">🔄 What changed here?</button>
@@ -962,6 +965,28 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       headerDiv.innerHTML = `<span>Found <b>${data.scenes.length}</b> Sentinel-2 scenes for <i>${data.aoi}</i>:</span><span class="text-[9px] text-crimson-400 font-mono font-bold">${data.provider}</span>`;
       container.appendChild(headerDiv);
 
+      // Bi-Temporal Comparison Card if at least 2 scenes
+      if (data.scenes.length >= 2) {
+        const s1 = data.scenes[0];
+        const s2 = data.scenes[1];
+        const compareDiv = document.createElement('div');
+        compareDiv.className = 'p-2.5 rounded-lg bg-crimson-950/80 border border-crimson-700/90 mb-2 space-y-1.5 shadow';
+        compareDiv.innerHTML = `
+          <div class="flex items-center justify-between text-[11px] text-slate-200">
+            <span class="font-semibold text-crimson-300 flex items-center space-x-1">
+              <i class="fa-solid fa-code-compare"></i>
+              <span>Bi-Temporal Pair Available</span>
+            </span>
+            <span class="text-[9px] font-mono bg-crimson-900 px-1.5 py-0.5 rounded text-white">${s1.date} vs ${s2.date}</span>
+          </div>
+          <button onclick="loadCopernicusPair('${s1.id}', '${s2.id}', '${s2.thumbnail_url || ''}', '${s1.thumbnail_url || ''}', '${data.aoi}', '${s1.date}', '${s2.date}')" class="w-full bg-crimson-600 hover:bg-crimson-500 text-white font-semibold text-xs py-1.5 px-3 rounded shadow transition flex items-center justify-center space-x-1.5">
+            <i class="fa-solid fa-layer-group text-[10px]"></i>
+            <span>Load Both Scenes for Change Detection</span>
+          </button>
+        `;
+        container.appendChild(compareDiv);
+      }
+
       data.scenes.forEach((sc, idx) => {
         const item = document.createElement('div');
         item.className = 'p-2 rounded-lg bg-void-950 border border-void-800 hover:border-crimson-700/80 transition flex items-center justify-between text-xs gap-2';
@@ -978,8 +1003,9 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
             </div>
           </div>
           <div class="flex items-center space-x-1 flex-shrink-0">
-            <button onclick="loadCopernicusScene('${sc.id}', '${sc.thumbnail_url || ''}', '${data.aoi}', '${sc.date}')" class="bg-crimson-950 hover:bg-crimson-900 border border-crimson-700 text-crimson-200 text-[10px] font-semibold px-2 py-1 rounded transition">
-              Load
+            <button onclick="loadCopernicusScene('${sc.id}', '${sc.thumbnail_url || ''}', '${data.aoi}', '${sc.date}')" class="bg-crimson-600 hover:bg-crimson-500 text-white text-[10px] font-semibold px-2.5 py-1 rounded transition shadow flex items-center space-x-1">
+              <i class="fa-solid fa-satellite text-[9px]"></i>
+              <span>Load Scene</span>
             </button>
           </div>
         `;
@@ -993,11 +1019,40 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       activeAnalysisMode = 'single';
       selectedFiles = [];
 
-      document.getElementById('viewerBaseImg').src = thumbUrl || '/static/thumbs/vja_s2_2026_09_02.jpg';
-      document.getElementById('sceneDataSource').innerText = `Copernicus Sentinel-2, ${date}, ${aoi}`;
+      const targetThumb = thumbUrl || '/static/thumbs/vja_s2_2026_09_02.jpg';
+      document.getElementById('viewerBaseImg').src = targetThumb;
+      document.getElementById('sceneDataSource').innerText = `Copernicus Sentinel-2 (${date}), ${aoi}`;
+      document.getElementById('sceneResolution').innerText = '10 m GSD';
       setQuery(`Analyze surface features, land use, and infrastructure in ${aoi}.`);
       resetViewerOverlays();
-      alert(`Loaded Sentinel-2 scene ${sceneId.split('_').slice(0,3).join('_')} for ${aoi} into the viewport!`);
+
+      const toast = document.getElementById('toastNotice');
+      if (toast) {
+        toast.innerHTML = `<span class="flex items-center space-x-1.5"><i class="fa-solid fa-circle-check text-emerald-400"></i><span>Loaded Sentinel-2 scene for <b>${aoi}</b> (${date}). Click <b>Analyze Satellite Images</b> below!</span></span>`;
+        toast.classList.remove('hidden');
+      }
+    }
+
+    function loadCopernicusPair(sid1, sid2, thumb2, thumb1, aoi, date1, date2) {
+      activeScenarioId = null;
+      activeSceneIds = `${sid1},${sid2}`;
+      activeAnalysisMode = 'change';
+      selectedFiles = [];
+
+      document.getElementById('viewerBaseImg').src = thumb2 || '/static/thumbs/vja_s2_2026_09_02.jpg';
+      if (thumb1) {
+        document.getElementById('viewerSplitImg').src = thumb1;
+      }
+      document.getElementById('sceneDataSource').innerText = `Copernicus Sentinel-2 (${date1} vs ${date2}), ${aoi}`;
+      document.getElementById('sceneResolution').innerText = '10 m GSD';
+      setQuery(`What infrastructure and environmental changes occurred in ${aoi} between ${date1} and ${date2}?`);
+      resetViewerOverlays();
+
+      const toast = document.getElementById('toastNotice');
+      if (toast) {
+        toast.innerHTML = `<span class="flex items-center space-x-1.5"><i class="fa-solid fa-code-compare text-crimson-400"></i><span>Loaded bi-temporal Sentinel-2 pair for <b>${aoi}</b> (${date1} vs ${date2}). Click <b>Analyze Satellite Images</b> below!</span></span>`;
+        toast.classList.remove('hidden');
+      }
     }
 
     function handleFileSelect(event) {
