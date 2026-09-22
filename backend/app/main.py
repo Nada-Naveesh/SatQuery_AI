@@ -5,7 +5,7 @@ import uuid
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query, BackgroundTasks, Response, Request
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -25,6 +25,10 @@ from backend.app.agent.registry import registry
 from backend.app.services.catalog_service import catalog_service
 from backend.app.services.trace_service import trace_service
 from backend.app.services.copernicus_service import copernicus_service
+from backend.app.services.location_service import location_service
+from backend.app.providers.copernicus_provider import copernicus_provider
+from backend.app.jobs.job_store import job_store
+from backend.app.jobs.analysis_jobs import run_analysis_job_sync
 from backend.app.mission_control import MISSION_CONTROL_HTML
 
 app = FastAPI(
@@ -229,15 +233,21 @@ def get_all_scenarios() -> List[DemoScenario]:
     return scenarios
 
 
+@app.get("/api/health")
 @app.get("/api/v1/health")
 def health_check():
+    cop_check = copernicus_provider.check_connection()
     return {
         "status": "online",
+        "router": "ready",
+        "copernicus": cop_check.get("status", "connected"),
+        "analysis_engine": "ready",
         "project": settings.PROJECT_NAME,
         "ps_id": settings.SIH_PS_ID,
         "organization": settings.ORGANIZATION,
         "device": settings.DEVICE,
         "registered_tools": registry.list_tools(),
+        "copernicus_details": cop_check,
         "real_data_scenarios_count": len(get_all_scenarios())
     }
 
@@ -301,10 +311,18 @@ def list_demo_packages():
 @app.get("/api/analysis/{trace_id}")
 @app.get("/api/v1/analysis/{trace_id}")
 def get_analysis_output(trace_id: str):
-    """Retrieves full persisted analysis output package for a given trace_id."""
+    """Retrieves full persisted analysis output package or live job status."""
+    # 1. Check job_store for asynchronous jobs
+    job = job_store.get_job(trace_id)
+    if job:
+        return job.model_dump()
+
+    # 2. Check in-memory session traces
     session = SESSION_TRACES.get(trace_id)
     if session:
         return session
+
+    # 3. Check persisted outputs on disk
     out_dir = settings.ROOT_DIR / "outputs" / trace_id
     if out_dir.exists() and (out_dir / "trace.json").exists():
         with open(out_dir / "trace.json", "r") as f:
@@ -319,7 +337,7 @@ def get_analysis_output(trace_id: str):
             "statistics": stats,
             "overlay_url": f"/outputs/{trace_id}/change_overlay.png" if (out_dir / "change_overlay.png").exists() else None
         }
-    raise HTTPException(status_code=404, detail=f"Analysis trace '{trace_id}' not found.")
+    raise HTTPException(status_code=404, detail=f"Analysis job or trace '{trace_id}' not found.")
 
 
 AOI_REGISTRY = {
@@ -414,6 +432,16 @@ AOI_REGISTRY = {
         "bbox": [12.60, 76.75, 19.15, 84.75]
     }
 }
+
+
+@app.get("/api/location/search")
+@app.get("/api/v1/location/search")
+def search_location_endpoint(q: str = Query(..., description="Place name or coordinate string to geocode")):
+    """
+    Geocodes arbitrary place names or coordinates into validated AOI boundaries
+    using OpenStreetMap Nominatim with caching and spatial safeguards.
+    """
+    return location_service.search_location(q)
 
 
 @app.get("/api/aoi/search")
@@ -514,7 +542,7 @@ def get_catalog_scene(scene_id: str):
 @app.get("/api/v1/copernicus/scenes")
 def search_copernicus_scenes(
     aoi_name: Optional[str] = Query("Gudlavalleru", description="Location name or place"),
-    bbox: Optional[str] = Query(None, description="Comma-separated bbox [min_lat, min_lon, max_lat, max_lon]"),
+    bbox: Optional[str] = Query(None, description="Comma-separated bbox [min_lat, min_lon, max_lat, max_lon] or [min_lon, min_lat, max_lon, max_lat]"),
     date_from: Optional[str] = Query(None, description="Start date YYYY-MM-DD"),
     date_to: Optional[str] = Query(None, description="End date YYYY-MM-DD"),
     max_cloud: float = Query(30.0, description="Max cloud cover percentage"),
@@ -527,11 +555,18 @@ def search_copernicus_scenes(
     parsed_bbox = None
     if bbox:
         try:
-            parsed_bbox = [float(x.strip()) for x in bbox.split(",")]
+            raw_parts = [float(x.strip()) for x in bbox.split(",") if x.strip()]
+            if len(raw_parts) == 4:
+                # If passed as [min_lon, min_lat, max_lon, max_lat] with lon > lat (e.g. India lon ~80, lat ~16)
+                if raw_parts[0] > raw_parts[1] and raw_parts[0] > 45.0:
+                    parsed_bbox = [raw_parts[1], raw_parts[0], raw_parts[3], raw_parts[2]]
+                else:
+                    parsed_bbox = raw_parts
         except Exception:
             parsed_bbox = None
+
     return copernicus_service.search_scenes(
-        aoi_name=aoi_name,
+        aoi_name=aoi_name or "Gudlavalleru",
         bbox=parsed_bbox,
         date_from=date_from,
         date_to=date_to,
@@ -885,6 +920,206 @@ def download_pdf_report(trace_id: str = Query(...)):
     evidence_bytes = None
     if session.get("evidence_overlay_b64"):
         import base64
+        b64_data = session["evidence_overlay_b64"].split(",")[-1]
+        evidence_bytes = base64.b64decode(b64_data)
+
+    generate_mission_pdf_report(
+        output_path=pdf_path,
+        query=session["query"],
+        detected_task=session["detected_task"],
+        analysis_result=session["analysis_result"],
+        execution_trace=session["execution_trace"],
+        input_summary=session["input_summary"],
+        base_image_bytes=base_bytes,
+        comparison_image_bytes=comp_bytes,
+        evidence_image_bytes=evidence_bytes
+    )
+
+    return FileResponse(
+        path=str(pdf_path),
+        media_type="application/pdf",
+        filename=pdf_filename
+    )
+
+
+@app.post("/api/analysis/start")
+async def start_analysis_job(
+    request: Request,
+    background_tasks: BackgroundTasks
+):
+    """
+    Initiates an asynchronous multi-stage satellite analysis job.
+    Accepts JSON body or multipart form data with uploaded images.
+    """
+    content_type = request.headers.get("content-type", "")
+    query = "Analyze land cover changes and measure differences in hectares"
+    location_name = "Target AOI"
+    scene_id_1 = None
+    scene_id_2 = None
+    resolution_m = 10.0
+    crs = "EPSG:4326"
+    raw_images = []
+    is_georef = True
+
+    if "application/json" in content_type:
+        body = await request.json()
+        query = body.get("query", query)
+        location_name = body.get("location_name") or body.get("location") or body.get("aoi") or "Target AOI"
+        scene_id_1 = body.get("scene_id_1") or body.get("t1_scene_id")
+        scene_id_2 = body.get("scene_id_2") or body.get("t2_scene_id")
+        resolution_m = float(body.get("resolution_m", 10.0))
+        crs = body.get("crs", "EPSG:4326")
+    elif "multipart/form-data" in content_type or "application/x-www-form-urlencoded" in content_type:
+        form = await request.form()
+        query = str(form.get("query", query))
+        loc_val = form.get("location_name") or form.get("location") or form.get("aoi")
+        if loc_val:
+            location_name = str(loc_val)
+        sid1 = form.get("scene_id_1") or form.get("t1_scene_id")
+        if sid1:
+            scene_id_1 = str(sid1)
+        sid2 = form.get("scene_id_2") or form.get("t2_scene_id")
+        if sid2:
+            scene_id_2 = str(sid2)
+        if form.get("resolution_m"):
+            try:
+                resolution_m = float(form.get("resolution_m"))
+            except Exception:
+                pass
+        if form.get("crs"):
+            crs = str(form.get("crs"))
+
+        uploaded_files = form.getlist("files")
+        if uploaded_files:
+            has_geo_meta = False
+            for upload in uploaded_files:
+                if hasattr(upload, "read") and hasattr(upload, "filename") and upload.filename:
+                    content = await upload.read()
+                    if content:
+                        img, meta = load_image_from_bytes(content, upload.filename)
+                        raw_images.append(img)
+                        if meta.get("crs") or meta.get("transform"):
+                            has_geo_meta = True
+                            if meta.get("crs"):
+                                crs = str(meta.get("crs"))
+            is_georef = has_geo_meta
+    else:
+        query = request.query_params.get("query", query)
+        loc_val = request.query_params.get("location_name") or request.query_params.get("location")
+        if loc_val:
+            location_name = loc_val
+
+    job = job_store.create_job(task_hint="change_detection")
+    job_id = job.job_id
+
+    if len(raw_images) >= 2:
+        background_tasks.add_task(
+            run_analysis_job_sync,
+            job_id=job_id,
+            query=query,
+            scene_id_1=None,
+            scene_id_2=None,
+            location_name=location_name or "Uploaded Imagery",
+            raw_images=raw_images,
+            is_georeferenced=is_georef,
+            resolution_m=resolution_m,
+            crs=crs
+        )
+    else:
+        background_tasks.add_task(
+            run_analysis_job_sync,
+            job_id=job_id,
+            query=query,
+            scene_id_1=scene_id_1,
+            scene_id_2=scene_id_2,
+            location_name=location_name or "Gudlavalleru",
+            raw_images=None,
+            is_georeferenced=True,
+            resolution_m=resolution_m,
+            crs=crs
+        )
+
+    return {
+        "job_id": job_id,
+        "status": "pending",
+        "stage": "validating_scenes",
+        "progress_pct": 5,
+        "message": "Analysis job queued. Satellite pipeline initializing...",
+        "status_url": f"/api/analysis/{job_id}",
+        "results_url": f"/api/analysis/{job_id}/results",
+        "overlay_url": f"/api/analysis/{job_id}/overlay",
+        "report_url": f"/api/analysis/{job_id}/report"
+    }
+
+
+@app.get("/api/analysis/{job_id}/results")
+def get_analysis_results_endpoint(job_id: str):
+    """Returns final structured results and physical area metrics for an analysis job."""
+    job = job_store.get_job(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail=f"Job '{job_id}' not found.")
+    if job.status == "failed":
+        return {"status": "failed", "error": job.error_message}
+    if job.status != "completed" or not job.result:
+        return {
+            "status": job.status,
+            "stage": job.stage,
+            "progress_pct": job.progress_pct,
+            "message": job.message
+        }
+    return job.result
+
+
+@app.get("/api/analysis/{job_id}/overlay")
+def get_analysis_overlay_endpoint(job_id: str):
+    """Streams the transparent visual evidence overlay PNG for a completed job."""
+    import base64
+    job = job_store.get_job(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail=f"Job '{job_id}' not found.")
+    if job.overlay_bytes:
+        return Response(content=job.overlay_bytes, media_type="image/png")
+    if job.result and "visual_evidence" in job.result:
+        b64 = job.result["visual_evidence"].get("rgba_base64") or job.result["visual_evidence"].get("overlay_base64")
+        if b64 and b64.startswith("data:image/png;base64,"):
+            data = base64.b64decode(b64.split(",", 1)[1])
+            return Response(content=data, media_type="image/png")
+    raise HTTPException(status_code=404, detail="Overlay not yet ready or job not completed.")
+
+
+@app.get("/api/analysis/{job_id}/report")
+def get_analysis_report_endpoint(job_id: str):
+    """Generates and serves the authentic PDF mission intelligence report for a completed job."""
+    import base64
+    job = job_store.get_job(job_id)
+    trace_id = job.result.get("trace_id", job_id) if (job and job.result) else job_id
+
+    session = SESSION_TRACES.get(trace_id) or SESSION_TRACES.get(job_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"No execution record found for job '{job_id}'.")
+
+    pdf_filename = f"SatQuery_MissionReport_{trace_id}.pdf"
+    pdf_path = settings.REPORTS_DIR / pdf_filename
+
+    if pdf_path.exists():
+        return FileResponse(path=str(pdf_path), media_type="application/pdf", filename=pdf_filename)
+
+    base_bytes = None
+    if session.get("base_image") is not None:
+        buf = io.BytesIO()
+        from PIL import Image
+        Image.fromarray(session["base_image"]).save(buf, format="PNG")
+        base_bytes = buf.getvalue()
+
+    comp_bytes = None
+    if session.get("comparison_image") is not None:
+        buf = io.BytesIO()
+        from PIL import Image
+        Image.fromarray(session["comparison_image"]).save(buf, format="PNG")
+        comp_bytes = buf.getvalue()
+
+    evidence_bytes = None
+    if session.get("evidence_overlay_b64"):
         b64_data = session["evidence_overlay_b64"].split(",")[-1]
         evidence_bytes = base64.b64decode(b64_data)
 

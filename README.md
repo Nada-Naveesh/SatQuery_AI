@@ -9,7 +9,7 @@
 
 > **"A dominance-grade, autonomous vision-language operations assistant transforming multi-sensor satellite imagery (Sentinel-2, Cartosat, Sentinel-1 SAR) into evidence-grounded, natural-language insights with cryptographically auditable decision traces — engineered for ISRO, SAC, disaster response commanders, and urban planners."**
 
-📘 **Quick Links:** [Copernicus CDSE Integration](docs/copernicus_integration.md) | [System Architecture](docs/architecture.md) | [SIH 2026 Alignment Matrix](docs/sih_alignment.md) | [Operator Manual & Judge Demo](docs/OPERATOR_MANUAL.md) | [Where to Get Free Satellite Data](docs/how_to_get_data.md) | [Benchmark Results](docs/benchmark_results.md)
+📘 **Quick Links:** [Live Place Analysis](docs/live_location_analysis.md) | [Upload Workflow](docs/upload_workflow.md) | [Area Calculation Engine](docs/area_calculation.md) | [Copernicus CDSE Integration](docs/copernicus_integration.md) | [System Architecture](docs/architecture.md) | [SIH 2026 Alignment Matrix](docs/sih_alignment.md) | [Operator Manual & Judge Demo](docs/OPERATOR_MANUAL.md)
 
 ---
 
@@ -39,61 +39,54 @@ Open your browser at:
 ## 2. Key Dominance-Grade Capabilities (SIH 2026 PS 26167)
 
 1. **Defense-Grade Black & Red UI Theme**:
-   - Deep void black (`#070709`) and crimson red (`#ef4444`) operations dashboard.
-   - Interactive split-slider comparison, opacity blending, and real-time zoom.
+   - Deep obsidian black (`#07080b`) and primary crimson (`#ef2b32`) operations command dashboard.
+   - Fixed CSS `clip-path` split-comparison slider eliminating image distortion or aspect-ratio compression.
 2. **Copernicus Data Space Ecosystem (CDSE) Ingestion**:
    - Automated dynamic discovery of Sentinel-2 L2A BOA reflectance tiles via `GET /api/copernicus/scenes`.
-   - Geocodes arbitrary places in Andhra Pradesh, India, or worldwide with deterministic offline catalog fallback.
-3. **Calibrated Confidence Engine**:
-   - Every response provides both a normalized numerical score ($\ge 0.85$) and plain English reasoning (`result.confidence_explanation`) detailing spectral quality, sensor ground resolution, and model alignment.
-4. **Explainable Semantic Multi-Color Overlays**:
-   - High-contrast 4-color change delineation with interactive on-map legend:
-     - 🔴 **Red (`#ef4444`)**: Built-up infrastructure & new constructions.
-     - 🟢 **Green (`#22c55e`)**: Crop emergence, agriculture & vegetation.
-     - 🔵 **Blue (`#3b82f6`)**: Water body expansion & flood inundation.
-     - 🟡 **Amber (`#f59e0b`)**: General surface spectral variance.
-5. **Multi-Query Conversational Sessions**:
-   - Session tracking via `session_trace_id` enables subsequent questions on the active scene without re-uploading raster tensors.
-6. **Auditable Cryptographic Traces**:
-   - Every tool execution produces a SHA-256 hashed trace accessible via `GET /api/traces/{trace_id}`.
+   - Geocodes arbitrary places in Andhra Pradesh, India, or worldwide with OpenStreetMap Nominatim.
+3. **Certified Physical Area Statistics Engine (0.0 ha Prevention)**:
+   - Derives real ground-truth surface areas in hectares using raster affine transform matrices and geodesic ellipsoidal math.
+   - Displays real computed hectares only after analysis execution; honestly flags non-georeferenced imagery without false defaults.
+4. **Asynchronous Remote Sensing Pipeline with Live Telemetry**:
+   - Multi-stage background execution (`validating_scenes` $\to$ `retrieving_bands` $\to$ `aligning_images` $\to$ `masking_clouds` $\to$ `calculating_indices` $\to$ `detecting_changes` $\to$ `calculating_areas` $\to$ `rendering_overlay`).
+5. **Calibrated Confidence Engine**:
+   - Dynamic quality formula ($0.25 Q_{\text{valid}} + 0.20 Q_{\text{cloud}} + 0.20 Q_{\text{overlap}} + 0.20 Q_{\text{reg}} + 0.15 Q_{\text{signal}}$).
+6. **Explainable Semantic Multi-Color Overlays**:
+   - High-contrast 5-class delineation with on-map legend revealed only upon overlay generation:
+     - 🔴 **Red (`#ef4444`)**: New built-up & impervious surfaces.
+     - 🟢 **Green (`#22c55e`)**: Crop emergence & vegetation canopy increase.
+     - 🟡 **Yellow (`#eab308`)**: Vegetation clearing & disturbance.
+     - 🔵 **Cyan (`#06b6d4`)**: Water surface expansion & flood inundation.
+     - 🟣 **Purple (`#a855f7`)**: Water recession & dry-up.
 7. **One-Click Official Mission PDF Report**:
    - Generates multi-page intelligence briefings via ReportLab with 3-image visual comparison tables, executive summaries, and tamper-evident audit IDs.
 
 ---
 
-## 3. Preloaded Demonstration Scenarios
-
-SatQuery AI includes 3 preloaded 1-click scenarios designed for instant evaluation:
-
-| Scenario | Location & Sensor | Suggested Query | Key Output |
-| :--- | :--- | :--- | :--- |
-| **1. Urban Infrastructure Sprawl** | Gudlavalleru & Vijayawada (Sentinel-2 L2A, 10m GSD, 2025 vs 2026) | *"What infrastructure changes occurred between 2025 and 2026?"* | Delineates built-up expansion in red, agricultural clearance in green, with hectare calculations. |
-| **2. Coastal Port & Breakwater Extension** | Visakhapatnam Deepwater Port (Sentinel-2 L2A, 10m GSD, 2025 vs 2026) | *"Inspect coastal construction and breakwater infrastructure development."* | Identifies maritime marine breakwater extensions and paved cargo storage zones. |
-| **3. Flood Inundation & Agrarian Recovery** | Godavari River Basin, AP (Sentinel-2 L2A + Sentinel-1 SAR) | *"Identify waterlogged agricultural parcels and flood extents."* | Multi-spectral water index ($\text{NDWI} \ge 0.15$) and SAR dielectric attenuation ($\le -21\text{ dB}$). |
-
----
-
-## 4. System Architecture
+## 3. System Architecture
 
 ```
 +---------------------------------------------------------------------------------------+
 |                    Dominance-Grade Mission Control Dashboard                          |
-|  - Black Void (#070709) & Crimson Red (#ef4444) Defense Intelligence UI              |
-|  - 3 Operating Modes: 1-Click Scenarios | Copernicus CDSE Discovery | Custom Upload    |
-|  - Multi-panel viewer: RGB Base, Comparison, Explainable Semantic Overlay, Swipe      |
-|  - On-map interactive legend (Red: Built-up, Green: Vegetation, Blue: Water)          |
-|  - Multi-query session thread with session_trace_id persistence                       |
-|  - Auditable cryptographic DAG execution trace modal + PDF Report Download            |
+|  - Black Obsidian (#07080b) & Crimson Red (#ef2b32) Defense Intelligence UI          |
+|  - 2 Workflows: Explore a Live Location (Nominatim + CDSE) | Upload Imagery Pair      |
+|  - Fixed CSS Clip-Path Split Slider, Evidence Overlay with Opacity, Side-by-Side      |
+|  - Real physical hectare stats card revealed only upon analysis completion            |
+|  - Asynchronous pipeline telemetry modal with real-time stage progress updates        |
+|  - Official Mission PDF Report Generator                                              |
 +------------------------------------------+--------------------------------------------+
                                            | HTTP / REST (Multipart / Form-Data / JSON)
                                            v
 +---------------------------------------------------------------------------------------+
 |                              FastAPI Gateway Server                                   |
-|  - Route: GET  /                       (Zero-setup self-contained Mission Control UI) |
-|  - Route: POST /api/v1/analyze         (Agentic query endpoint + multi-query caching) |
-|  - Route: GET  /api/copernicus/scenes  (Live Copernicus CDSE discovery + fallback)    |
-|  - Route: GET  /api/traces/{trace_id}  (Auditable execution traces)                   |
-|  - Route: GET  /api/v1/report/pdf      (Official PDF Mission Report Generator)        |
+|  - Route: GET  /                          (Self-contained Mission Control UI)         |
+|  - Route: GET  /api/location/search       (Nominatim geocoding & spatial bounding box)|
+|  - Route: GET  /api/copernicus/scenes     (Live Copernicus CDSE discovery + fallback) |
+|  - Route: POST /api/analysis/start        (Asynchronous pipeline job initiator)       |
+|  - Route: GET  /api/analysis/{job_id}     (Real-time pipeline stage telemetry)        |
+|  - Route: GET  /api/analysis/{job}/results(Physical area breakdown in hectares)       |
+|  - Route: GET  /api/analysis/{job}/overlay(Classified 4-channel transparent PNG)      |
+|  - Route: GET  /api/analysis/{job}/report (Official PDF Mission Report Generator)     |
 +------------------------------------------+--------------------------------------------+
                                            | Parsed In-Memory Arrays & Georeferencing
                                            v

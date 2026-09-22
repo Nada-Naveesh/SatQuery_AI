@@ -20,6 +20,9 @@ from backend.app.processing.change_detection import (
 )
 from backend.app.processing.overlay_renderer import render_evidence_overlay, RenderResult, COLOR_PALETTE
 from backend.app.processing.statistics import compute_change_statistics, ChangeStatistics
+from backend.app.processing.area_stats import calculate_physical_area_statistics, AreaMetricResult, compute_pixel_area_hectares
+from backend.app.processing.quality_score import calculate_quality_score, QualityAssessmentResult
+from backend.app.processing.validation import validate_analysis_input
 
 __all__ = [
     "load_raster_scene",
@@ -45,4 +48,10 @@ __all__ = [
     "COLOR_PALETTE",
     "compute_change_statistics",
     "ChangeStatistics",
+    "calculate_physical_area_statistics",
+    "AreaMetricResult",
+    "compute_pixel_area_hectares",
+    "calculate_quality_score",
+    "QualityAssessmentResult",
+    "validate_analysis_input"
 ]
