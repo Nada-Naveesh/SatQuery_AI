@@ -155,10 +155,6 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
           <span class="text-slate-600">|</span>
           <span class="text-cyan-400 font-mono">BigEarthNet Adapted</span>
         </div>
-        <button onclick="toggleHowToUseGuide()" class="inline-flex items-center space-x-1.5 bg-crimson-950/80 hover:bg-crimson-900 text-crimson-200 hover:text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-crimson-700/80 transition shadow-sm">
-          <i class="fa-solid fa-compass text-crimson-400"></i>
-          <span class="hidden sm:inline">How to Use</span>
-        </button>
         <button onclick="openDataModal()" class="inline-flex items-center space-x-1.5 bg-void-850 hover:bg-void-800 text-slate-300 hover:text-white text-xs font-medium px-2.5 py-1.5 rounded-lg border border-void-700 hover:border-crimson-600 transition shadow-sm">
           <i class="fa-solid fa-circle-question text-crimson-400"></i>
           <span class="hidden sm:inline">Free Data</span>
@@ -175,8 +171,8 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
     </div>
   </header>
 
-  <!-- Top "How to Use SatQuery AI" Guide Ribbon -->
-  <section id="howToUseGuide" class="bg-gradient-to-r from-void-900 via-void-850 to-void-900 border-b border-crimson-900/60 transition-all duration-300">
+  <!-- Top "How to Use SatQuery AI" Guide Ribbon (Hidden from display) -->
+  <section id="howToUseGuide" class="hidden bg-gradient-to-r from-void-900 via-void-850 to-void-900 border-b border-crimson-900/60 transition-all duration-300">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
       <div class="flex items-center justify-between mb-2">
         <div class="flex items-center space-x-2">
@@ -227,7 +223,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
             <span class="font-bold text-slate-200">Detect &amp; Quantify &mdash; Evidence &amp; Trace</span>
           </div>
           <p class="text-[11px] text-slate-400 leading-snug">
-            Inspect split slider comparison, 40% semi-transparent evidence overlays, physical hectare breakdown, and export official mission PDF dossier.
+            Inspect split slider comparison, semi-transparent evidence overlays, physical hectare breakdown, and export official mission PDF dossier.
           </p>
         </div>
       </div>
@@ -394,37 +390,11 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
 
           <div class="space-y-2">
             <div class="flex gap-1.5">
-              <input type="text" id="copernicusPlaceInput" value="river corridor near Rasuwa / Bhote Koshi" placeholder="Search ANY location or coordinates worldwide (e.g. Rasuwa, Bhote Koshi, Kathmandu, Vijayawada, 28.1° N, 85.3° E)..." class="flex-1 bg-void-950 border border-void-700 rounded px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-crimson-500" onkeydown="if(event.key==='Enter') executeCopernicusSearch()">
+              <input type="text" id="copernicusPlaceInput" value="" placeholder="Search ANY location or coordinates worldwide (e.g. Vijayawada, Amaravati, Visakhapatnam, Tirupati, Kurnool, Avanigadda, Rasuwa, Bhote Koshi, 16.48° N, 80.74° E)..." class="flex-1 bg-void-950 border border-void-700 rounded px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-crimson-500" onkeydown="if(event.key==='Enter') executeCopernicusSearch()">
               <button onclick="executeCopernicusSearch()" id="btnCopernicusSearch" class="bg-crimson-600 hover:bg-crimson-500 text-white text-xs px-4 py-2 rounded font-semibold transition flex items-center space-x-1.5 shadow">
                 <i class="fa-solid fa-magnifying-glass text-[10px]"></i>
-                <span>Fetch</span>
+                <span>Fetch Real Satellite Data</span>
               </button>
-            </div>
-
-            <!-- Quick Regional Presets -->
-            <div class="flex flex-wrap gap-1 items-center pt-0.5 text-[10px] text-slate-400">
-              <span class="font-medium text-slate-400">Quick AOI Jump:</span>
-              <button onclick="quickJumpCity('Vijayawada')" class="px-2 py-0.5 rounded bg-void-950 border border-void-700 hover:border-crimson-500 text-slate-300">Vijayawada</button>
-              <button onclick="quickJumpCity('Amaravati')" class="px-2 py-0.5 rounded bg-void-950 border border-void-700 hover:border-crimson-500 text-slate-300">Amaravati</button>
-              <button onclick="quickJumpCity('Visakhapatnam')" class="px-2 py-0.5 rounded bg-void-950 border border-void-700 hover:border-crimson-500 text-slate-300">Visakhapatnam</button>
-              <button onclick="quickJumpCity('Tirupati')" class="px-2 py-0.5 rounded bg-void-950 border border-void-700 hover:border-crimson-500 text-slate-300">Tirupati</button>
-              <button onclick="quickJumpCity('Kurnool')" class="px-2 py-0.5 rounded bg-void-950 border border-void-700 hover:border-crimson-500 text-slate-300">Kurnool</button>
-              <button onclick="quickJumpCity('Avanigadda')" class="px-2 py-0.5 rounded bg-void-950 border border-void-700 hover:border-crimson-500 text-slate-300">Avanigadda</button>
-            </div>
-
-            <!-- Nepal Flood Case Study Callout -->
-            <div class="p-2.5 rounded-lg bg-cyan-950/30 border border-cyan-800/60 text-xs space-y-1">
-              <div class="flex items-center justify-between text-cyan-300 font-semibold text-[11px]">
-                <span><i class="fa-solid fa-cloud-showers-heavy text-cyan-400 mr-1"></i> Nepal Flood Case Study (Rasuwa / Bhote Koshi)</span>
-                <span class="text-[9px] bg-cyan-900/60 px-1.5 py-0.5 rounded font-mono">Optical + SAR</span>
-              </div>
-              <p class="text-[11px] text-slate-300 leading-snug">
-                When dense monsoon cloud cover occludes optical Sentinel-2, SatQuery engages Sentinel-1 C-band SAR to penetrate clouds and map water inundation.
-              </p>
-              <div class="flex gap-2 pt-1">
-                <button onclick="loadNepalFloodAOI(false)" class="text-[10px] bg-void-950 border border-cyan-700 hover:border-cyan-400 text-cyan-200 px-2 py-1 rounded transition">Clear Optical S2</button>
-                <button onclick="loadNepalFloodAOI(true)" class="text-[10px] bg-cyan-900/80 hover:bg-cyan-800 text-white font-semibold px-2 py-1 rounded transition">Cloud-Penetrating S1 SAR</button>
-              </div>
             </div>
 
             <div class="flex items-center justify-between text-[11px] text-slate-400 px-1 pt-1">
@@ -628,7 +598,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
 
             <div class="flex items-center space-x-1.5 pl-2 border-l border-void-700">
               <span class="text-slate-400 text-[10px]">Opacity:</span>
-              <input type="range" id="overlayOpacitySlider" min="10" max="90" value="40" class="w-16 accent-crimson-500 cursor-pointer" oninput="updateOverlayOpacity(this.value)">
+              <input type="range" id="overlayOpacitySlider" min="10" max="100" value="40" class="w-16 accent-crimson-500 cursor-pointer" oninput="updateOverlayOpacity(this.value)">
               <span id="overlayOpacityVal" class="text-crimson-400 font-mono text-[10px] font-bold">40%</span>
             </div>
 
@@ -653,8 +623,8 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
             <!-- 2. Optional Reference Basemap (Esri World Imagery) -->
             <img id="viewerBasemapImg" src="" alt="Reference basemap — not the image used for analysis." class="absolute inset-0 w-full h-full object-contain hidden pointer-events-none">
 
-            <!-- 3. Semi-Transparent Evidence Overlay (Default 40% subtle opacity) -->
-            <img id="viewerOverlayImg" src="" alt="Evidence Overlay" class="absolute inset-0 w-full h-full object-contain opacity-40 transition-opacity z-10 hidden pointer-events-none" style="opacity: 0.40;">
+            <!-- 3. Semi-Transparent Evidence Overlay (Default 85% vivid color visibility) -->
+            <img id="viewerOverlayImg" src="" alt="Evidence Overlay" class="absolute inset-0 w-full h-full object-contain transition-opacity z-10 hidden pointer-events-none" style="opacity: 0.85;">
 
             <!-- Split Screen Slider Container -->
             <div id="splitContainer" class="absolute inset-0 hidden z-15 pointer-events-none">
@@ -823,37 +793,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         </div>
       </div>
 
-      <!-- Auditable Execution Trace Accordion -->
-      <div class="bg-void-900 border border-void-800 rounded-xl p-4 shadow-sm">
-        <button onclick="toggleTraceAccordion()" class="w-full flex items-center justify-between text-left">
-          <div class="flex items-center space-x-2">
-            <i class="fa-solid fa-microchip text-crimson-400 text-xs"></i>
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Auditable Execution Trace</span>
-            <span id="traceIdBadge" class="text-[10px] text-slate-400 font-mono bg-void-950 px-2 py-0.5 rounded border border-void-700">Trace: Initializing</span>
-          </div>
-          <i id="traceChevron" class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform duration-200"></i>
-        </button>
-        <div id="traceContent" class="hidden mt-3 pt-3 border-t border-void-800 space-y-2.5 text-xs text-slate-300 font-mono">
-          <div class="flex justify-between items-center text-[11px]">
-            <span class="text-slate-400">Router Decision:</span>
-            <span id="traceRouterReasoning" class="text-emerald-400 font-semibold">Change Detection Specialist</span>
-          </div>
-          <div class="flex justify-between items-center text-[11px]">
-            <span class="text-slate-400">Pipeline Latency:</span>
-            <span id="traceLatency" class="text-slate-200">-- ms</span>
-          </div>
-          <div class="flex justify-between items-center text-[11px]">
-            <span class="text-slate-400">Provenance:</span>
-            <span id="traceDataSource" class="text-slate-200">Copernicus Sentinel-2 Level-2A (ESA / CDSE)</span>
-          </div>
-          <div class="pt-1">
-            <span class="text-[10px] text-slate-500 block mb-1 uppercase font-sans font-semibold">Specialist Tools Executed</span>
-            <div id="traceToolsList" class="space-y-1">
-              <div class="p-2 rounded bg-void-950 border border-void-800 text-[11px] text-slate-400">Tools will appear here after analysis.</div>
-            </div>
-          </div>
-        </div>
-      </div>
+
 
     </div>
 
@@ -1851,33 +1791,91 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
 
       // 5. Physical Hectares
       const metrics = (data.result.visual_evidence && data.result.visual_evidence.metric_summary) || {};
-      const totChanged = metrics.total_changed_ha || metrics.changed_hectares || metrics.builtup_ha || 0.0;
-      const builtup = metrics.new_builtup_ha || metrics.builtup_hectares || 0.0;
-      const vegLoss = metrics.veg_loss_ha || metrics.veg_loss_hectares || 0.0;
-      const waterInc = metrics.water_increase_ha || metrics.water_hectares || 0.0;
+      const fullText = (data.result.text_answer || '') + ' ' + ((data.result.summary_bullet_points || []).join(' '));
 
-      document.getElementById('statTotalChanged').innerText = totChanged.toFixed(1) + ' ha';
-      document.getElementById('statBuiltup').innerText = builtup.toFixed(1) + ' ha';
-      document.getElementById('statVegLoss').innerText = vegLoss.toFixed(1) + ' ha';
-      document.getElementById('statWaterInc').innerText = waterInc.toFixed(1) + ' ha';
+      // Extract metrics with all key aliases
+      let totChanged = metrics.total_changed_ha ?? metrics.area_hectares ?? metrics.changed_hectares ?? metrics.affected_area_hectares ?? null;
+      let builtup = metrics.new_builtup_ha ?? metrics.builtup_expansion_hectares ?? metrics.builtup_hectares ?? metrics.builtup_ha ?? null;
+      let vegLoss = metrics.veg_loss_ha ?? metrics.vegetation_loss_hectares ?? metrics.veg_loss_hectares ?? null;
+      let waterInc = metrics.water_increase_ha ?? metrics.water_increase_hectares ?? metrics.water_hectares ?? metrics.water_inundation_ha ?? null;
+      let changedPct = metrics.coverage_pct ?? metrics.changed_pct ?? metrics.changed_percentage ?? null;
 
-      // 6. Trace details
+      // Robust regex fallbacks from text_answer and summary bullets if missing or 0
+      if ((totChanged === null || totChanged === 0) && fullText) {
+        const m = fullText.match(/(?:total (?:surface )?area changed|altered|affected|experienced visible surface alterations|overall)[^\d]*([\d,.]+)\s*(?:ha|hectares)/i) ||
+                  fullText.match(/([\d,.]+)\s*hectares/i);
+        if (m) totChanged = parseFloat(m[1].replace(/,/g, ''));
+      }
+      if ((builtup === null || builtup === 0) && fullText) {
+        const m = fullText.match(/(?:built-?up|paved|infrastructure)[^\d]*([\d,.]+)\s*ha/i);
+        if (m) builtup = parseFloat(m[1].replace(/,/g, ''));
+      }
+      if ((vegLoss === null || vegLoss === 0) && fullText) {
+        const m = fullText.match(/(?:vegetation (?:canopy )?loss|clearing)[^\d]*([\d,.]+)\s*ha/i);
+        if (m) vegLoss = parseFloat(m[1].replace(/,/g, ''));
+      }
+      if ((waterInc === null || waterInc === 0) && fullText) {
+        const m = fullText.match(/(?:water (?:surface )?expansion|water-covered area|flood(?:ed|ing)?)[^\d]*([\d,.]+)\s*(?:ha|hectares)/i);
+        if (m) waterInc = parseFloat(m[1].replace(/,/g, ''));
+      }
+      if ((changedPct === null || changedPct === 0) && fullText) {
+        const m = fullText.match(/\(([\d,.]+)%\s*of\s*(?:monitored\s*)?AOI\)/i) ||
+                  fullText.match(/([\d,.]+)%\s*(?:of the valid land area|coverage)/i);
+        if (m) changedPct = parseFloat(m[1]);
+      }
+
+      totChanged = totChanged || 0.0;
+      builtup = builtup || 0.0;
+      vegLoss = vegLoss || 0.0;
+      waterInc = waterInc || 0.0;
+
+      const elTot = document.getElementById('statTotalChanged');
+      if (elTot) elTot.innerText = totChanged.toFixed(1) + ' ha';
+
+      const elPct = document.getElementById('statChangedPct');
+      if (elPct) {
+        if (changedPct !== null && changedPct !== undefined && changedPct > 0) {
+          elPct.innerText = changedPct.toFixed(1) + '% of AOI';
+        } else if (totChanged > 0) {
+          const aoiHa = metrics.total_area_hectares || 2621.4;
+          elPct.innerText = ((totChanged / aoiHa) * 100).toFixed(1) + '% of AOI';
+        } else {
+          elPct.innerText = '0.0% of AOI';
+        }
+      }
+
+      const elBuilt = document.getElementById('statBuiltup');
+      if (elBuilt) elBuilt.innerText = builtup.toFixed(1) + ' ha';
+
+      const elVeg = document.getElementById('statVegLoss');
+      if (elVeg) elVeg.innerText = vegLoss.toFixed(1) + ' ha';
+
+      const elWater = document.getElementById('statWaterInc');
+      if (elWater) elWater.innerText = waterInc.toFixed(1) + ' ha';
+
+      // 6. Trace details (safely guarded)
       const trace = data.execution_trace;
-      document.getElementById('traceIdBadge').innerText = 'Trace: ' + trace.trace_id;
-      document.getElementById('traceRouterReasoning').innerText = trace.router_reasoning;
-      document.getElementById('traceLatency').innerText = trace.total_execution_time_ms + ' ms';
-      document.getElementById('traceDataSource').innerText = trace.data_source_label;
+      const elTraceId = document.getElementById('traceIdBadge');
+      if (elTraceId && trace) elTraceId.innerText = 'Trace: ' + trace.trace_id;
+      const elRouter = document.getElementById('traceRouterReasoning');
+      if (elRouter && trace) elRouter.innerText = trace.router_reasoning;
+      const elLat = document.getElementById('traceLatency');
+      if (elLat && trace) elLat.innerText = trace.total_execution_time_ms + ' ms';
+      const elSrc = document.getElementById('traceDataSource');
+      if (elSrc && trace) elSrc.innerText = trace.data_source_label;
 
       const toolsList = document.getElementById('traceToolsList');
-      toolsList.innerHTML = trace.tools_executed.map(t => `
-        <div class="p-2 rounded bg-void-950 border border-void-800 text-[11px] flex justify-between items-center">
-          <div>
-            <b class="text-white">${t.tool_name}</b>
-            <span class="text-slate-500 block text-[10px]">${t.model_checkpoint}</span>
+      if (toolsList && trace && trace.tools_executed) {
+        toolsList.innerHTML = trace.tools_executed.map(t => `
+          <div class="p-2 rounded bg-void-950 border border-void-800 text-[11px] flex justify-between items-center">
+            <div>
+              <b class="text-white">${t.tool_name}</b>
+              <span class="text-slate-500 block text-[10px]">${t.model_checkpoint}</span>
+            </div>
+            <span class="text-emerald-400 font-mono text-[10px]">${t.execution_time_ms} ms</span>
           </div>
-          <span class="text-emerald-400 font-mono text-[10px]">${t.execution_time_ms} ms</span>
-        </div>
-      `).join('');
+        `).join('');
+      }
 
       // Enable PDF download
       document.getElementById('headerDownloadBtn').disabled = false;
@@ -1908,28 +1906,20 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
     function toggleTraceAccordion() {
       const content = document.getElementById('traceContent');
       const chevron = document.getElementById('traceChevron');
+      if (!content) return;
       if (content.classList.contains('hidden')) {
         content.classList.remove('hidden');
-        chevron.classList.add('rotate-180');
+        if (chevron) chevron.classList.add('rotate-180');
       } else {
         content.classList.add('hidden');
-        chevron.classList.remove('rotate-180');
+        if (chevron) chevron.classList.remove('rotate-180');
       }
     }
 
     function toggleHowToUseGuide() {
-      const grid = document.getElementById('guideStepsGrid');
-      const icon = document.getElementById('guideToggleIcon');
-      const txt = document.getElementById('guideToggleText');
-      if (!grid) return;
-      if (grid.classList.contains('hidden')) {
-        grid.classList.remove('hidden');
-        if (icon) icon.className = 'fa-solid fa-chevron-up text-[10px]';
-        if (txt) txt.innerText = 'Collapse Guide';
-      } else {
-        grid.classList.add('hidden');
-        if (icon) icon.className = 'fa-solid fa-chevron-down text-[10px]';
-        if (txt) txt.innerText = 'Expand Guide';
+      const guide = document.getElementById('howToUseGuide');
+      if (guide) {
+        guide.classList.toggle('hidden');
       }
     }
 
