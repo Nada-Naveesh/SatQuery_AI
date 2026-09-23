@@ -17,7 +17,7 @@ class RSVqaTool(BaseSpecialistTool):
     """
     @property
     def name(self) -> str:
-        return "RS_VQA_Specialist_v1"
+        return "remote_sensing_vqa_tool"
 
     @property
     def task_type(self) -> str:
@@ -142,8 +142,26 @@ class RSVqaTool(BaseSpecialistTool):
             overlay_type = "segmentation_mask"
             metrics = {"veg_pct": veg_cov, "urban_pct": urb_cov, "water_pct": water_cov}
 
+        # Domain adaptation prediction via BigEarthNet adapter
+        adapter_res = {}
+        try:
+            from backend.app.models.adaptation.adapter import get_adapted_model
+            adapter = get_adapted_model()
+            adapter_res = adapter.predict_land_cover(img)
+        except Exception:
+            pass
+
         overlay_b64 = numpy_to_base64(overlay)
         elapsed_ms = (time.perf_counter() - start_t) * 1000.0
+
+        tool_params = {
+            "mean_ndvi_proxy": round(mean_ndvi, 3),
+            "mean_ndwi_proxy": round(mean_ndwi, 3),
+            "temperature_calibration": 1.2,
+            "spectral_bands_evaluated": ["Red", "Green", "Blue", "NIR_proxy"]
+        }
+        if adapter_res.get("top_classes"):
+            tool_params["bigearthnet_adapted_classes"] = adapter_res["top_classes"]
 
         return ToolResult(
             tool_name=self.name,
@@ -153,12 +171,7 @@ class RSVqaTool(BaseSpecialistTool):
             visual_overlay_type=overlay_type,
             confidence=round(conf, 3),
             execution_time_ms=round(elapsed_ms, 2),
-            parameters={
-                "mean_ndvi_proxy": round(mean_ndvi, 3),
-                "mean_ndwi_proxy": round(mean_ndwi, 3),
-                "temperature_calibration": 1.2,
-                "spectral_bands_evaluated": ["Red", "Green", "Blue", "NIR_proxy"]
-            },
+            parameters=tool_params,
             metric_summary=metrics,
             summary_bullet_points=bullets
         )

@@ -68,5 +68,8 @@ desktop.ini
 outputs/*
 !outputs/.gitkeep
 
+# Copernicus live API cache
+data/copernicus_cache/
+
 # Scratch directory
 scratch/

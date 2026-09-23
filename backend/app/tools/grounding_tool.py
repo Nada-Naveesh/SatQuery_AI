@@ -19,7 +19,7 @@ class TextGuidedGroundingTool(BaseSpecialistTool):
     """
     @property
     def name(self) -> str:
-        return "Grounding_Specialist_v1"
+        return "text_guided_grounding_tool"
 
     @property
     def task_type(self) -> str:

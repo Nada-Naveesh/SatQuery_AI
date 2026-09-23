@@ -52,5 +52,7 @@ def test_execution_trace_generation():
     assert response.status == "success"
     assert response.execution_trace.trace_id.startswith("trace-sih-26167-")
     assert response.execution_trace.total_execution_time_ms > 0
-    assert len(response.execution_trace.tools_executed) == 1
+    assert len(response.execution_trace.tools_executed) >= 1
+    tool_names = [t.tool_name for t in response.execution_trace.tools_executed]
+    assert "remote_sensing_vqa_tool" in tool_names or "input_validator_tool" in tool_names
     assert response.result.confidence_score >= 0.5

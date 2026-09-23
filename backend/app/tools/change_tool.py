@@ -23,7 +23,7 @@ class BiTemporalChangeTool(BaseSpecialistTool):
     """
     @property
     def name(self) -> str:
-        return "Siamese_Change_Specialist_v1"
+        return "temporal_change_tool"
 
     @property
     def task_type(self) -> str:

@@ -252,6 +252,26 @@ def health_check():
     }
 
 
+@app.get("/api/benchmarks/results")
+@app.get("/api/v1/benchmarks/results")
+def get_benchmark_results():
+    """Retrieves the latest empirical benchmark evaluation results."""
+    out_file = settings.ROOT_DIR / "outputs" / "benchmarks" / "benchmark_results.json"
+    if out_file.exists():
+        with open(out_file, "r") as f:
+            return json.load(f)
+    from scripts.evaluate_benchmarks import run_live_benchmark_evaluation
+    return run_live_benchmark_evaluation("all")
+
+
+@app.post("/api/benchmarks/evaluate")
+@app.post("/api/v1/benchmarks/evaluate")
+def trigger_benchmark_evaluation(suite: str = Query("all", description="Benchmark suite: 'all', 'rsvqa', 'grounding', 'levir', 'bigearthnet'")):
+    """Triggers dynamic evaluation over benchmark test instances and returns computed metrics."""
+    from scripts.evaluate_benchmarks import run_live_benchmark_evaluation
+    return run_live_benchmark_evaluation(suite)
+
+
 @app.get("/api/scenarios", response_model=List[DemoScenario])
 @app.get("/api/v1/scenarios", response_model=List[DemoScenario])
 def get_scenarios():
@@ -618,6 +638,7 @@ async def analyze_remote_sensing_query(
     scenario_id: Optional[str] = Form(None),
     scene_ids: Optional[str] = Form(None),
     analysis_mode: Optional[str] = Form(None),
+    input_mode: Optional[str] = Form(None),
     session_trace_id: Optional[str] = Form(None),
     files: Optional[List[UploadFile]] = File(None)
 ):
@@ -850,6 +871,12 @@ async def analyze_remote_sensing_query(
             detail="No valid satellite image data could be loaded for processing."
         )
 
+    # Apply input_mode if provided
+    if input_mode and isinstance(input_mode, str):
+        scenario_meta["input_mode"] = input_mode
+        if task_hint in ("auto", None):
+            task_hint = input_mode
+
     # Execute Agent Controller with full real satellite metadata
     response = controller.execute(
         query=query,
@@ -901,17 +928,19 @@ async def analyze_remote_sensing_query_alias(
     scenario_id: Optional[str] = Form(None),
     scene_ids: Optional[str] = Form(None),
     analysis_mode: Optional[str] = Form(None),
+    input_mode: Optional[str] = Form(None),
     session_trace_id: Optional[str] = Form(None),
     files: Optional[List[UploadFile]] = File(None)
 ):
     """Alias for /api/v1/analyze supporting all parameter combinations."""
     return await analyze_remote_sensing_query(
         query=query,
-        task_hint=task_hint,
-        scenario_id=scenario_id,
-        scene_ids=scene_ids,
-        analysis_mode=analysis_mode,
-        session_trace_id=session_trace_id,
+        task_hint=task_hint if isinstance(task_hint, str) else "auto",
+        scenario_id=scenario_id if isinstance(scenario_id, str) else None,
+        scene_ids=scene_ids if isinstance(scene_ids, str) else None,
+        analysis_mode=analysis_mode if isinstance(analysis_mode, str) else None,
+        input_mode=input_mode if isinstance(input_mode, str) else None,
+        session_trace_id=session_trace_id if isinstance(session_trace_id, str) else None,
         files=files
     )
 
@@ -1165,7 +1194,6 @@ def get_analysis_report_endpoint(job_id: str):
         media_type="application/pdf",
         filename=pdf_filename
     )
-
 
 @app.get("/", response_class=HTMLResponse)
 def serve_mission_control_ui():

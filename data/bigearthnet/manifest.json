@@ -1,0 +1,544 @@
+{
+  "corine_classes": [
+    "Urban fabric",
+    "Industrial or commercial units",
+    "Arable land",
+    "Permanent crops",
+    "Pastures",
+    "Complex cultivation patterns",
+    "Land principally occupied by agriculture",
+    "Broad-leaved forest",
+    "Coniferous forest",
+    "Mixed forest",
+    "Natural grassland and sparsely vegetated areas",
+    "Moors, heathland and sclerophyllous vegetation",
+    "Transitional woodland, shrub",
+    "Beaches, dunes, sands",
+    "Inland wetlands",
+    "Coastal wetlands",
+    "Inland waters",
+    "Marine waters",
+    "Continuous and discontinuous urban fabric"
+  ],
+  "splits": {
+    "train": [
+      {
+        "patch_id": "S2A_MSIL2A_20240501_patch_01_train",
+        "optical_path": "data/bigearthnet/train/optical/S2A_MSIL2A_20240501_patch_01_train.png",
+        "sar_path": "data/bigearthnet/train/sar/S2A_MSIL2A_20240501_patch_01_train.png",
+        "labels": [
+          0,
+          2,
+          4
+        ],
+        "class_names": [
+          "Urban fabric",
+          "Arable land",
+          "Pastures"
+        ],
+        "caption": "Urban settlement bordered by arable fields and pasture parcels.",
+        "qa_pairs": [
+          {
+            "q": "What agricultural land cover is present?",
+            "a": "Arable land and pastures."
+          },
+          {
+            "q": "Are there human settlement structures in this scene?",
+            "a": "Yes, urban fabric and residential dwellings are visible."
+          }
+        ],
+        "grounding": {
+          "target": "Urban fabric",
+          "bbox": [
+            15,
+            20,
+            65,
+            80
+          ]
+        }
+      },
+      {
+        "patch_id": "S2B_MSIL2A_20240510_patch_02_train",
+        "optical_path": "data/bigearthnet/train/optical/S2B_MSIL2A_20240510_patch_02_train.png",
+        "sar_path": "data/bigearthnet/train/sar/S2B_MSIL2A_20240510_patch_02_train.png",
+        "labels": [
+          7,
+          8,
+          9
+        ],
+        "class_names": [
+          "Broad-leaved forest",
+          "Coniferous forest",
+          "Mixed forest"
+        ],
+        "caption": "Dense mixed canopy comprising coniferous and broad-leaved forest stands.",
+        "qa_pairs": [
+          {
+            "q": "What is the primary natural vegetation cover?",
+            "a": "Dense mixed and coniferous forest."
+          },
+          {
+            "q": "Is there surface water present?",
+            "a": "No significant surface water body detected."
+          }
+        ],
+        "grounding": {
+          "target": "Broad-leaved forest",
+          "bbox": [
+            10,
+            10,
+            115,
+            115
+          ]
+        }
+      },
+      {
+        "patch_id": "S2A_MSIL2A_20240515_patch_03_train",
+        "optical_path": "data/bigearthnet/train/optical/S2A_MSIL2A_20240515_patch_03_train.png",
+        "sar_path": "data/bigearthnet/train/sar/S2A_MSIL2A_20240515_patch_03_train.png",
+        "labels": [
+          16,
+          14
+        ],
+        "class_names": [
+          "Inland waters",
+          "Inland wetlands"
+        ],
+        "caption": "Inland river reservoir and adjacent wetlands drainage marsh.",
+        "qa_pairs": [
+          {
+            "q": "What water features exist in this patch?",
+            "a": "Inland waters and wetland marshes."
+          },
+          {
+            "q": "Assess SAR specular reflection signature.",
+            "a": "Strong specular attenuation indicative of calm open water."
+          }
+        ],
+        "grounding": {
+          "target": "Inland waters",
+          "bbox": [
+            30,
+            25,
+            100,
+            95
+          ]
+        }
+      },
+      {
+        "patch_id": "S2B_MSIL2A_20240520_patch_04_train",
+        "optical_path": "data/bigearthnet/train/optical/S2B_MSIL2A_20240520_patch_04_train.png",
+        "sar_path": "data/bigearthnet/train/sar/S2B_MSIL2A_20240520_patch_04_train.png",
+        "labels": [
+          1,
+          0
+        ],
+        "class_names": [
+          "Industrial or commercial units",
+          "Urban fabric"
+        ],
+        "caption": "Industrial logistics depot and commercial warehousing complex.",
+        "qa_pairs": [
+          {
+            "q": "What built infrastructure dominates this scene?",
+            "a": "Industrial and commercial units with metal roofing."
+          },
+          {
+            "q": "Does SAR show dihedral double-bounce?",
+            "a": "Yes, high radar backscatter returns from corner reflectors."
+          }
+        ],
+        "grounding": {
+          "target": "Industrial or commercial units",
+          "bbox": [
+            20,
+            25,
+            90,
+            85
+          ]
+        }
+      },
+      {
+        "patch_id": "S2A_MSIL2A_20240525_patch_05_train",
+        "optical_path": "data/bigearthnet/train/optical/S2A_MSIL2A_20240525_patch_05_train.png",
+        "sar_path": "data/bigearthnet/train/sar/S2A_MSIL2A_20240525_patch_05_train.png",
+        "labels": [
+          2,
+          5,
+          10
+        ],
+        "class_names": [
+          "Arable land",
+          "Complex cultivation patterns",
+          "Natural grassland and sparsely vegetated areas"
+        ],
+        "caption": "Complex cultivation patterns interspersed with natural grasslands.",
+        "qa_pairs": [
+          {
+            "q": "What farming activities are observed?",
+            "a": "Complex cultivation patterns on fertile agricultural parcels."
+          },
+          {
+            "q": "Is the terrain vegetated?",
+            "a": "Yes, healthy seasonal crop growth is evident."
+          }
+        ],
+        "grounding": {
+          "target": "Arable land",
+          "bbox": [
+            15,
+            15,
+            110,
+            110
+          ]
+        }
+      }
+    ],
+    "val": [
+      {
+        "patch_id": "S2A_MSIL2A_20240501_patch_01_val",
+        "optical_path": "data/bigearthnet/val/optical/S2A_MSIL2A_20240501_patch_01_val.png",
+        "sar_path": "data/bigearthnet/val/sar/S2A_MSIL2A_20240501_patch_01_val.png",
+        "labels": [
+          0,
+          2,
+          4
+        ],
+        "class_names": [
+          "Urban fabric",
+          "Arable land",
+          "Pastures"
+        ],
+        "caption": "Urban settlement bordered by arable fields and pasture parcels.",
+        "qa_pairs": [
+          {
+            "q": "What agricultural land cover is present?",
+            "a": "Arable land and pastures."
+          },
+          {
+            "q": "Are there human settlement structures in this scene?",
+            "a": "Yes, urban fabric and residential dwellings are visible."
+          }
+        ],
+        "grounding": {
+          "target": "Urban fabric",
+          "bbox": [
+            15,
+            20,
+            65,
+            80
+          ]
+        }
+      },
+      {
+        "patch_id": "S2B_MSIL2A_20240510_patch_02_val",
+        "optical_path": "data/bigearthnet/val/optical/S2B_MSIL2A_20240510_patch_02_val.png",
+        "sar_path": "data/bigearthnet/val/sar/S2B_MSIL2A_20240510_patch_02_val.png",
+        "labels": [
+          7,
+          8,
+          9
+        ],
+        "class_names": [
+          "Broad-leaved forest",
+          "Coniferous forest",
+          "Mixed forest"
+        ],
+        "caption": "Dense mixed canopy comprising coniferous and broad-leaved forest stands.",
+        "qa_pairs": [
+          {
+            "q": "What is the primary natural vegetation cover?",
+            "a": "Dense mixed and coniferous forest."
+          },
+          {
+            "q": "Is there surface water present?",
+            "a": "No significant surface water body detected."
+          }
+        ],
+        "grounding": {
+          "target": "Broad-leaved forest",
+          "bbox": [
+            10,
+            10,
+            115,
+            115
+          ]
+        }
+      },
+      {
+        "patch_id": "S2A_MSIL2A_20240515_patch_03_val",
+        "optical_path": "data/bigearthnet/val/optical/S2A_MSIL2A_20240515_patch_03_val.png",
+        "sar_path": "data/bigearthnet/val/sar/S2A_MSIL2A_20240515_patch_03_val.png",
+        "labels": [
+          16,
+          14
+        ],
+        "class_names": [
+          "Inland waters",
+          "Inland wetlands"
+        ],
+        "caption": "Inland river reservoir and adjacent wetlands drainage marsh.",
+        "qa_pairs": [
+          {
+            "q": "What water features exist in this patch?",
+            "a": "Inland waters and wetland marshes."
+          },
+          {
+            "q": "Assess SAR specular reflection signature.",
+            "a": "Strong specular attenuation indicative of calm open water."
+          }
+        ],
+        "grounding": {
+          "target": "Inland waters",
+          "bbox": [
+            30,
+            25,
+            100,
+            95
+          ]
+        }
+      },
+      {
+        "patch_id": "S2B_MSIL2A_20240520_patch_04_val",
+        "optical_path": "data/bigearthnet/val/optical/S2B_MSIL2A_20240520_patch_04_val.png",
+        "sar_path": "data/bigearthnet/val/sar/S2B_MSIL2A_20240520_patch_04_val.png",
+        "labels": [
+          1,
+          0
+        ],
+        "class_names": [
+          "Industrial or commercial units",
+          "Urban fabric"
+        ],
+        "caption": "Industrial logistics depot and commercial warehousing complex.",
+        "qa_pairs": [
+          {
+            "q": "What built infrastructure dominates this scene?",
+            "a": "Industrial and commercial units with metal roofing."
+          },
+          {
+            "q": "Does SAR show dihedral double-bounce?",
+            "a": "Yes, high radar backscatter returns from corner reflectors."
+          }
+        ],
+        "grounding": {
+          "target": "Industrial or commercial units",
+          "bbox": [
+            20,
+            25,
+            90,
+            85
+          ]
+        }
+      },
+      {
+        "patch_id": "S2A_MSIL2A_20240525_patch_05_val",
+        "optical_path": "data/bigearthnet/val/optical/S2A_MSIL2A_20240525_patch_05_val.png",
+        "sar_path": "data/bigearthnet/val/sar/S2A_MSIL2A_20240525_patch_05_val.png",
+        "labels": [
+          2,
+          5,
+          10
+        ],
+        "class_names": [
+          "Arable land",
+          "Complex cultivation patterns",
+          "Natural grassland and sparsely vegetated areas"
+        ],
+        "caption": "Complex cultivation patterns interspersed with natural grasslands.",
+        "qa_pairs": [
+          {
+            "q": "What farming activities are observed?",
+            "a": "Complex cultivation patterns on fertile agricultural parcels."
+          },
+          {
+            "q": "Is the terrain vegetated?",
+            "a": "Yes, healthy seasonal crop growth is evident."
+          }
+        ],
+        "grounding": {
+          "target": "Arable land",
+          "bbox": [
+            15,
+            15,
+            110,
+            110
+          ]
+        }
+      }
+    ],
+    "test": [
+      {
+        "patch_id": "S2A_MSIL2A_20240501_patch_01_test",
+        "optical_path": "data/bigearthnet/test/optical/S2A_MSIL2A_20240501_patch_01_test.png",
+        "sar_path": "data/bigearthnet/test/sar/S2A_MSIL2A_20240501_patch_01_test.png",
+        "labels": [
+          0,
+          2,
+          4
+        ],
+        "class_names": [
+          "Urban fabric",
+          "Arable land",
+          "Pastures"
+        ],
+        "caption": "Urban settlement bordered by arable fields and pasture parcels.",
+        "qa_pairs": [
+          {
+            "q": "What agricultural land cover is present?",
+            "a": "Arable land and pastures."
+          },
+          {
+            "q": "Are there human settlement structures in this scene?",
+            "a": "Yes, urban fabric and residential dwellings are visible."
+          }
+        ],
+        "grounding": {
+          "target": "Urban fabric",
+          "bbox": [
+            15,
+            20,
+            65,
+            80
+          ]
+        }
+      },
+      {
+        "patch_id": "S2B_MSIL2A_20240510_patch_02_test",
+        "optical_path": "data/bigearthnet/test/optical/S2B_MSIL2A_20240510_patch_02_test.png",
+        "sar_path": "data/bigearthnet/test/sar/S2B_MSIL2A_20240510_patch_02_test.png",
+        "labels": [
+          7,
+          8,
+          9
+        ],
+        "class_names": [
+          "Broad-leaved forest",
+          "Coniferous forest",
+          "Mixed forest"
+        ],
+        "caption": "Dense mixed canopy comprising coniferous and broad-leaved forest stands.",
+        "qa_pairs": [
+          {
+            "q": "What is the primary natural vegetation cover?",
+            "a": "Dense mixed and coniferous forest."
+          },
+          {
+            "q": "Is there surface water present?",
+            "a": "No significant surface water body detected."
+          }
+        ],
+        "grounding": {
+          "target": "Broad-leaved forest",
+          "bbox": [
+            10,
+            10,
+            115,
+            115
+          ]
+        }
+      },
+      {
+        "patch_id": "S2A_MSIL2A_20240515_patch_03_test",
+        "optical_path": "data/bigearthnet/test/optical/S2A_MSIL2A_20240515_patch_03_test.png",
+        "sar_path": "data/bigearthnet/test/sar/S2A_MSIL2A_20240515_patch_03_test.png",
+        "labels": [
+          16,
+          14
+        ],
+        "class_names": [
+          "Inland waters",
+          "Inland wetlands"
+        ],
+        "caption": "Inland river reservoir and adjacent wetlands drainage marsh.",
+        "qa_pairs": [
+          {
+            "q": "What water features exist in this patch?",
+            "a": "Inland waters and wetland marshes."
+          },
+          {
+            "q": "Assess SAR specular reflection signature.",
+            "a": "Strong specular attenuation indicative of calm open water."
+          }
+        ],
+        "grounding": {
+          "target": "Inland waters",
+          "bbox": [
+            30,
+            25,
+            100,
+            95
+          ]
+        }
+      },
+      {
+        "patch_id": "S2B_MSIL2A_20240520_patch_04_test",
+        "optical_path": "data/bigearthnet/test/optical/S2B_MSIL2A_20240520_patch_04_test.png",
+        "sar_path": "data/bigearthnet/test/sar/S2B_MSIL2A_20240520_patch_04_test.png",
+        "labels": [
+          1,
+          0
+        ],
+        "class_names": [
+          "Industrial or commercial units",
+          "Urban fabric"
+        ],
+        "caption": "Industrial logistics depot and commercial warehousing complex.",
+        "qa_pairs": [
+          {
+            "q": "What built infrastructure dominates this scene?",
+            "a": "Industrial and commercial units with metal roofing."
+          },
+          {
+            "q": "Does SAR show dihedral double-bounce?",
+            "a": "Yes, high radar backscatter returns from corner reflectors."
+          }
+        ],
+        "grounding": {
+          "target": "Industrial or commercial units",
+          "bbox": [
+            20,
+            25,
+            90,
+            85
+          ]
+        }
+      },
+      {
+        "patch_id": "S2A_MSIL2A_20240525_patch_05_test",
+        "optical_path": "data/bigearthnet/test/optical/S2A_MSIL2A_20240525_patch_05_test.png",
+        "sar_path": "data/bigearthnet/test/sar/S2A_MSIL2A_20240525_patch_05_test.png",
+        "labels": [
+          2,
+          5,
+          10
+        ],
+        "class_names": [
+          "Arable land",
+          "Complex cultivation patterns",
+          "Natural grassland and sparsely vegetated areas"
+        ],
+        "caption": "Complex cultivation patterns interspersed with natural grasslands.",
+        "qa_pairs": [
+          {
+            "q": "What farming activities are observed?",
+            "a": "Complex cultivation patterns on fertile agricultural parcels."
+          },
+          {
+            "q": "Is the terrain vegetated?",
+            "a": "Yes, healthy seasonal crop growth is evident."
+          }
+        ],
+        "grounding": {
+          "target": "Arable land",
+          "bbox": [
+            15,
+            15,
+            110,
+            110
+          ]
+        }
+      }
+    ]
+  }
+}

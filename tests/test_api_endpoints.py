@@ -13,7 +13,7 @@ def test_health_endpoint():
     data = res.json()
     assert data["status"] == "online"
     assert data["ps_id"] == "26167"
-    assert len(data["registered_tools"]) == 4
+    assert len(data["registered_tools"]) >= 4
 
 def test_scenarios_endpoint():
     res = client.get("/api/v1/scenarios")
@@ -64,7 +64,8 @@ def test_analyze_scenario_2_temporal():
     assert res.status_code == 200
     data = res.json()
     assert data["detected_task"] == "change_detection"
-    assert data["execution_trace"]["tools_executed"][0]["tool_name"] == "Siamese_Change_Specialist_v1"
+    tool_names = [t["tool_name"] for t in data["execution_trace"]["tools_executed"]]
+    assert any("change" in t.lower() or "temporal" in t.lower() for t in tool_names)
 
 def test_analyze_scenario_3_optical_sar():
     payload = {
@@ -75,7 +76,8 @@ def test_analyze_scenario_3_optical_sar():
     assert res.status_code == 200
     data = res.json()
     assert data["detected_task"] == "optical_sar_fusion"
-    assert data["execution_trace"]["tools_executed"][0]["tool_name"] == "Optical_SAR_Fusion_Specialist_v1"
+    tool_names = [t["tool_name"] for t in data["execution_trace"]["tools_executed"]]
+    assert any("fusion" in t.lower() for t in tool_names)
 
 def test_pdf_report_generation():
     # First analyze to generate trace

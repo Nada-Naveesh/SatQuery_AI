@@ -50,14 +50,14 @@ class AgenticController:
         if image_count == 2 and has_sar and has_opt:
             return (
                 "optical_sar_fusion",
-                "Detected co-registered Optical + SAR image pair. Routing to Optical_SAR_Fusion_Specialist for cross-modal structural/dielectric reasoning."
+                "Detected co-registered Optical + SAR image pair. Routing to optical_sar_fusion_tool (Optical_SAR_Fusion_Specialist) for cross-modal structural/dielectric reasoning."
             )
 
         # Rule 2: Bi-temporal pair detection
-        if image_count == 2:
+        if image_count == 2 and not (has_sar and has_opt):
             return (
                 "change_detection",
-                "Detected 2 temporal acquisition scenes. Routing to Siamese_Change_Specialist for bi-temporal delta computation and change-VQA."
+                "Detected 2 temporal acquisition scenes. Routing to temporal_change_tool (Siamese_Change_Specialist) for bi-temporal delta computation and change-VQA."
             )
 
         # Query semantics for temporal change (even if 2 images passed without explicit labels)
@@ -65,7 +65,7 @@ class AgenticController:
             if image_count >= 2:
                 return (
                     "change_detection",
-                    "Query explicitly requests temporal change analysis over multi-date image pair."
+                    "Query explicitly requests temporal change analysis over multi-date image pair. Routing to temporal_change_tool (Siamese_Change_Specialist)."
                 )
 
         # Query semantics for Optical-SAR fusion / cloud penetration
@@ -73,7 +73,7 @@ class AgenticController:
             if image_count >= 2:
                 return (
                     "optical_sar_fusion",
-                    "Query requests cross-modal all-weather radar/optical fusion."
+                    "Query requests cross-modal all-weather radar/optical fusion. Routing to optical_sar_fusion_tool (Optical_SAR_Fusion_Specialist)."
                 )
 
         # Rule 3: Text-guided Grounding / Localization
@@ -81,13 +81,21 @@ class AgenticController:
         if any(gv in q for gv in grounding_verbs):
             return (
                 "region_grounding",
-                f"Query contains referring expression / spatial localization directive. Routing to Grounding_Specialist for bounding box extraction."
+                "Query contains referring expression / spatial localization directive. Routing to text_guided_grounding_tool (Grounding_Specialist) for bounding box extraction."
             )
 
-        # Rule 4: Default single-image VQA
+        # Rule 4: Scene Captioning / Summary
+        caption_verbs = ["describe", "caption", "summary", "summarize", "overview", "scene description", "tell me about"]
+        if any(cv in q for cv in caption_verbs):
+            return (
+                "scene_captioning",
+                "Query requests scene description / land cover summary. Routing to scene_caption_tool (Scene_Caption_Specialist)."
+            )
+
+        # Rule 5: Default single-image VQA
         return (
             "visual_question_answering",
-            "Single satellite scene with descriptive or categorical question. Routing to RS_VQA_Specialist."
+            "Single satellite scene with descriptive or categorical question. Routing to remote_sensing_vqa_tool (RS_VQA_Specialist)."
         )
 
     def execute(
@@ -103,8 +111,79 @@ class AgenticController:
         total_start_t = time.perf_counter()
         trace_id = f"trace-sih-26167-{uuid.uuid4().hex[:8]}"
         timestamp = datetime.now(timezone.utc).isoformat()
+        executed_records: List[ToolExecutionRecord] = []
 
         image_count = len(images)
+        meta = scenario_meta or {}
+
+        # 1. Mandatory Input Validation Tool
+        validator_tool = self.registry.get_tool_by_name("input_validator_tool")
+        val_params = {
+            "input_mode": task_hint if task_hint in ("single_optical", "single_sar", "bitemporal_pair", "optical_sar_pair") else "auto",
+            "filenames": image_names,
+            "modalities": modalities,
+            **meta
+        }
+        val_result: ToolResult = validator_tool.run(images=images, parameters=val_params)
+        executed_records.append(ToolExecutionRecord(
+            tool_name=val_result.tool_name,
+            task_type=val_result.task_type,
+            model_checkpoint=validator_tool.model_checkpoint,
+            parameters=val_result.parameters,
+            execution_time_ms=val_result.execution_time_ms,
+            confidence=val_result.confidence
+        ))
+
+        # Check for rejection
+        val_errors = val_result.parameters.get("validation_errors", [])
+        if len(val_errors) > 0 and val_result.confidence == 0.0:
+            total_elapsed_ms = (time.perf_counter() - total_start_t) * 1000.0
+            h = images[0].shape[0] if len(images) > 0 and images[0] is not None else 0
+            w = images[0].shape[1] if len(images) > 0 and images[0] is not None else 0
+            c = images[0].shape[2] if len(images) > 0 and images[0] is not None and images[0].ndim == 3 else 1
+
+            input_summary = InputSummary(
+                image_count=image_count,
+                modalities=modalities,
+                dimensions=[w, h, c],
+                crs=meta.get("crs", "EPSG:4326"),
+                resolution_m=10.0,
+                sensor=meta.get("sensor", "Remote Sensing Sensor"),
+                area=meta.get("area", "Operator AOI"),
+                acquisition_date=meta.get("date", "Unknown"),
+                data_source=meta.get("real_data_source", "Satellite Archive")
+            )
+
+            execution_trace = ExecutionTrace(
+                trace_id=trace_id,
+                timestamp=timestamp,
+                detected_task="input_validation",
+                router_reasoning=f"Input rejected by input_validator_tool: {'; '.join(val_errors)}",
+                input_configuration=f"{image_count} scene(s) [{', '.join(modalities)}]",
+                tools_executed=executed_records,
+                total_execution_time_ms=round(total_elapsed_ms, 2),
+                data_source_label="Validation Layer Rejection"
+            )
+
+            result = AnalysisResult(
+                text_answer=f"Input Validation Error: {val_result.text_output}. Please adjust your input image files or mode selection.",
+                confidence_score=0.0,
+                confidence_explanation="Input validation rejected: file format, dimension, or sensor constraints were not met.",
+                visual_evidence=None,
+                summary_bullet_points=[f"Error: {e}" for e in val_errors]
+            )
+
+            return AnalysisResponse(
+                status="rejected",
+                query=query,
+                detected_task="input_validation",
+                input_summary=input_summary,
+                result=result,
+                execution_trace=execution_trace,
+                report_download_url=f"/api/v1/report/pdf?trace_id={trace_id}"
+            )
+
+        # 2. Intent Classification & Routing
         task_type, reasoning = self.classify_intent(query, image_count, modalities, task_hint)
 
         # Lookup tool in registry
@@ -115,20 +194,18 @@ class AgenticController:
             task_type = "visual_question_answering"
             reasoning += " (Fallback tool invoked as requested task tool was unavailable)"
 
-        # Execute the specialist tool
+        # 3. Execute Specialist Model Tool
         tool_result: ToolResult = tool.run(images=images, query=query, parameters=parameters)
-
-        # Calculate execution telemetry
         total_elapsed_ms = (time.perf_counter() - total_start_t) * 1000.0
 
-        tool_record = ToolExecutionRecord(
+        executed_records.append(ToolExecutionRecord(
             tool_name=tool_result.tool_name,
             task_type=tool_result.task_type,
             model_checkpoint=tool.model_checkpoint,
             parameters=tool_result.parameters,
             execution_time_ms=tool_result.execution_time_ms,
             confidence=tool_result.confidence
-        )
+        ))
 
         h, w = images[0].shape[:2]
         meta = scenario_meta or {}
@@ -174,7 +251,7 @@ class AgenticController:
             detected_task=task_type,
             router_reasoning=reasoning,
             input_configuration=f"{image_count} scene(s) [{', '.join(modalities)}]",
-            tools_executed=[tool_record],
+            tools_executed=executed_records,
             total_execution_time_ms=round(total_elapsed_ms, 2),
             data_source_label=meta.get("real_data_source") or f"{meta.get('sensor', 'Satellite Scene')} ({meta.get('area', 'Standard EO Archive')})"
         )

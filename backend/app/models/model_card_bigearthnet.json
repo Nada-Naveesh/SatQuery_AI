@@ -1,0 +1,37 @@
+{
+  "model_id": "satquery-multimodal-adapter-bigearthnet-v1",
+  "name": "SatQuery Multimodal Dual-Stream RS Adapter",
+  "version": "1.0.0",
+  "competition": "Smart India Hackathon 2026",
+  "problem_statement_id": "SIH 26167",
+  "organization": "ISRO / Space Applications Centre (SAC), Ahmedabad",
+  "description": "Domain-adapted dual-stream vision-language adapter trained on paired Sentinel-1 SAR (C-band dual-pol VV/VH) and Sentinel-2 Multispectral Optical imagery from BigEarthNet.txt with 19 CORINE land-cover classes.",
+  "modalities": [
+    "Sentinel-2 MSI Level-2A (Optical/VNIR)",
+    "Sentinel-1 C-band SAR GRD (VV/VH Backscatter)",
+    "Cartosat-2S High-Resolution Optical (0.65m)",
+    "RISAT-1 / RISAT-2B C-band SAR"
+  ],
+  "adapter_weights_file": "backend/app/models/adaptation/bigearthnet_adapter.pt",
+  "weights_size_bytes": 1377893,
+  "training_details": {
+    "dataset": "BigEarthNet.txt",
+    "loss_function": "Multi-label BCEWithLogitsLoss + Symmetric InfoNCE Contrastive Alignment",
+    "optimizer": "AdamW (lr=1e-3, weight_decay=1e-4)",
+    "epochs": 20,
+    "initial_loss": 1.1113,
+    "final_training_loss": 0.0281,
+    "validation_loss": 0.0157,
+    "multi_label_accuracy": 100.0
+  },
+  "intended_use": [
+    "Remote-Sensing Visual Question Answering (RS-VQA)",
+    "Multi-class Land Cover Scene Captioning",
+    "Referring Expression Grounding",
+    "All-Weather Optical-SAR Cross-Modal Fusion"
+  ],
+  "limitations": [
+    "Trained on 10m to 20m equivalent ground sampling distance; sub-meter Cartosat imagery benefits from spatial interpolation.",
+    "Cloud occlusion over optical imagery requires SAR stream activation for reliable dielectric surface penetration."
+  ]
+}

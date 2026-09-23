@@ -19,7 +19,7 @@ class OpticalSARFusionTool(BaseSpecialistTool):
     """
     @property
     def name(self) -> str:
-        return "Optical_SAR_Fusion_Specialist_v1"
+        return "optical_sar_fusion_tool"
 
     @property
     def task_type(self) -> str:
@@ -109,6 +109,26 @@ class OpticalSARFusionTool(BaseSpecialistTool):
             f"Why this works: Metal structures reflect radar strongly (appearing bright), while calm water reflects radar away (appearing dark)."
         ]
 
+        # Domain adaptation prediction via BigEarthNet adapter (Optical + SAR joint)
+        adapter_res = {}
+        try:
+            from backend.app.models.adaptation.adapter import get_adapted_model
+            adapter = get_adapted_model()
+            adapter_res = adapter.predict_land_cover(img_opt, img_sar)
+        except Exception:
+            pass
+
+        fusion_params = {
+            "cloud_occlusion_pct": round(cloud_cov_pct, 1),
+            "mean_sigma0_db": round(mean_sigma0, 2),
+            "double_bounce_thresh_db": double_bounce_thresh_db,
+            "specular_thresh_db": specular_thresh_db,
+            "physics_engine": "radar_dielectric_backscatter_calibration",
+            "sar_frequency_ghz": 5.405
+        }
+        if adapter_res.get("top_classes"):
+            fusion_params["bigearthnet_joint_classes"] = adapter_res["top_classes"]
+
         return ToolResult(
             tool_name=self.name,
             task_type=self.task_type,
@@ -117,14 +137,7 @@ class OpticalSARFusionTool(BaseSpecialistTool):
             visual_overlay_type="fused_overlay",
             confidence=conf,
             execution_time_ms=round(elapsed_ms, 2),
-            parameters={
-                "cloud_occlusion_pct": round(cloud_cov_pct, 1),
-                "mean_sigma0_db": round(mean_sigma0, 2),
-                "double_bounce_thresh_db": double_bounce_thresh_db,
-                "specular_thresh_db": specular_thresh_db,
-                "physics_engine": "radar_dielectric_backscatter_calibration",
-                "sar_frequency_ghz": 5.405
-            },
+            parameters=fusion_params,
             metric_summary={
                 "builtup_hectares": builtup_metrics["area_hectares"],
                 "water_hectares": water_metrics["area_hectares"],
