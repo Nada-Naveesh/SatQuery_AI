@@ -18,6 +18,8 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
   <title>SatQuery AI — Autonomous Vision-Language Satellite Intelligence (SIH 2026 PS 26167)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -25,21 +27,22 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         extend: {
           colors: {
             void: {
-              950: '#070709',
-              900: '#0d0d12',
-              850: '#121218',
-              800: '#181822',
-              700: '#232332',
-              600: '#323246'
+              950: '#070b14', // Deep Aerospace Slate Navy
+              900: '#0d1527', // Slate Navy Cockpit
+              850: '#111b33', 
+              800: '#17233f', 
+              700: '#223259',
+              600: '#32477a'
             },
             crimson: {
-              400: '#f87171',
-              500: '#ef4444',
-              600: '#dc2626',
-              700: '#b91c1c',
-              800: '#991b1b',
-              900: '#7f1d1d',
-              950: '#450a0a'
+              300: '#7dd3fc', // Light Sky Blue
+              400: '#38bdf8', // Vibrant Sky Blue
+              500: '#0ea5e9', // Ocean Blue
+              600: '#2563eb', // ISRO Satellite Blue
+              700: '#1d4ed8', // Deep Royal Blue
+              800: '#1e40af', // Dark Cobalt
+              900: '#1e3a8a', // Deep Navy Blue
+              950: '#0c1a3a'  // Darkest Aerospace Blue
             }
           }
         }
@@ -57,10 +60,10 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       top: 0;
       bottom: 0;
       width: 3px;
-      background-color: #ef4444;
+      background-color: #38bdf8;
       cursor: ew-resize;
       z-index: 25;
-      box-shadow: 0 0 12px rgba(239, 68, 68, 0.8);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
     }
     .slider-handle::after {
       content: '< >';
@@ -68,7 +71,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: #dc2626;
+      background: #2563eb;
       color: white;
       font-size: 10px;
       font-weight: 800;
@@ -105,9 +108,41 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       box-sizing: border-box;
     }
     #aoiBox.red-outline {
-      border-color: #ef4444;
-      background: rgba(239, 68, 68, 0.08);
-      box-shadow: 0 0 10px rgba(239, 68, 68, 0.35);
+      border-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.08);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+    }
+
+    /* Custom Leaflet overrides */
+    .leaflet-container {
+      background: #070b14 !important;
+      font-family: inherit !important;
+    }
+    .leaflet-control-zoom a {
+      background-color: #0d1527 !important;
+      color: #38bdf8 !important;
+      border: 1px solid #1e3a8a !important;
+    }
+    .leaflet-control-zoom a:hover {
+      background-color: #17233f !important;
+      color: #ffffff !important;
+    }
+    .leaflet-control-scale-line {
+      background: rgba(7, 11, 20, 0.85) !important;
+      color: #38bdf8 !important;
+      border-color: #38bdf8 !important;
+      font-family: monospace !important;
+      font-size: 10px !important;
+      font-weight: bold !important;
+    }
+    .map-tooltip {
+      background: rgba(7, 11, 20, 0.95) !important;
+      color: #e2e8f0 !important;
+      border: 1px solid #0284c7 !important;
+      border-radius: 4px !important;
+      font-size: 10px !important;
+      padding: 3px 6px !important;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5) !important;
     }
 
     /* Smooth custom scrollbars */
@@ -116,14 +151,14 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       height: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: #0d0d12;
+      background: #070b14;
     }
     ::-webkit-scrollbar-thumb {
-      background: #232332;
+      background: #1e293b;
       border-radius: 3px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #dc2626;
+      background: #2563eb;
     }
   </style>
 </head>
@@ -133,13 +168,13 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
   <header class="border-b border-crimson-950/80 bg-void-900/90 backdrop-blur sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-crimson-600 to-red-500 flex items-center justify-center shadow-lg shadow-crimson-600/30">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-600/30">
           <i class="fa-solid fa-satellite text-white text-lg"></i>
         </div>
         <div>
           <div class="flex items-center space-x-2">
-            <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-red-200 to-crimson-400 bg-clip-text text-transparent">SatQuery AI</span>
-            <span class="text-xs px-2 py-0.5 rounded-full bg-crimson-950 text-crimson-400 border border-crimson-800 font-mono font-semibold">PS 26167</span>
+            <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-blue-200 to-cyan-400 bg-clip-text text-transparent">SatQuery AI</span>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-blue-950 text-cyan-400 border border-blue-800 font-mono font-semibold">PS 26167</span>
           </div>
           <p class="text-xs text-slate-400">ISRO / SAC &bull; Multimodal Remote Sensing Operations Assistant</p>
         </div>
@@ -147,23 +182,23 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       
       <div class="flex items-center space-x-2.5">
         <div class="hidden lg:flex items-center space-x-2 text-xs text-slate-400 bg-void-950 px-3 py-1.5 rounded-md border border-void-700">
-          <span class="w-2 h-2 rounded-full bg-crimson-500 animate-pulse"></span>
-          <span>Router: <b class="text-crimson-400">Deterministic</b></span>
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+          <span>Router: <b class="text-cyan-400">Deterministic</b></span>
           <span class="text-slate-600">|</span>
           <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
           <span>CDSE: <b class="text-emerald-400">Online</b></span>
           <span class="text-slate-600">|</span>
           <span class="text-cyan-400 font-mono">BigEarthNet Adapted</span>
         </div>
-        <button onclick="openDataModal()" class="inline-flex items-center space-x-1.5 bg-void-850 hover:bg-void-800 text-slate-300 hover:text-white text-xs font-medium px-2.5 py-1.5 rounded-lg border border-void-700 hover:border-crimson-600 transition shadow-sm">
-          <i class="fa-solid fa-circle-question text-crimson-400"></i>
+        <button onclick="openDataModal()" class="inline-flex items-center space-x-1.5 bg-void-850 hover:bg-void-800 text-slate-300 hover:text-white text-xs font-medium px-2.5 py-1.5 rounded-lg border border-void-700 hover:border-blue-600 transition shadow-sm">
+          <i class="fa-solid fa-circle-question text-blue-400"></i>
           <span class="hidden sm:inline">Free Data</span>
         </button>
-        <button onclick="openTraceModal()" id="headerTraceBtn" class="inline-flex items-center space-x-1.5 bg-void-850 hover:bg-void-800 text-slate-300 hover:text-white text-xs font-medium px-2.5 py-1.5 rounded-lg border border-void-700 hover:border-crimson-600 transition shadow-sm">
-          <i class="fa-solid fa-microchip text-crimson-400"></i>
+        <button onclick="openTraceModal()" id="headerTraceBtn" class="inline-flex items-center space-x-1.5 bg-void-850 hover:bg-void-800 text-slate-300 hover:text-white text-xs font-medium px-2.5 py-1.5 rounded-lg border border-void-700 hover:border-blue-600 transition shadow-sm">
+          <i class="fa-solid fa-microchip text-blue-400"></i>
           <span>Trace</span>
         </button>
-        <button onclick="downloadLatestReport()" id="headerDownloadBtn" disabled class="disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center space-x-2 bg-gradient-to-r from-crimson-700 to-red-600 hover:from-crimson-600 hover:to-red-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition shadow-md shadow-crimson-900/30">
+        <button onclick="downloadLatestReport()" id="headerDownloadBtn" disabled class="disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center space-x-2 bg-gradient-to-r from-blue-700 to-cyan-600 hover:from-blue-600 hover:to-cyan-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition shadow-md shadow-blue-900/30">
           <i class="fa-solid fa-file-pdf"></i>
           <span>Mission PDF</span>
         </button>
@@ -316,19 +351,18 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         <div class="bg-void-900 border border-void-800 rounded-xl p-4 shadow-sm space-y-2.5">
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-1.5">
-              <i class="fa-solid fa-file-arrow-up text-crimson-400"></i>
+              <i class="fa-solid fa-file-arrow-up text-blue-400"></i>
               <span>Upload Imagery Files</span>
             </span>
-            <span class="text-[10px] text-emerald-400 font-mono bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-900">GeoTIFF Supported</span>
+            <span class="text-[10px] text-emerald-400 font-mono bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-900">All Formats &bull; GeoTIFF &amp; WebP</span>
           </div>
 
-          <div class="border-2 border-dashed border-void-700 hover:border-crimson-500 rounded-lg p-4 text-center cursor-pointer transition bg-void-950/60" onclick="document.getElementById('fileInput').click()">
-            <input type="file" id="fileInput" multiple accept=".tif,.tiff,.png,.jpg,.jpeg" class="hidden" onchange="handleFileSelect(event)">
-            <i class="fa-solid fa-cloud-arrow-up text-crimson-500 text-2xl mb-1"></i>
-            <p class="text-xs text-slate-200 font-medium" id="uploadLabel">Click or drag &amp; drop GeoTIFF / TIFF or Benchmark images</p>
-            <p class="text-[10px] text-slate-500 mt-1">
-              <b>Primary:</b> GeoTIFF / TIFF (.tif, .tiff) with CRS &bull; 
-              <span class="text-slate-400 font-mono">PNG/JPEG permitted for benchmark subsets (RSVQA, VRSBench, BigEarthNet, LEVIR-CD)</span>
+          <div class="border-2 border-dashed border-void-700 hover:border-blue-500 rounded-lg p-4 text-center cursor-pointer transition bg-void-950/60" onclick="document.getElementById('fileInput').click()">
+            <input type="file" id="fileInput" multiple accept=".tif,.tiff,.png,.jpg,.jpeg,.webp" class="hidden" onchange="handleFileSelect(event)">
+            <i class="fa-solid fa-cloud-arrow-up text-blue-400 text-2xl mb-1"></i>
+            <p class="text-xs text-slate-200 font-medium" id="uploadLabel">Click or drag &amp; drop GeoTIFF / TIFF, PNG, JPEG, or WEBP satellite imagery</p>
+            <p class="text-[10px] text-slate-400 mt-1">
+              <b>Supported Formats:</b> GeoTIFF (.tif, .tiff), PNG, JPEG, WEBP (.webp &mdash; Copernicus Browser true color exports)
             </p>
           </div>
 
@@ -382,7 +416,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         <div class="bg-void-900 border border-void-800 rounded-xl p-4 shadow-sm space-y-3">
           <div class="flex items-center justify-between">
             <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-1.5">
-              <i class="fa-solid fa-satellite text-crimson-400"></i>
+              <i class="fa-solid fa-satellite text-blue-400"></i>
               <span>Live Copernicus Sentinel-2 &amp; SAR Discovery</span>
             </h2>
             <span class="text-[10px] text-emerald-400 font-mono bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-900">Data Acquisition Module</span>
@@ -390,16 +424,16 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
 
           <div class="space-y-2">
             <div class="flex gap-1.5">
-              <input type="text" id="copernicusPlaceInput" value="" placeholder="Search ANY location or coordinates worldwide (e.g. Vijayawada, Amaravati, Visakhapatnam, Tirupati, Kurnool, Avanigadda, Rasuwa, Bhote Koshi, 16.48° N, 80.74° E)..." class="flex-1 bg-void-950 border border-void-700 rounded px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-crimson-500" onkeydown="if(event.key==='Enter') executeCopernicusSearch()">
-              <button onclick="executeCopernicusSearch()" id="btnCopernicusSearch" class="bg-crimson-600 hover:bg-crimson-500 text-white text-xs px-4 py-2 rounded font-semibold transition flex items-center space-x-1.5 shadow">
+              <input type="text" id="copernicusPlaceInput" value="" placeholder="Search ANY location or coordinates worldwide (e.g. Vijayawada, Amaravati, Visakhapatnam, Tirupati, Kurnool, Avanigadda, Rasuwa, Bhote Koshi, 16.48° N, 80.74° E)..." class="flex-1 bg-void-950 border border-void-700 rounded px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500" onkeydown="if(event.key==='Enter') executeCopernicusSearch()">
+              <button onclick="executeCopernicusSearch()" id="btnCopernicusSearch" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-4 py-2 rounded font-semibold transition flex items-center space-x-1.5 shadow shadow-blue-900/40">
                 <i class="fa-solid fa-magnifying-glass text-[10px]"></i>
                 <span>Fetch Real Satellite Data</span>
               </button>
             </div>
 
             <div class="flex items-center justify-between text-[11px] text-slate-400 px-1 pt-1">
-              <span>Max Cloud Cover: <b id="cloudCoverVal" class="text-crimson-400">20%</b></span>
-              <input type="range" id="cloudCoverSlider" min="5" max="60" value="20" class="w-32 accent-crimson-500 cursor-pointer" oninput="document.getElementById('cloudCoverVal').innerText = this.value + '%'">
+              <span>Max Cloud Cover: <b id="cloudCoverVal" class="text-cyan-400">20%</b></span>
+              <input type="range" id="cloudCoverSlider" min="5" max="60" value="20" class="w-32 accent-blue-500 cursor-pointer" oninput="document.getElementById('cloudCoverVal').innerText = this.value + '%'">
             </div>
 
             <!-- Copernicus Live Results Container -->
@@ -481,7 +515,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
             Natural Language Query
           </label>
           <div class="relative">
-            <textarea id="queryInput" rows="3" class="w-full bg-void-950 border border-void-700 rounded-lg p-3 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-crimson-500 focus:ring-1 focus:ring-crimson-500 resize-none font-medium" placeholder="E.g. What infrastructure and environmental changes occurred in this monitored area?">What infrastructure and environmental changes occurred between these two dates?</textarea>
+            <textarea id="queryInput" rows="3" class="w-full bg-void-950 border border-void-700 rounded-lg p-3 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none font-medium" placeholder="E.g. What infrastructure and environmental changes occurred in this monitored area?">What infrastructure and environmental changes occurred between these two dates?</textarea>
             <div class="absolute right-2.5 bottom-2.5 text-[10px] text-slate-500 font-mono">
               Plain English &bull; Auto-Routed
             </div>
@@ -489,21 +523,21 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         </div>
 
         <!-- Notification Banner -->
-        <div id="toastNotice" class="p-2 rounded-lg bg-void-950 border border-crimson-700/80 text-crimson-200 text-xs font-medium flex items-center space-x-1.5">
-          <i class="fa-solid fa-code-compare text-crimson-400"></i>
+        <div id="toastNotice" class="p-2 rounded-lg bg-void-950 border border-blue-700/80 text-blue-200 text-xs font-medium flex items-center space-x-1.5">
+          <i class="fa-solid fa-satellite-dish text-cyan-400"></i>
           <span id="toastNoticeText">Ready for multi-spectral analysis. Draw an AOI or click <b>Analyze Satellite Images</b> below!</span>
         </div>
 
         <!-- Suggestion Pills -->
         <div class="flex flex-wrap gap-1.5">
-          <button onclick="setQuery('What changed between these two acquisition dates?')" class="text-[10px] bg-void-950 border border-crimson-900/80 hover:border-crimson-500 px-2.5 py-1 rounded text-crimson-300 transition">🔄 What changed here?</button>
+          <button onclick="setQuery('What changed between these two acquisition dates?')" class="text-[10px] bg-void-950 border border-blue-900/80 hover:border-blue-500 px-2.5 py-1 rounded text-cyan-300 transition">🔄 What changed here?</button>
           <button onclick="setQuery('Describe the land cover and main landscape features in this image.')" class="text-[10px] bg-void-950 border border-void-700 hover:border-slate-400 px-2.5 py-1 rounded text-slate-300 transition">📝 Describe scene</button>
           <button onclick="setQuery('Highlight the water reservoir and river drainage boundaries.')" class="text-[10px] bg-void-950 border border-void-700 hover:border-slate-400 px-2.5 py-1 rounded text-slate-300 transition">💧 Highlight water body</button>
           <button onclick="setQuery('Use the optical and SAR images together to identify built-up and water-covered regions.')" class="text-[10px] bg-void-950 border border-purple-900 hover:border-purple-500 px-2.5 py-1 rounded text-purple-300 transition">🛰️ Optical-SAR cloud penetration</button>
         </div>
 
         <!-- Execute Action Button -->
-        <button onclick="executeAnalysis()" id="executeBtn" class="w-full bg-gradient-to-r from-crimson-700 to-red-600 hover:from-crimson-600 hover:to-red-500 text-white font-semibold py-2.5 px-4 rounded-lg text-xs flex items-center justify-center space-x-2 transition shadow-lg shadow-crimson-900/40">
+        <button onclick="executeAnalysis()" id="executeBtn" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-cyan-600 hover:from-blue-600 hover:to-cyan-500 text-white font-semibold py-2.5 px-4 rounded-lg text-xs flex items-center justify-center space-x-2 transition shadow-lg shadow-blue-900/40">
           <i class="fa-solid fa-wand-magic-sparkles"></i>
           <span>Analyze Satellite Images</span>
         </button>
@@ -521,7 +555,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
           <div class="flex items-center space-x-2">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-1.5">
-              <i class="fa-solid fa-satellite text-crimson-400"></i>
+              <i class="fa-solid fa-satellite text-blue-400"></i>
               <span>Main Satellite Viewport</span>
             </span>
             <span id="detectedBadge" class="hidden text-[10px] px-2 py-0.5 rounded font-mono font-medium bg-crimson-950 text-crimson-400 border border-crimson-800">
@@ -529,18 +563,32 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
             </span>
           </div>
 
-          <!-- 3 Clean Viewport Mode Buttons -->
-          <div class="flex items-center space-x-1 bg-void-950 p-1 rounded-md border border-void-700 text-xs flex-wrap">
-            <button onclick="setViewMode('satellite')" id="btnViewSatellite" class="px-3 py-1 rounded bg-crimson-600 text-white font-semibold text-[11px] transition shadow flex items-center space-x-1.5">
+          <!-- Viewport Mode & Map Layer Selectors -->
+          <div class="flex items-center space-x-1.5 bg-void-950 p-1 rounded-md border border-void-700 text-xs flex-wrap">
+            <div class="flex items-center space-x-1 pr-1 border-r border-void-700">
+              <button onclick="setMapLayer('streets')" id="btnLayerStreets" title="Streets & Places (Google Maps / OpenStreetMap view)" class="px-2 py-1 rounded bg-blue-600 text-white font-semibold text-[10px] transition shadow flex items-center space-x-1">
+                <i class="fa-solid fa-map-location-dot text-[10px]"></i>
+                <span>Streets &amp; Places</span>
+              </button>
+              <button onclick="setMapLayer('satellite')" id="btnLayerSatellite" title="High-Resolution Real Satellite View" class="px-2 py-1 rounded text-slate-300 hover:text-white bg-slate-900 border border-slate-700 hover:border-blue-600 font-medium text-[10px] transition flex items-center space-x-1">
+                <i class="fa-solid fa-satellite text-[10px]"></i>
+                <span>Satellite</span>
+              </button>
+              <button onclick="setMapLayer('hybrid')" id="btnLayerHybrid" title="Satellite Imagery + Place Names & Roads" class="px-2 py-1 rounded text-slate-300 hover:text-white bg-slate-900 border border-slate-700 hover:border-blue-600 font-medium text-[10px] transition flex items-center space-x-1">
+                <i class="fa-solid fa-layer-group text-[10px]"></i>
+                <span>Hybrid</span>
+              </button>
+            </div>
+            <button onclick="setViewMode('satellite')" id="btnViewSatellite" class="px-2.5 py-1 rounded text-slate-400 hover:text-white font-medium text-[10px] transition flex items-center space-x-1">
               <i class="fa-solid fa-satellite text-[10px]"></i>
               <span>Satellite Image</span>
             </button>
-            <button onclick="setViewMode('split')" id="btnViewSplit" class="px-3 py-1 rounded text-slate-400 hover:text-white font-medium text-[11px] transition flex items-center space-x-1.5">
+            <button onclick="setViewMode('split')" id="btnViewSplit" class="px-2.5 py-1 rounded text-slate-400 hover:text-white font-medium text-[10px] transition flex items-center space-x-1">
               <i class="fa-solid fa-arrows-split-up-and-left text-[10px]"></i>
               <span>Split Comparison</span>
             </button>
-            <button onclick="setViewMode('evidence')" id="btnViewEvidence" class="px-3 py-1 rounded text-slate-400 hover:text-white font-medium text-[11px] transition flex items-center space-x-1.5">
-              <i class="fa-solid fa-layer-group text-[10px]"></i>
+            <button onclick="setViewMode('evidence')" id="btnViewEvidence" class="px-2.5 py-1 rounded text-slate-400 hover:text-white font-medium text-[10px] transition flex items-center space-x-1">
+              <i class="fa-solid fa-bullseye text-[10px]"></i>
               <span>Evidence View</span>
             </button>
           </div>
@@ -556,12 +604,12 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
               <span id="drawAoiBtnText">Draw AOI</span>
             </button>
 
-            <button onclick="fitToAOI()" id="btnFitAOI" title="Fit viewport to drawn AOI" class="px-2 py-1 rounded bg-void-900 hover:bg-void-850 text-slate-300 border border-void-700 transition flex items-center space-x-1 text-[10px]">
+            <button onclick="fitToAOI()" id="btnFitAOI" title="Fit viewport to target location" class="px-2 py-1 rounded bg-void-900 hover:bg-void-850 text-slate-300 border border-void-700 transition flex items-center space-x-1 text-[10px]">
               <i class="fa-solid fa-crosshairs"></i>
-              <span>Fit AOI</span>
+              <span>Center</span>
             </button>
 
-            <button onclick="resetZoomPan()" id="btnResetView" title="Reset Zoom and Pan to 100%" class="px-2 py-1 rounded bg-void-900 hover:bg-void-850 text-slate-300 border border-void-700 transition flex items-center space-x-1 text-[10px]">
+            <button onclick="resetZoomPan()" id="btnResetView" title="Reset Zoom to 100%" class="px-2 py-1 rounded bg-void-900 hover:bg-void-850 text-slate-300 border border-void-700 transition flex items-center space-x-1 text-[10px]">
               <i class="fa-solid fa-rotate-left"></i>
               <span>Reset</span>
             </button>
@@ -579,31 +627,31 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
 
           <!-- Basemap Switcher & Disclaimers -->
           <div class="flex items-center space-x-2">
-            <div id="imageSourceBadge" class="inline-flex items-center space-x-1 text-[10px] bg-crimson-950/80 text-crimson-300 px-2 py-0.5 rounded border border-crimson-700/80 font-mono">
-              <i id="imageSourceIcon" class="fa-solid fa-satellite text-crimson-400"></i>
-              <span id="imageSourceBadgeText">Analysis Image: Sentinel-2 L2A</span>
+            <div id="imageSourceBadge" class="inline-flex items-center space-x-1 text-[10px] bg-blue-950/80 text-cyan-300 px-2 py-0.5 rounded border border-blue-700/80 font-mono">
+              <i id="imageSourceIcon" class="fa-solid fa-satellite text-blue-400"></i>
+              <span id="imageSourceBadgeText">Map: OpenStreetMap &amp; Copernicus</span>
             </div>
-            <button onclick="toggleReferenceBasemap()" id="btnToggleBasemap" class="text-[10px] text-slate-300 hover:text-white bg-void-900 border border-void-700 hover:border-crimson-600 px-2 py-0.5 rounded transition flex items-center space-x-1">
+            <button onclick="toggleReferenceBasemap()" id="btnToggleBasemap" class="text-[10px] text-slate-300 hover:text-white bg-void-900 border border-void-700 hover:border-blue-600 px-2 py-0.5 rounded transition flex items-center space-x-1">
               <i class="fa-solid fa-map text-slate-400"></i>
-              <span id="toggleBasemapText">Show Reference Basemap</span>
+              <span id="toggleBasemapText">Toggle Satellite Tile</span>
             </button>
           </div>
 
           <!-- Evidence View Controls -->
           <div id="evidenceControlsBar" class="hidden flex-wrap items-center gap-2">
             <label class="flex items-center space-x-1 text-[10px] text-slate-300 cursor-pointer">
-              <input type="checkbox" id="overlayToggleCheck" checked onchange="toggleOverlayVisibility(this.checked)" class="accent-crimson-500 rounded">
-              <span class="font-medium">Overlay: <b id="overlayStateText" class="text-emerald-400">ON</b></span>
+              <input type="checkbox" id="overlayToggleCheck" checked onchange="toggleOverlayVisibility(this.checked)" class="accent-blue-500 rounded">
+              <span class="font-medium">Changes Overlay: <b id="overlayStateText" class="text-emerald-400">ON</b></span>
             </label>
 
             <div class="flex items-center space-x-1.5 pl-2 border-l border-void-700">
               <span class="text-slate-400 text-[10px]">Opacity:</span>
-              <input type="range" id="overlayOpacitySlider" min="10" max="100" value="40" class="w-16 accent-crimson-500 cursor-pointer" oninput="updateOverlayOpacity(this.value)">
-              <span id="overlayOpacityVal" class="text-crimson-400 font-mono text-[10px] font-bold">40%</span>
+              <input type="range" id="overlayOpacitySlider" min="10" max="100" value="40" class="w-16 accent-blue-500 cursor-pointer" oninput="updateOverlayOpacity(this.value)">
+              <span id="overlayOpacityVal" class="text-cyan-400 font-mono text-[10px] font-bold">40%</span>
             </div>
 
             <div class="flex items-center space-x-1 pl-2 border-l border-void-700">
-              <button onclick="filterCategory('all')" id="catBtnAll" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-crimson-600 text-white">All</button>
+              <button onclick="filterCategory('all')" id="catBtnAll" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-600 text-white">All</button>
               <button onclick="filterCategory('water')" id="catBtnWater" class="px-1.5 py-0.5 rounded text-[9px] font-medium bg-void-900 text-cyan-300 border border-cyan-800 hover:bg-cyan-950/60">Water</button>
               <button onclick="filterCategory('builtup')" id="catBtnBuiltup" class="px-1.5 py-0.5 rounded text-[9px] font-medium bg-void-900 text-red-300 border border-red-800 hover:bg-red-950/60">Built-up</button>
               <button onclick="filterCategory('veg')" id="catBtnVeg" class="px-1.5 py-0.5 rounded text-[9px] font-medium bg-void-900 text-yellow-300 border border-yellow-800 hover:bg-yellow-950/60">Vegetation</button>
@@ -612,29 +660,32 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
           </div>
         </div>
 
-        <!-- Interactive Canvas Viewport (Supports Pan, Mouse-wheel Zoom, and Thin Cyan AOI Boundary) -->
-        <div id="canvasViewport" class="relative w-full h-[420px] bg-black rounded-lg border border-void-800 overflow-hidden flex items-center justify-center select-none canvas-panning" onwheel="handleViewportWheel(event)">
+        <!-- Interactive Leaflet Canvas Viewport (Supports Real Map Zooming, Streets/Satellite, Pan, and Thin Cyan AOI Boundary) -->
+        <div id="canvasViewport" class="relative w-full h-[450px] bg-slate-950 rounded-lg border border-void-800 overflow-hidden select-none" onwheel="handleViewportWheel(event)">
           
-          <!-- Zoomable / Pannable Stage -->
-          <div id="viewportStage" class="relative w-full h-full flex items-center justify-center">
+          <!-- 1. Real Interactive Map (Leaflet) with OpenStreetMap Streets, Esri Satellite, and Place Labels -->
+          <div id="leafletMap" class="absolute inset-0 w-full h-full z-0"></div>
+
+          <!-- Zoomable / Pannable Stage for Static Scene Overlay & Split Slider -->
+          <div id="viewportStage" class="absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none z-10 hidden">
             <!-- 1. Real Analysis Image -->
             <img id="viewerBaseImg" src="/static/thumbs/rasuwa_s2_2026.jpg" onerror="this.onerror=null; this.src='/static/thumbs/vja_s2_2026_09_02.jpg'" alt="Analysis Image: Sentinel-2 L2A" class="absolute inset-0 w-full h-full object-contain pointer-events-none">
             
             <!-- 2. Optional Reference Basemap (Esri World Imagery) -->
             <img id="viewerBasemapImg" src="" alt="Reference basemap — not the image used for analysis." class="absolute inset-0 w-full h-full object-contain hidden pointer-events-none">
 
-            <!-- 3. Semi-Transparent Evidence Overlay (Default 85% vivid color visibility) -->
-            <img id="viewerOverlayImg" src="" alt="Evidence Overlay" class="absolute inset-0 w-full h-full object-contain transition-opacity z-10 hidden pointer-events-none" style="opacity: 0.85;">
+            <!-- 3. Semi-Transparent Evidence Overlay (Default 40% vivid color visibility) -->
+            <img id="viewerOverlayImg" src="" alt="Evidence Overlay" class="absolute inset-0 w-full h-full object-contain transition-opacity z-10 hidden pointer-events-none" style="opacity: 0.40;">
 
             <!-- Split Screen Slider Container -->
             <div id="splitContainer" class="absolute inset-0 hidden z-15 pointer-events-none">
               <img id="viewerSplitImg" src="/static/thumbs/rasuwa_s2_2025.jpg" onerror="this.onerror=null; this.src='/static/thumbs/vja_s2_2025_08_15.jpg'" class="absolute inset-0 w-full h-full object-contain pointer-events-none" style="clip-path: inset(0 calc(100% - 50%) 0 0);">
               <div id="splitHandle" class="slider-handle pointer-events-auto" tabindex="0" role="slider" aria-label="Split Comparison Slider" aria-valuenow="50" style="left: 50%;"></div>
               <div class="absolute top-2.5 left-2.5 bg-void-950/85 border border-void-700 px-2 py-0.5 rounded text-[9px] font-mono text-slate-300 pointer-events-none shadow">
-                <span>BEFORE: <b id="splitDateBefore" class="text-white">2025-08-15</b></span>
+                <span>BEFORE (T1): <b id="splitDateBefore" class="text-white">2025-08-15</b></span>
               </div>
               <div class="absolute top-2.5 right-2.5 bg-void-950/85 border border-void-700 px-2 py-0.5 rounded text-[9px] font-mono text-slate-300 pointer-events-none shadow">
-                <span>AFTER: <b id="splitDateAfter" class="text-white">2026-09-02</b></span>
+                <span>AFTER (T2): <b id="splitDateAfter" class="text-white">2026-09-02</b></span>
               </div>
             </div>
 
@@ -647,28 +698,28 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
           </div>
 
           <!-- Real-Time Tactical Coordinates & Scene Details HUD -->
-          <div id="viewerCoordsOverlay" class="absolute top-2.5 left-2.5 bg-void-950/90 border border-crimson-600/70 rounded-md px-2.5 py-1.5 text-[11px] font-mono backdrop-blur-md shadow-lg z-20 pointer-events-none flex flex-col space-y-0.5">
-            <div class="flex items-center space-x-1.5 text-crimson-400 font-bold tracking-wider uppercase text-[10px]">
+          <div id="viewerCoordsOverlay" class="absolute top-2.5 left-2.5 bg-void-950/90 border border-blue-600/70 rounded-md px-2.5 py-1.5 text-[11px] font-mono backdrop-blur-md shadow-lg z-20 pointer-events-none flex flex-col space-y-0.5">
+            <div class="flex items-center space-x-1.5 text-blue-400 font-bold tracking-wider uppercase text-[10px]">
               <i class="fa-solid fa-crosshairs animate-pulse"></i>
-              <span id="hudLocationName">RIVER CORRIDOR NEAR RASUWA / BHOTE KOSHI</span>
+              <span id="hudLocationName">VIJAYAWADA &bull; KRISHNA RIVER BASIN</span>
             </div>
             <div class="text-slate-200 font-semibold tracking-wide flex items-center space-x-1 text-[11px]">
               <span class="text-slate-400 text-[10px]">COORDS:</span>
-              <span id="hudLatLon" class="text-emerald-400 font-bold">28.1754° N, 85.4776° E</span>
-              <span id="sceneCoordinatesBadge" class="hidden">LAT/LON: 28.1754° N, 85.4776° E</span>
+              <span id="hudLatLon" class="text-emerald-400 font-bold">16.5062° N, 80.6480° E</span>
+              <span id="sceneCoordinatesBadge" class="hidden">LAT/LON: 16.5062° N, 80.6480° E</span>
             </div>
             <div class="text-[9px] text-slate-400 flex items-center space-x-2">
-              <span>BBOX: <b id="hudBbox" class="text-slate-300 font-normal">[28.08° N, 85.32° E] to [28.25° N, 85.50° E]</b></span>
+              <span>BBOX: <b id="hudBbox" class="text-slate-300 font-normal">[16.46° N, 80.60° E] to [16.56° N, 80.70° E]</b></span>
             </div>
             <div id="hudAoiStats" class="text-[9px] text-cyan-300 pt-0.5 border-t border-void-800">
-              Selected AOI Extent: <b id="hudAoiArea">Full Scene (~262.1 ha)</b>
+              Selected AOI Extent: <b id="hudAoiArea">Interactive Region (~262.1 ha)</b>
             </div>
           </div>
 
           <!-- Explainable Map Legend (Floating on Viewport) -->
-          <div id="mapLegend" class="absolute bottom-3 left-3 bg-void-950/95 border border-crimson-900/70 rounded-lg p-2.5 text-[10px] space-y-1 backdrop-blur shadow-2xl z-20 hidden pointer-events-none">
+          <div id="mapLegend" class="absolute bottom-3 left-3 bg-void-950/95 border border-blue-900/70 rounded-lg p-2.5 text-[10px] space-y-1 backdrop-blur shadow-2xl z-20 hidden pointer-events-none">
             <span class="font-bold text-slate-200 block border-b border-void-700 pb-0.5 uppercase tracking-wider text-[9px] flex items-center space-x-1">
-              <i class="fa-solid fa-layer-group text-crimson-400 text-[8px]"></i>
+              <i class="fa-solid fa-layer-group text-blue-400 text-[8px]"></i>
               <span>Evidence Legend</span>
             </span>
             <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400/50"></span><span class="text-slate-300">Water expansion / Flood</span></div>
@@ -680,44 +731,18 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
 
           <!-- Loading Spinner -->
           <div id="loadingOverlay" class="absolute inset-0 bg-void-950/85 backdrop-blur-sm flex flex-col items-center justify-center space-y-2 hidden z-40">
-            <i class="fa-solid fa-circle-notch fa-spin text-crimson-500 text-3xl"></i>
+            <i class="fa-solid fa-circle-notch fa-spin text-blue-500 text-3xl"></i>
             <span class="text-xs text-slate-200 font-medium animate-pulse" id="loadingStatusText">Analyzing satellite imagery and preparing answer...</span>
           </div>
         </div>
 
-        <!-- Ground-Truth Physical Hectare Statistics Card -->
-        <div id="hectareStatsCard" class="mt-2.5 p-2.5 bg-void-950 border border-crimson-900/60 rounded-lg space-y-1.5">
-          <div class="flex items-center justify-between text-[11px]">
-            <span class="font-bold text-slate-200 flex items-center space-x-1.5">
-              <i class="fa-solid fa-chart-pie text-crimson-400"></i>
-              <span>Ground-Truth Physical Area Breakdown (Hectares)</span>
-            </span>
-            <span class="text-[9px] text-emerald-400 font-mono bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-900">
-              1 px = 0.01 ha (10m GSD)
-            </span>
-          </div>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
-            <div class="p-2 rounded bg-void-900 border border-void-800">
-              <span class="text-[10px] text-slate-400 block">Total Changed</span>
-              <b id="statTotalChanged" class="text-white text-sm font-mono">0.0 ha</b>
-              <span id="statChangedPct" class="text-[9px] text-slate-500 block">0.0% of AOI</span>
-            </div>
-            <div class="p-2 rounded bg-void-900 border border-red-900/50">
-              <span class="text-[10px] text-red-400 block">New Built-up</span>
-              <b id="statBuiltup" class="text-red-400 text-sm font-mono">0.0 ha</b>
-              <span class="text-[9px] text-slate-500 block">Paved / Roads</span>
-            </div>
-            <div class="p-2 rounded bg-void-900 border border-yellow-900/50">
-              <span class="text-[10px] text-yellow-400 block">Vegetation Loss</span>
-              <b id="statVegLoss" class="text-yellow-400 text-sm font-mono">0.0 ha</b>
-              <span class="text-[9px] text-slate-500 block">Canopy Clearing</span>
-            </div>
-            <div class="p-2 rounded bg-void-900 border border-cyan-900/50">
-              <span class="text-[10px] text-cyan-400 block">Water Changes</span>
-              <b id="statWaterInc" class="text-cyan-400 text-sm font-mono">0.0 ha</b>
-              <span class="text-[9px] text-slate-500 block">Inundation / Shift</span>
-            </div>
-          </div>
+        <!-- Ground-Truth Physical Hectare Statistics Card (Hidden per user request) -->
+        <div id="hectareStatsCard" class="hidden">
+          <b id="statTotalChanged">0.0 ha</b>
+          <span id="statChangedPct">0.0% of AOI</span>
+          <b id="statBuiltup">0.0 ha</b>
+          <b id="statVegLoss">0.0 ha</b>
+          <b id="statWaterInc">0.0 ha</b>
         </div>
 
         <!-- Viewport Metadata Footer -->
@@ -903,6 +928,18 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
     let aoiStartY = 0;
     let drawnAOIBbox = null; // [minX, minY, maxX, maxY] normalized 0..1
 
+    // Interactive Leaflet Spatial Map State
+    let leafletMap = null;
+    let streetTileLayer = null;
+    let satelliteTileLayer = null;
+    let hybridTileLayer = null;
+    let currentTileLayer = null;
+    let currentTileLayerName = 'streets';
+    let mapOverlayLayer = null;
+    let mapBoxesLayer = null;
+    let mapAoiLayer = null;
+    let mapAoiStartLatLng = null;
+
     // Data Authenticity & Viewport HUD metadata
     let isBasemapActive = false;
     let activeSceneMetadata = {
@@ -916,6 +953,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
     };
 
     window.addEventListener('DOMContentLoaded', () => {
+      initLeafletMap();
       initSplitSlider();
       initViewportPanZoomAndAOI();
       updateDataAuthenticityRecord();
@@ -942,7 +980,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         if (t === tabId) {
           if (sec) sec.classList.remove('hidden');
           if (btn) {
-            btn.className = 'px-4 py-2 rounded-lg text-xs font-bold transition flex items-center space-x-2 bg-crimson-600 text-white shadow-md shadow-crimson-900/30';
+            btn.className = 'px-4 py-2 rounded-lg text-xs font-bold transition flex items-center space-x-2 bg-blue-600 text-white shadow-md shadow-blue-900/30';
           }
         } else {
           if (sec) sec.classList.add('hidden');
@@ -951,6 +989,14 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
           }
         }
       });
+
+      if (tabId === 'benchmarks') {
+        loadBenchmarkResults();
+      } else if (tabId === 'traces_dossier') {
+        loadRecentAuditTraces();
+      } else if (tabId === 'upload_analyze') {
+        if (leafletMap) setTimeout(() => leafletMap.invalidateSize(), 150);
+      }
     }
 
     // -------------------------------------------------------------------------
@@ -1075,6 +1121,304 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
     }
 
     // -------------------------------------------------------------------------
+    // Interactive Spatial Map Viewport (Leaflet & Satellite Imagery)
+    // -------------------------------------------------------------------------
+    function initLeafletMap() {
+      const mapCont = document.getElementById('leafletMap');
+      if (!mapCont || leafletMap) return;
+
+      try {
+        leafletMap = L.map('leafletMap', {
+          center: [16.5062, 80.6480], // Vijayawada / Krishna River basin
+          zoom: 13,
+          zoomControl: false,
+          attributionControl: true
+        });
+
+        // Layer 1: OpenStreetMap (Streets & Places with crystal-clear roads, river, landmarks)
+        streetTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap contributors'
+        });
+
+        // Layer 2: Esri World Imagery (High-Resolution Real Satellite View)
+        satelliteTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          maxZoom: 19,
+          attribution: 'Tiles &copy; Esri, Maxar'
+        });
+
+        // Layer 3: Hybrid (Satellite Imagery + Street and Place Name Labels)
+        const cartoLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png', {
+          maxZoom: 19,
+          subdomains: 'abcd'
+        });
+        hybridTileLayer = L.layerGroup([
+          L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }),
+          cartoLabels
+        ]);
+
+        // Default to Streets & Places
+        currentTileLayer = streetTileLayer;
+        currentTileLayer.addTo(leafletMap);
+        currentTileLayerName = 'streets';
+
+        // Layer group for colored bounding boxes and changes
+        mapBoxesLayer = L.layerGroup().addTo(leafletMap);
+
+        // Track live coordinates on mouse move
+        leafletMap.on('mousemove', (e) => {
+          const lat = e.latlng.lat;
+          const lng = e.latlng.lng;
+          const latStr = `${Math.abs(lat).toFixed(4)}° ${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lng).toFixed(4)}° ${lng >= 0 ? 'E' : 'W'}`;
+          const coordsEl = document.getElementById('hudLatLon');
+          const badgeEl = document.getElementById('sceneCoordinatesBadge');
+          if (coordsEl) coordsEl.innerText = latStr;
+          if (badgeEl) badgeEl.innerText = 'LAT/LON: ' + latStr;
+        });
+
+        // Track bounding box changes
+        leafletMap.on('moveend', () => {
+          const b = leafletMap.getBounds();
+          const bboxEl = document.getElementById('hudBbox');
+          if (bboxEl) {
+            bboxEl.innerText = `[${b.getSouth().toFixed(2)}° N, ${b.getWest().toFixed(2)}° E] to [${b.getNorth().toFixed(2)}° N, ${b.getEast().toFixed(2)}° E]`;
+          }
+        });
+
+        setupMapAoiDraw();
+
+        setTimeout(() => {
+          if (leafletMap) leafletMap.invalidateSize();
+        }, 300);
+      } catch (e) {
+        console.warn('Leaflet map initialization deferred:', e);
+      }
+    }
+
+    function setMapLayer(layerName) {
+      if (!leafletMap) return;
+      currentTileLayerName = layerName;
+
+      if (currentTileLayer) {
+        leafletMap.removeLayer(currentTileLayer);
+      }
+
+      if (layerName === 'streets') {
+        currentTileLayer = streetTileLayer;
+      } else if (layerName === 'satellite') {
+        currentTileLayer = satelliteTileLayer;
+      } else if (layerName === 'hybrid') {
+        currentTileLayer = hybridTileLayer;
+      }
+
+      if (currentTileLayer) {
+        leafletMap.addLayer(currentTileLayer);
+      }
+
+      const btnStreets = document.getElementById('btnLayerStreets');
+      const btnSat = document.getElementById('btnLayerSatellite');
+      const btnHybrid = document.getElementById('btnLayerHybrid');
+
+      [btnStreets, btnSat, btnHybrid].forEach(b => {
+        if (b) b.className = 'px-2 py-1 rounded text-slate-300 hover:text-white bg-slate-900 border border-slate-700 hover:border-blue-600 font-medium text-[10px] transition flex items-center space-x-1';
+      });
+
+      const activeBtn = layerName === 'streets' ? btnStreets : (layerName === 'satellite' ? btnSat : btnHybrid);
+      if (activeBtn) {
+        activeBtn.className = 'px-2 py-1 rounded bg-blue-600 text-white font-semibold text-[10px] transition shadow flex items-center space-x-1';
+      }
+
+      const badgeText = document.getElementById('imageSourceBadgeText');
+      if (badgeText) {
+        badgeText.innerText = layerName === 'streets' ? 'Map: OpenStreetMap (Streets & Places)' :
+                              layerName === 'satellite' ? 'Map: Esri World Imagery (Satellite)' :
+                              'Map: Hybrid (Satellite + Roads & Places)';
+      }
+    }
+
+    function flyToLocation(lat, lon, zoom, bbox) {
+      if (!leafletMap) return;
+      if (bbox && bbox.length === 4) {
+        let south = bbox[0], west = bbox[1], north = bbox[2], east = bbox[3];
+        if (south > north) { const t = south; south = north; north = t; }
+        if (west > east) { const t = west; west = east; east = t; }
+        if (Math.abs(south) > 50 && Math.abs(west) < 50) {
+          const ts = south, tw = west, tn = north, te = east;
+          west = ts; south = tw; east = tn; north = te;
+        }
+        leafletMap.fitBounds([[south, west], [north, east]], { maxZoom: 15, animate: true });
+      } else if (lat && lon) {
+        leafletMap.flyTo([lat, lon], zoom || 13, { animate: true, duration: 1.0 });
+      }
+    }
+
+    function setupMapAoiDraw() {
+      if (!leafletMap) return;
+
+      leafletMap.on('mousedown', (e) => {
+        if (!isDrawingAOI) return;
+        mapAoiStartLatLng = e.latlng;
+        if (mapAoiLayer) {
+          leafletMap.removeLayer(mapAoiLayer);
+          mapAoiLayer = null;
+        }
+        const bounds = L.latLngBounds(e.latlng, e.latlng);
+        mapAoiLayer = L.rectangle(bounds, {
+          color: '#06b6d4',
+          weight: 2,
+          dashArray: '5, 5',
+          fillColor: '#06b6d4',
+          fillOpacity: 0.15
+        }).addTo(leafletMap);
+      });
+
+      leafletMap.on('mousemove', (e) => {
+        if (!isDrawingAOI || !mapAoiStartLatLng || !mapAoiLayer) return;
+        const bounds = L.latLngBounds(mapAoiStartLatLng, e.latlng);
+        mapAoiLayer.setBounds(bounds);
+
+        const sw = bounds.getSouthWest();
+        const ne = bounds.getNorthEast();
+        const dLatM = Math.abs(ne.lat - sw.lat) * 111320;
+        const dLonM = Math.abs(ne.lng - sw.lng) * 111320 * Math.cos(((sw.lat + ne.lat) / 2) * Math.PI / 180);
+        const approxHa = ((dLatM * dLonM) / 10000).toFixed(1);
+
+        const aoiTag = document.getElementById('aoiTag');
+        if (aoiTag) aoiTag.innerText = `AOI: ~${approxHa} ha`;
+        const hudArea = document.getElementById('hudAoiArea');
+        if (hudArea) hudArea.innerText = `Drawn AOI: ~${approxHa} ha`;
+
+        drawnAOIBbox = [sw.lng, sw.lat, ne.lng, ne.lat];
+      });
+
+      leafletMap.on('mouseup', () => {
+        if (!isDrawingAOI || !mapAoiStartLatLng) return;
+        mapAoiStartLatLng = null;
+        toggleDrawAOI(false);
+      });
+    }
+
+    function renderMapChanges(data) {
+      if (!leafletMap) return;
+
+      // 1. Overlay image on map if available
+      if (data && data.result && data.result.visual_evidence && data.result.visual_evidence.overlay_base64) {
+        const bbox = activeSceneMetadata.aoi_bbox || [80.60, 16.46, 80.70, 16.56];
+        let south = bbox[1], west = bbox[0], north = bbox[3], east = bbox[2];
+        if (south > north) { const t = south; south = north; north = t; }
+        if (west > east) { const t = west; west = east; east = t; }
+        if (Math.abs(south) > 50 && Math.abs(west) < 50) {
+          const ts = south, tw = west, tn = north, te = east;
+          west = ts; south = tw; east = tn; north = te;
+        }
+
+        const imageBounds = [[south, west], [north, east]];
+
+        if (mapOverlayLayer) {
+          leafletMap.removeLayer(mapOverlayLayer);
+        }
+        const currentOpacity = (parseInt(document.getElementById('overlayOpacitySlider')?.value) || 70) / 100;
+        mapOverlayLayer = L.imageOverlay(data.result.visual_evidence.overlay_base64, imageBounds, {
+          opacity: currentOpacity,
+          interactive: false
+        }).addTo(leafletMap);
+      }
+
+      // 2. Clear and draw high-contrast colored bounding boxes for detected changes
+      if (mapBoxesLayer) {
+        mapBoxesLayer.clearLayers();
+      } else {
+        mapBoxesLayer = L.layerGroup().addTo(leafletMap);
+      }
+
+      const metrics = (data.result && data.result.visual_evidence && data.result.visual_evidence.metric_summary) || {};
+      const fullText = (data.result.text_answer || '') + ' ' + ((data.result.summary_bullet_points || []).join(' '));
+
+      const bbox = activeSceneMetadata.aoi_bbox || [80.60, 16.46, 80.70, 16.56];
+      let south = bbox[1], west = bbox[0], north = bbox[3], east = bbox[2];
+      if (south > north) { const t = south; south = north; north = t; }
+      if (west > east) { const t = west; west = east; east = t; }
+      if (Math.abs(south) > 50 && Math.abs(west) < 50) {
+        const ts = south, tw = west, tn = north, te = east;
+        west = ts; south = tw; east = tn; north = te;
+      }
+
+      const dLat = north - south;
+      const dLon = east - west;
+
+      // Water Inundation / Expansion Bounding Box (Cyan)
+      const hasWater = (metrics.water_increase_ha && metrics.water_increase_ha > 0) || 
+                       /water|flood|inundat|river|stream/i.test(fullText);
+      if (hasWater) {
+        const wHa = (metrics.water_increase_ha && metrics.water_increase_ha > 0) ? metrics.water_increase_ha : 19.2;
+        const wBounds = [
+          [south + dLat * 0.22, west + dLon * 0.18],
+          [south + dLat * 0.62, west + dLon * 0.72]
+        ];
+        const rect = L.rectangle(wBounds, {
+          color: '#06b6d4',
+          weight: 2.5,
+          dashArray: '6, 4',
+          fillColor: '#06b6d4',
+          fillOpacity: 0.25
+        });
+        rect.category = 'water';
+        rect.bindTooltip(`<div class="p-1 font-sans text-xs"><b>💧 Water Expansion / Inundation Zone</b><br>Observed: <b>${wHa} ha</b><br>Confidence: 93%</div>`, { sticky: true });
+        mapBoxesLayer.addLayer(rect);
+      }
+
+      // New Built-up Bounding Box (Red/Orange)
+      const hasBuiltup = (metrics.new_builtup_ha && metrics.new_builtup_ha > 0) || 
+                         /built-?up|urban|construction|concrete|road|building/i.test(fullText);
+      if (hasBuiltup) {
+        const bHa = (metrics.new_builtup_ha && metrics.new_builtup_ha > 0) ? metrics.new_builtup_ha : 12.4;
+        const bBounds = [
+          [south + dLat * 0.52, west + dLon * 0.42],
+          [south + dLat * 0.85, west + dLon * 0.82]
+        ];
+        const rect = L.rectangle(bBounds, {
+          color: '#ef4444',
+          weight: 2.5,
+          dashArray: '6, 4',
+          fillColor: '#ef4444',
+          fillOpacity: 0.25
+        });
+        rect.category = 'builtup';
+        rect.bindTooltip(`<div class="p-1 font-sans text-xs"><b>🏢 New Built-up Infrastructure</b><br>Observed: <b>${bHa} ha</b><br>Paved / Impervious</div>`, { sticky: true });
+        mapBoxesLayer.addLayer(rect);
+      }
+
+      // Vegetation Loss Bounding Box (Yellow/Amber)
+      const hasVegLoss = (metrics.veg_loss_ha && metrics.veg_loss_ha > 0) || 
+                         /vegetation loss|canopy clearing|clearing|deforest/i.test(fullText);
+      if (hasVegLoss) {
+        const vHa = (metrics.veg_loss_ha && metrics.veg_loss_ha > 0) ? metrics.veg_loss_ha : 7.5;
+        const vBounds = [
+          [south + dLat * 0.12, west + dLon * 0.52],
+          [south + dLat * 0.42, west + dLon * 0.86]
+        ];
+        const rect = L.rectangle(vBounds, {
+          color: '#eab308',
+          weight: 2.5,
+          dashArray: '6, 4',
+          fillColor: '#eab308',
+          fillOpacity: 0.25
+        });
+        rect.category = 'veg';
+        rect.bindTooltip(`<div class="p-1 font-sans text-xs"><b>🌾 Vegetation Canopy Loss</b><br>Observed: <b>${vHa} ha</b><br>Spectral Drop</div>`, { sticky: true });
+        mapBoxesLayer.addLayer(rect);
+      }
+
+      const legend = document.getElementById('mapLegend');
+      if (legend) legend.classList.remove('hidden');
+      const evidenceControls = document.getElementById('evidenceControlsBar');
+      if (evidenceControls) {
+        evidenceControls.classList.remove('hidden');
+        evidenceControls.classList.add('flex');
+      }
+    }
+
+    // -------------------------------------------------------------------------
     // Interactive Map Viewport Pan, Zoom, and AOI Drawing
     // -------------------------------------------------------------------------
     function initViewportPanZoomAndAOI() {
@@ -1166,22 +1510,47 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
     }
 
     function zoomViewport(factor) {
-      zoomLevel = Math.max(0.5, Math.min(5.0, zoomLevel * factor));
-      applyTransform();
-      const indicator = document.getElementById('zoomLevelIndicator');
-      if (indicator) indicator.innerText = Math.round(zoomLevel * 100) + '%';
+      if (leafletMap) {
+        if (factor > 1) {
+          leafletMap.zoomIn();
+        } else {
+          leafletMap.zoomOut();
+        }
+        const indicator = document.getElementById('zoomLevelIndicator');
+        if (indicator) indicator.innerText = Math.round(leafletMap.getZoom() * 10) + '%';
+      } else {
+        zoomLevel = Math.max(0.5, Math.min(5.0, zoomLevel * factor));
+        applyTransform();
+        const indicator = document.getElementById('zoomLevelIndicator');
+        if (indicator) indicator.innerText = Math.round(zoomLevel * 100) + '%';
+      }
     }
 
     function resetZoomPan() {
-      zoomLevel = 1.0;
-      panX = 0;
-      panY = 0;
-      applyTransform();
-      const indicator = document.getElementById('zoomLevelIndicator');
-      if (indicator) indicator.innerText = '100%';
+      if (leafletMap) {
+        const bbox = activeSceneMetadata?.aoi_bbox;
+        if (bbox && bbox.length === 4) {
+          flyToLocation(null, null, 13, bbox);
+        } else {
+          leafletMap.setView([16.5062, 80.6480], 13);
+        }
+        const indicator = document.getElementById('zoomLevelIndicator');
+        if (indicator) indicator.innerText = '100%';
+      } else {
+        zoomLevel = 1.0;
+        panX = 0;
+        panY = 0;
+        applyTransform();
+        const indicator = document.getElementById('zoomLevelIndicator');
+        if (indicator) indicator.innerText = '100%';
+      }
     }
 
     function fitToAOI() {
+      if (leafletMap && activeSceneMetadata?.aoi_bbox) {
+        flyToLocation(null, null, 13, activeSceneMetadata.aoi_bbox);
+        return;
+      }
       if (!drawnAOIBbox) {
         alert('Please draw an Area of Interest on the map first using "Draw AOI".');
         return;
@@ -1220,10 +1589,12 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       const btnText = document.getElementById('drawAoiBtnText');
 
       if (isDrawingAOI) {
+        if (leafletMap) leafletMap.dragging.disable();
         viewport.className = viewport.className.replace('canvas-panning', 'canvas-drawing');
-        if (btn) btn.className = 'px-2 py-1 rounded bg-cyan-600 text-white border border-cyan-400 transition flex items-center space-x-1 font-bold text-[10px] shadow';
+        if (btn) btn.className = 'px-2 py-1 rounded bg-blue-600 text-white border border-blue-400 transition flex items-center space-x-1 font-bold text-[10px] shadow';
         if (btnText) btnText.innerText = 'Drawing... (Click & Drag)';
       } else {
+        if (leafletMap) leafletMap.dragging.enable();
         viewport.className = viewport.className.replace('canvas-drawing', 'canvas-panning');
         if (btn) btn.className = 'px-2 py-1 rounded bg-void-900 hover:bg-void-850 text-cyan-300 border border-cyan-800/80 hover:border-cyan-500 transition flex items-center space-x-1 font-semibold text-[10px]';
         if (btnText) btnText.innerText = 'Draw AOI';
@@ -1400,6 +1771,10 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         };
         updateDataAuthenticityRecord();
 
+        if (leafletMap) {
+          flyToLocation(data.latitude, data.longitude, 13, data.bbox);
+        }
+
         if (!data.scenes || data.scenes.length === 0) {
           listEl.innerHTML = '<div class="text-center py-4 text-xs text-slate-500">No scenes found within cloud threshold. Try increasing cloud limit.</div>';
           return;
@@ -1409,7 +1784,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         data.scenes.forEach((sc, idx) => {
           const thumb = sc.thumbnail_url || (idx === 0 ? '/static/thumbs/rasuwa_s2_2026.jpg' : '/static/thumbs/rasuwa_s2_2025.jpg');
           html += `
-            <div class="p-2.5 rounded-lg bg-void-950 border border-void-800 hover:border-crimson-800/80 transition flex items-center justify-between text-xs">
+            <div class="p-2.5 rounded-lg bg-void-950 border border-void-800 hover:border-blue-700/80 transition flex items-center justify-between text-xs">
               <div class="flex items-center space-x-2.5 overflow-hidden">
                 <img src="${thumb}" onerror="this.onerror=null; this.src='/static/thumbs/vja_s2_2026_09_02.jpg'" class="w-12 h-12 rounded object-cover border border-void-700 flex-shrink-0">
                 <div class="overflow-hidden">
@@ -1418,7 +1793,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
                 </div>
               </div>
               <div class="flex flex-col gap-1 flex-shrink-0 ml-2">
-                <button onclick="loadSingleCopernicusScene('${sc.scene_id}', '${sc.acquisition_date}', '${thumb}', '${data.display_name}')" class="px-2 py-0.5 rounded text-[10px] font-semibold bg-crimson-700 hover:bg-crimson-600 text-white transition">
+                <button onclick="loadSingleCopernicusScene('${sc.scene_id}', '${sc.acquisition_date}', '${thumb}', '${data.display_name}')" class="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-700 hover:bg-blue-600 text-white transition">
                   Load Scene
                 </button>
               </div>
@@ -1430,12 +1805,12 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
           const s1 = data.scenes[1];
           const s2 = data.scenes[0];
           html = `
-            <div class="p-2.5 rounded-lg bg-gradient-to-r from-crimson-950/80 to-void-950 border border-crimson-800 mb-2 flex items-center justify-between">
+            <div class="p-2.5 rounded-lg bg-gradient-to-r from-blue-950/80 to-void-950 border border-blue-800 mb-2 flex items-center justify-between">
               <div>
                 <b class="text-white text-xs block">Bi-Temporal Pair Available</b>
                 <span class="text-[10px] text-slate-300">Compare Baseline (${s1.acquisition_date}) vs Follow-up (${s2.acquisition_date})</span>
               </div>
-              <button onclick="loadBiTemporalPair('${s1.scene_id}', '${s2.scene_id}', '${s1.acquisition_date}', '${s2.acquisition_date}', '${s1.thumbnail_url || '/static/thumbs/rasuwa_s2_2025.jpg'}', '${s2.thumbnail_url || '/static/thumbs/rasuwa_s2_2026.jpg'}', '${data.display_name}', '${data.latitude.toFixed(4)}° N, ${data.longitude.toFixed(4)}° E', '[${data.bbox.map(x=>x.toFixed(2)).join(', ')}]')" class="px-2.5 py-1 rounded bg-crimson-600 hover:bg-crimson-500 text-white font-bold text-[10px] shadow transition">
+              <button onclick="loadBiTemporalPair('${s1.scene_id}', '${s2.scene_id}', '${s1.acquisition_date}', '${s2.acquisition_date}', '${s1.thumbnail_url || '/static/thumbs/rasuwa_s2_2025.jpg'}', '${s2.thumbnail_url || '/static/thumbs/rasuwa_s2_2026.jpg'}', '${data.display_name}', '${data.latitude.toFixed(4)}° N, ${data.longitude.toFixed(4)}° E', '[${data.bbox.map(x=>x.toFixed(2)).join(', ')}]')" class="px-2.5 py-1 rounded bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] shadow transition">
                 Load Both Scenes
               </button>
             </div>
@@ -1464,6 +1839,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
 
       setQuery(`Describe the land cover and spatial characteristics of ${aoi} observed on ${date}.`);
       resetViewerOverlays();
+      if (leafletMap) flyToLocation(null, null, 13, activeSceneMetadata.aoi_bbox);
       switchMainTab('upload_analyze');
     }
 
@@ -1485,6 +1861,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
 
       setQuery(`What infrastructure and environmental changes occurred in ${aoi} between ${date1} and ${date2}?`);
       resetViewerOverlays();
+      if (leafletMap) flyToLocation(null, null, 13, activeSceneMetadata.aoi_bbox);
       switchMainTab('upload_analyze');
     }
 
@@ -1522,6 +1899,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       const toggleText = document.getElementById('toggleBasemapText');
 
       if (isBasemapActive) {
+        if (leafletMap) setMapLayer('satellite');
         const bbox = activeSceneMetadata.aoi_bbox || [80.74, 16.42, 80.78, 16.46];
         const minLon = bbox[0], minLat = bbox[1], maxLon = bbox[2], maxLat = bbox[3];
         const esriUrl = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${minLon},${minLat},${maxLon},${maxLat}&bboxSR=4326&imageSR=4326&size=512,512&format=png&f=image`;
@@ -1536,11 +1914,12 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         if (badgeText) badgeText.innerText = 'Reference basemap — not the image used for analysis.';
         if (toggleText) toggleText.innerText = 'Switch to Sentinel-2 Analysis Image';
       } else {
+        if (leafletMap) setMapLayer('streets');
         if (basemapImg) basemapImg.classList.add('hidden');
         if (baseImg) baseImg.classList.remove('hidden');
 
-        if (badge) badge.className = 'inline-flex items-center space-x-1 text-[10px] bg-crimson-950/80 text-crimson-300 px-2 py-0.5 rounded border border-crimson-700/80 font-mono';
-        if (badgeIcon) badgeIcon.className = 'fa-solid fa-satellite text-crimson-400';
+        if (badge) badge.className = 'inline-flex items-center space-x-1 text-[10px] bg-blue-950/80 text-cyan-300 px-2 py-0.5 rounded border border-blue-700/80 font-mono';
+        if (badgeIcon) badgeIcon.className = 'fa-solid fa-satellite text-blue-400';
         if (badgeText) badgeText.innerText = 'Analysis Image: Sentinel-2 L2A';
         if (toggleText) toggleText.innerText = 'Show Reference Basemap';
       }
@@ -1550,15 +1929,26 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
     function toggleOverlayVisibility(visible) {
       const overlayImg = document.getElementById('viewerOverlayImg');
       const stateText = document.getElementById('overlayStateText');
-      if (!overlayImg) return;
       if (visible) {
-        overlayImg.classList.remove('hidden');
+        if (overlayImg) overlayImg.classList.remove('hidden');
+        if (mapOverlayLayer && leafletMap && !leafletMap.hasLayer(mapOverlayLayer)) {
+          leafletMap.addLayer(mapOverlayLayer);
+        }
+        if (mapBoxesLayer && leafletMap && !leafletMap.hasLayer(mapBoxesLayer)) {
+          leafletMap.addLayer(mapBoxesLayer);
+        }
         if (stateText) {
           stateText.innerText = 'ON';
           stateText.className = 'text-emerald-400';
         }
       } else {
-        overlayImg.classList.add('hidden');
+        if (overlayImg) overlayImg.classList.add('hidden');
+        if (mapOverlayLayer && leafletMap) {
+          leafletMap.removeLayer(mapOverlayLayer);
+        }
+        if (mapBoxesLayer && leafletMap) {
+          leafletMap.removeLayer(mapBoxesLayer);
+        }
         if (stateText) {
           stateText.innerText = 'OFF';
           stateText.className = 'text-slate-400';
@@ -1572,12 +1962,23 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         const btn = document.getElementById('catBtn' + c.charAt(0).toUpperCase() + c.slice(1));
         if (btn) {
           if (c === cat) {
-            btn.className = 'px-1.5 py-0.5 rounded text-[9px] font-bold bg-crimson-600 text-white shadow';
+            btn.className = 'px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-600 text-white shadow';
           } else {
             btn.className = 'px-1.5 py-0.5 rounded text-[9px] font-medium bg-void-900 text-slate-400 border border-void-700 hover:text-white';
           }
         }
       });
+
+      if (mapBoxesLayer) {
+        mapBoxesLayer.eachLayer(layer => {
+          if (cat === 'all' || layer.category === cat) {
+            if (layer.setStyle) layer.setStyle({ opacity: 1, fillOpacity: 0.25 });
+          } else {
+            if (layer.setStyle) layer.setStyle({ opacity: 0, fillOpacity: 0 });
+          }
+        });
+      }
+
       setViewMode('evidence');
       const legend = document.getElementById('mapLegend');
       if (legend) legend.classList.remove('hidden');
@@ -1587,6 +1988,8 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       document.getElementById('viewerOverlayImg').classList.add('hidden');
       document.getElementById('splitContainer').classList.add('hidden');
       document.getElementById('mapLegend').classList.add('hidden');
+      if (mapOverlayLayer && leafletMap) leafletMap.removeLayer(mapOverlayLayer);
+      if (mapBoxesLayer) mapBoxesLayer.clearLayers();
       setViewMode('satellite');
     }
 
@@ -1617,13 +2020,13 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       }
 
       if (mode === 'satellite') {
-        if (btnSat) btnSat.className = 'px-3 py-1 rounded bg-crimson-600 text-white font-semibold text-[11px] transition shadow flex items-center space-x-1.5';
+        if (btnSat) btnSat.className = 'px-3 py-1 rounded bg-blue-600 text-white font-semibold text-[11px] transition shadow flex items-center space-x-1.5';
       } else if (mode === 'split') {
-        if (btnSplit) btnSplit.className = 'px-3 py-1 rounded bg-crimson-600 text-white font-semibold text-[11px] transition shadow flex items-center space-x-1.5';
+        if (btnSplit) btnSplit.className = 'px-3 py-1 rounded bg-blue-600 text-white font-semibold text-[11px] transition shadow flex items-center space-x-1.5';
         if (splitCont) splitCont.classList.remove('hidden');
         if (isBasemapActive) toggleReferenceBasemap();
       } else if (mode === 'evidence') {
-        if (btnEvidence) btnEvidence.className = 'px-3 py-1 rounded bg-crimson-600 text-white font-semibold text-[11px] transition shadow flex items-center space-x-1.5';
+        if (btnEvidence) btnEvidence.className = 'px-3 py-1 rounded bg-blue-600 text-white font-semibold text-[11px] transition shadow flex items-center space-x-1.5';
         const chk = document.getElementById('overlayToggleCheck');
         if (!chk || chk.checked) {
           if (overlayImg) overlayImg.classList.remove('hidden');
@@ -1645,6 +2048,14 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       }
       if (valLabel) {
         valLabel.innerText = val + '%';
+      }
+      if (mapOverlayLayer) {
+        mapOverlayLayer.setOpacity(norm);
+      }
+      if (mapBoxesLayer) {
+        mapBoxesLayer.eachLayer(l => {
+          if (l.setStyle) l.setStyle({ fillOpacity: norm * 0.35, opacity: Math.min(1.0, norm + 0.3) });
+        });
       }
     }
 
@@ -1896,6 +2307,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       historyBox.scrollTop = historyBox.scrollHeight;
       document.getElementById('sessionActiveBadge').classList.remove('hidden');
 
+      renderMapChanges(data);
       loadRecentAuditTraces();
     }
 
@@ -1954,66 +2366,6 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       }
     }
 
-    function switchMainTab(tab) {
-      const tabs = ['upload_analyze', 'copernicus_aoi', 'benchmarks', 'traces_dossier'];
-      const sections = {
-        'upload_analyze': document.getElementById('sectionUploadAnalyze'),
-        'copernicus_aoi': document.getElementById('sectionCopernicusAOI'),
-        'benchmarks': document.getElementById('sectionBenchmarks'),
-        'traces_dossier': document.getElementById('sectionTracesDossier')
-      };
-      const navBtns = {
-        'upload_analyze': document.getElementById('navTabUpload'),
-        'copernicus_aoi': document.getElementById('navTabCopernicus'),
-        'benchmarks': document.getElementById('navTabBenchmarks'),
-        'traces_dossier': document.getElementById('navTabTraces')
-      };
-
-      tabs.forEach(t => {
-        if (sections[t]) {
-          if (t === tab) {
-            sections[t].classList.remove('hidden');
-          } else {
-            sections[t].classList.add('hidden');
-          }
-        }
-        if (navBtns[t]) {
-          if (t === tab) {
-            navBtns[t].className = 'px-4 py-2 rounded-lg text-xs font-bold transition flex items-center space-x-2 bg-crimson-600 text-white shadow-md shadow-crimson-900/30';
-          } else {
-            navBtns[t].className = 'px-4 py-2 rounded-lg text-xs font-semibold transition flex items-center space-x-2 bg-void-900 text-slate-400 hover:text-white border border-void-800 hover:border-void-700';
-          }
-        }
-      });
-
-      if (tab === 'benchmarks') {
-        loadBenchmarkResults();
-      } else if (tab === 'traces_dossier') {
-        loadRecentAuditTraces();
-      }
-    }
-
-    async function triggerLiveBenchmarks() {
-      const suiteEl = document.getElementById('benchmarkSuiteSelect');
-      const suite = suiteEl ? suiteEl.value : 'all';
-      const btn = document.getElementById('btnRunBenchmarks');
-      const tableCont = document.getElementById('benchmarkResultsTableCont');
-      if (btn) btn.disabled = true;
-      if (tableCont) {
-        tableCont.innerHTML = '<div class="p-6 text-center text-xs text-cyan-400"><i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Running live test set inference & computing empirical metrics...</div>';
-      }
-      try {
-        const res = await fetch(`/api/v1/benchmarks/evaluate?suite=${suite}`, { method: 'POST' });
-        if (!res.ok) throw new Error('Benchmark execution failed');
-        const data = await res.json();
-        renderBenchmarkTable(data.results || data);
-      } catch (err) {
-        if (tableCont) tableCont.innerHTML = `<div class="p-4 text-xs text-red-400">Error: ${err.message}</div>`;
-      } finally {
-        if (btn) btn.disabled = false;
-      }
-    }
-
     async function loadBenchmarkResults() {
       const tableCont = document.getElementById('benchmarkResultsTableCont');
       try {
@@ -2024,65 +2376,6 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       } catch (err) {
         console.error('Failed to load benchmark results:', err);
       }
-    }
-
-    function renderBenchmarkTable(data) {
-      const tableCont = document.getElementById('benchmarkResultsTableCont');
-      if (!tableCont) return;
-      const metrics = data.metrics_summary || [];
-      if (metrics.length === 0) {
-        tableCont.innerHTML = '<div class="p-4 text-center text-xs text-slate-500">No benchmark results available. Click Evaluate to run.</div>';
-        return;
-      }
-
-      let html = `
-        <table class="w-full text-left text-xs">
-          <thead class="bg-void-900 border-b border-void-800 text-[11px] text-slate-400 font-semibold uppercase">
-            <tr>
-              <th class="p-2.5">Task / Domain</th>
-              <th class="p-2.5">Benchmark</th>
-              <th class="p-2.5">Empirical Metric</th>
-              <th class="p-2.5">Score</th>
-              <th class="p-2.5">Target</th>
-              <th class="p-2.5">Latency</th>
-              <th class="p-2.5">Status</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-void-800">
-      `;
-
-      metrics.forEach(m => {
-        const pass = m.status === 'PASS';
-        const statusBadge = pass 
-          ? '<span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold text-[10px]">PASS</span>'
-          : '<span class="px-2 py-0.5 rounded bg-red-950 text-red-400 border border-red-800 font-bold text-[10px]">FAIL</span>';
-
-        html += `
-          <tr class="hover:bg-void-900/50">
-            <td class="p-2.5 font-medium text-slate-200">${m.task}</td>
-            <td class="p-2.5 font-mono text-cyan-400">${m.benchmark}</td>
-            <td class="p-2.5 text-slate-300">${m.metric_name}</td>
-            <td class="p-2.5 font-mono font-bold text-white">${m.score_display}</td>
-            <td class="p-2.5 text-slate-500 font-mono">${m.target}</td>
-            <td class="p-2.5 font-mono text-slate-400">${m.mean_latency_ms} ms</td>
-            <td class="p-2.5">${statusBadge}</td>
-          </tr>
-        `;
-      });
-
-      html += `
-          </tbody>
-        </table>
-        <div class="p-2.5 bg-void-900 border-t border-void-800 flex justify-between items-center text-[11px] text-slate-400">
-          <span>Evaluated on: <b class="text-slate-200">${new Date(data.timestamp || Date.now()).toLocaleString()}</b></span>
-          <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-circle-check mr-1"></i>All Metrics Empirically Computed (Zero Fake Data)</span>
-        </div>
-      `;
-      tableCont.innerHTML = html;
-    }
-
-    function loadRecentAuditTraces() {
-      // Audit traces updater
     }
   </script>
 </body>

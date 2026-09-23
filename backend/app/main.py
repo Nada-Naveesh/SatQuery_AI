@@ -848,7 +848,7 @@ async def analyze_remote_sensing_query(
         if not files or len(files) == 0:
             raise HTTPException(
                 status_code=400,
-                detail="Must upload 1 or 2 satellite images (GeoTIFF / PNG), select a pre-configured scenario/scene, or provide an active session_trace_id."
+                detail="Must upload 1 or 2 satellite images (GeoTIFF / PNG / WEBP / JPEG), select a pre-configured scenario/scene, or provide an active session_trace_id."
             )
         validated_files = await validate_upload_files(files)
         for content, fname in validated_files:

@@ -3,7 +3,7 @@ from typing import List, Tuple
 from fastapi import UploadFile, HTTPException
 from backend.app.config import settings
 
-ALLOWED_EXTENSIONS = {".tif", ".tiff", ".png", ".jpg", ".jpeg"}
+ALLOWED_EXTENSIONS = {".tif", ".tiff", ".png", ".jpg", ".jpeg", ".webp"}
 
 async def validate_upload_files(files: List[UploadFile]) -> List[Tuple[bytes, str]]:
     """
