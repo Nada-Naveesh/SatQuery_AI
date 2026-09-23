@@ -58,13 +58,24 @@ def compute_spectral_indices(scene: RasterScene) -> SpectralIndices:
             red_nir_diff = (r - nir) / (r + nir + eps)
             ndbi = 0.65 * red_nir_diff + 0.35 * (brightness - 0.25)
     else:
-        # Fallback for 3-band RGB imagery (proxy indices)
-        # Green-Red vegetation proxy (VARI-like)
+        # Fallback for 3-band visible RGB imagery (proxy indices)
+        # 1. Vegetation Index: Visible Atmospherically Resistant Index (VARI proxy)
+        # Vegetation has strong green reflectance and red chlorophyll absorption.
         ndvi = (g - r) / (g + r + eps)
-        # Green-Blue water proxy
-        ndwi = (g - b) / (g + b + eps)
-        # Brightness-guided urban proxy
-        ndbi = np.clip((brightness - 0.35) * 1.5, -1.0, 1.0)
+
+        # 2. Water Index: Blue-Red Water Ratio proxy
+        # Water absorbs red wavelengths strongly, while vegetation reflects green >> blue and green >> red.
+        # Water is dark (brightness < 0.38) and exhibits blue/cyan dominance without the vegetation green peak.
+        is_water_candidate = (brightness < 0.38) & (b > r * 0.90) & (g < b * 1.25)
+        raw_ndwi = (b - r) / (b + r + eps)
+        ndwi = np.where(is_water_candidate, raw_ndwi, -0.6)
+
+        # 3. Built-up / Impervious Surface Index:
+        # Paved roads, concrete roofs, and engineered structures exhibit moderate-to-high brightness
+        # and a flat, spectrally neutral response across visible bands (|r-g| < 0.08 and |g-b| < 0.08).
+        is_urban_candidate = (brightness > 0.30) & (ndvi < 0.06)
+        neutral_factor = 1.0 - np.clip(np.abs(r - g) + np.abs(g - b), 0.0, 1.0)
+        ndbi = np.where(is_urban_candidate, (brightness - 0.28) * 2.0 * neutral_factor, -0.6)
 
     # Clip indices strictly to [-1.0, 1.0]
     ndvi = np.clip(ndvi, -1.0, 1.0)

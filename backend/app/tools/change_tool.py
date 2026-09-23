@@ -109,13 +109,17 @@ class BiTemporalChangeTool(BaseSpecialistTool):
                 lead_answer = f"Yes, new built-up and paved infrastructure increased by approximately {builtup_ha:.1f} hectares between {date1} and {date2} (highlighted in red)."
             else:
                 lead_answer = f"No significant new built-up construction was detected in this area between {date1} and {date2}."
-        elif any(w in q for w in ["flood", "water", "submerge", "river", "lake", "inundat"]):
+        elif any(w in q for w in ["flood", "water", "submerge", "river", "lake", "inundat", "nepal"]):
+            sensor_tag = "Flood indicator derived from Sentinel-1 radar data." if any(w in q for w in ["radar", "sar", "cloud"]) else "Flood indicator derived from Sentinel-2 multispectral observations."
             if water_inc_ha > 0:
-                lead_answer = f"Yes, surface water and inundation expanded by about {water_inc_ha:.1f} hectares between {date1} and {date2} (highlighted in blue)."
+                lead_answer = (
+                    f"Possible newly water-covered area of approximately {water_inc_ha:.1f} hectares detected from the selected satellite observations between {date1} and {date2} (highlighted in cyan/blue). "
+                    f"{sensor_tag} Note: This estimate is a satellite-based change indicator, not an exact ground-confirmed flood boundary."
+                )
             elif water_dec_ha > 0:
-                lead_answer = f"Water levels receded by approximately {water_dec_ha:.1f} hectares between {date1} and {date2} (highlighted in purple)."
+                lead_answer = f"Water levels receded by approximately {water_dec_ha:.1f} hectares between {date1} and {date2} (highlighted in purple). {sensor_tag}"
             else:
-                lead_answer = f"Water bodies remained stable with no major flood inundation between {date1} and {date2}."
+                lead_answer = f"Water surface remained stable across the monitored area between {date1} and {date2}. {sensor_tag}"
         elif any(w in q for w in ["tree", "forest", "green", "crop", "vegetation", "farm", "deforest"]):
             if veg_dec_ha > 0:
                 lead_answer = f"Vegetation canopy decline / crop clearing affected about {veg_dec_ha:.1f} hectares (highlighted in yellow)."

@@ -67,3 +67,6 @@ desktop.ini
 # Runtime trace outputs
 outputs/*
 !outputs/.gitkeep
+
+# Scratch directory
+scratch/

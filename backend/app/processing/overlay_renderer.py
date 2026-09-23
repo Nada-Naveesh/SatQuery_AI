@@ -46,7 +46,7 @@ class RenderResult:
 def render_evidence_overlay(
     base_true_color: np.ndarray,
     change_result: ChangeClassificationResult,
-    alpha: float = 0.65,
+    alpha: float = 0.40,
     add_decorations: bool = True,
     date_labels: Optional[Tuple[str, str]] = None,
     resolution_m: float = 10.0
@@ -70,15 +70,15 @@ def render_evidence_overlay(
         c_r, c_g, c_b = color
         color_arr = np.array([c_r, c_g, c_b], dtype=np.float32)
 
-        # RGBA Layer: assign color and alpha
-        a_val = int(255 * (0.40 if class_id == CLASS_CLOUD_INVALID else alpha))
+        # RGBA Layer: assign color and subtle semi-transparent alpha (default 35-45%)
+        a_val = int(255 * (0.30 if class_id == CLASS_CLOUD_INVALID else alpha))
         rgba[class_pixels, 0] = c_r
         rgba[class_pixels, 1] = c_g
         rgba[class_pixels, 2] = c_b
         rgba[class_pixels, 3] = a_val
 
-        # Blended RGB Layer: Alpha-blend over base satellite image
-        class_alpha = 0.35 if class_id == CLASS_CLOUD_INVALID else alpha
+        # Blended RGB Layer: Subtle Alpha-blend preserving base satellite texture
+        class_alpha = 0.25 if class_id == CLASS_CLOUD_INVALID else alpha
         blended[class_pixels] = (
             (1.0 - class_alpha) * blended[class_pixels] + class_alpha * color_arr
         )

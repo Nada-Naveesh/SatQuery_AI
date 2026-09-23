@@ -132,12 +132,11 @@ def test_analyze_kurnool_solar_park_scene():
 
 def test_mission_control_html_serves_ap_coverage():
     """
-    Verifies that the root Mission Control HTML dashboard contains Andhra Pradesh state-wide coverage.
+    Verifies that the root Mission Control HTML dashboard supports arbitrary search and includes key regions.
     """
     resp = client.get("/")
     assert resp.status_code == 200
     html = resp.text
-    assert "Andhra Pradesh State-Wide Coverage" in html
     assert "Vijayawada" in html
     assert "Amaravati" in html
     assert "Visakhapatnam" in html
@@ -175,4 +174,61 @@ def test_aoi_search_endpoint():
     resp_tpt = client.get("/api/v1/aoi/search?q=Tirupati")
     assert resp_tpt.status_code == 200
     assert resp_tpt.json()["aoi"] == "tirupati"
+
+
+def test_how_to_use_guide_ribbon_in_html():
+    """
+    Verifies that the Quick Start Guide ribbon and toggle functions exist in Mission Control HTML.
+    """
+    resp = client.get("/")
+    assert resp.status_code == 200
+    html = resp.text
+    assert "howToUseGuide" in html
+    assert "Quick Start Guide" in html
+    assert "toggleHowToUseGuide" in html
+    assert "Select Location" in html
+    assert "Discover Scenes" in html
+    assert "Load Both Scenes" in html
+    assert "Detect &amp; Quantify" in html
+
+
+def test_all_cities_bitemporal_change_nonzero_hectares():
+    """
+    Verifies that all 8 key Andhra Pradesh cities produce non-zero physical hectares
+    for both New Built-up and Vegetation Loss, resolving the 0.0 ha issue completely.
+    """
+    cities = [
+        "vijayawada",
+        "amaravati",
+        "visakhapatnam",
+        "tirupati",
+        "kurnool",
+        "gudlavalleru",
+        "avanigadda",
+        "kankipadu",
+    ]
+
+    for city in cities:
+        s1 = f"copernicus_{city}_s2_2025"
+        s2 = f"copernicus_{city}_s2_2026"
+        resp = client.post(
+            "/api/v1/analyze",
+            data={
+                "query": f"Detect urban expansion and vegetation changes in {city}.",
+                "scene_ids": f"{s1},{s2}",
+                "analysis_mode": "change"
+            }
+        )
+        assert resp.status_code == 200, f"Analysis failed for {city}: {resp.text}"
+        data = resp.json()
+        metric = data.get("result", {}).get("visual_evidence", {}).get("metric_summary", {})
+        total_ha = metric.get("area_hectares", 0.0)
+        builtup_ha = metric.get("builtup_expansion_hectares", 0.0)
+        vegloss_ha = metric.get("vegetation_loss_hectares", 0.0)
+        water_ha = metric.get("water_increase_hectares", 0.0)
+
+        assert total_ha > 0.0, f"{city} total_ha must be > 0"
+        assert builtup_ha > 0.0, f"{city} built_up_increase_ha must be > 0, got {builtup_ha}"
+        assert vegloss_ha > 0.0, f"{city} vegetation_loss_ha must be > 0, got {vegloss_ha}"
+        assert water_ha > 0.0, f"{city} water_changes_ha must be > 0, got {water_ha}"
 

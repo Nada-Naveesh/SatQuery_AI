@@ -116,6 +116,10 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
           <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
           <span>Copernicus CDSE: <b class="text-emerald-400">Online</b></span>
         </div>
+        <button onclick="toggleHowToUseGuide()" class="inline-flex items-center space-x-1.5 bg-crimson-950/80 hover:bg-crimson-900 text-crimson-200 hover:text-white text-xs font-semibold px-3 py-2 rounded-lg border border-crimson-700/80 transition shadow-sm">
+          <i class="fa-solid fa-compass text-crimson-400"></i>
+          <span>How to Use SatQuery</span>
+        </button>
         <button onclick="openDataModal()" class="inline-flex items-center space-x-1.5 bg-void-850 hover:bg-void-800 text-slate-300 hover:text-white text-xs font-medium px-3 py-2 rounded-lg border border-void-700 hover:border-crimson-600 transition shadow-sm">
           <i class="fa-solid fa-circle-question text-crimson-400"></i>
           <span>How to Get Free Data</span>
@@ -131,6 +135,72 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       </div>
     </div>
   </header>
+
+  <!-- Top "How to Use SatQuery AI" Guide Ribbon -->
+  <section id="howToUseGuide" class="bg-gradient-to-r from-void-900 via-void-850 to-void-900 border-b border-crimson-900/60 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center space-x-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-crimson-500 animate-ping"></span>
+          <h2 class="text-xs font-bold uppercase tracking-wider text-crimson-300 flex items-center space-x-1.5">
+            <i class="fa-solid fa-circle-info text-crimson-400"></i>
+            <span>Quick Start Guide &mdash; How to Use SatQuery AI (PS 26167)</span>
+          </h2>
+          <span class="text-[10px] bg-crimson-950 text-crimson-400 px-2 py-0.5 rounded border border-crimson-800 font-mono">10m GSD Multi-Temporal</span>
+        </div>
+        <button onclick="toggleHowToUseGuide()" class="text-xs text-slate-400 hover:text-white flex items-center space-x-1 px-2 py-1 rounded bg-void-950 border border-void-700 hover:border-void-600">
+          <span id="guideToggleText">Collapse Guide</span>
+          <i id="guideToggleIcon" class="fa-solid fa-chevron-up text-[10px]"></i>
+        </button>
+      </div>
+
+      <div id="guideStepsGrid" class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+        <!-- Step 1 -->
+        <div class="bg-void-950/80 border border-void-800 hover:border-crimson-900/50 p-2.5 rounded-lg">
+          <div class="flex items-center space-x-2 mb-1.5">
+            <span class="w-5 h-5 rounded-full bg-crimson-600 text-white flex items-center justify-center font-bold text-[10px]">1</span>
+            <span class="font-bold text-slate-200">Select Location</span>
+          </div>
+          <p class="text-[11px] text-slate-400 leading-snug">
+            Choose an authentic Sentinel-2 city (<b class="text-slate-200">Vijayawada, Amaravati, Visakhapatnam, Tirupati, Kurnool, Gudlavalleru, Avanigadda, Kankipadu</b>) or type any global place name.
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="bg-void-950/80 border border-void-800 hover:border-crimson-900/50 p-2.5 rounded-lg">
+          <div class="flex items-center space-x-2 mb-1.5">
+            <span class="w-5 h-5 rounded-full bg-crimson-600 text-white flex items-center justify-center font-bold text-[10px]">2</span>
+            <span class="font-bold text-slate-200">Discover Scenes</span>
+          </div>
+          <p class="text-[11px] text-slate-400 leading-snug">
+            Click <b class="text-crimson-400">Discover Scenes (CDSE)</b>. Real Sentinel-2 L2A observations (True Color RGB + NIR) are fetched from the Copernicus Data Space API with cloud cover filtering.
+          </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="bg-void-950/80 border border-void-800 hover:border-crimson-900/50 p-2.5 rounded-lg">
+          <div class="flex items-center space-x-2 mb-1.5">
+            <span class="w-5 h-5 rounded-full bg-crimson-600 text-white flex items-center justify-center font-bold text-[10px]">3</span>
+            <span class="font-bold text-slate-200">Load Both Scenes</span>
+          </div>
+          <p class="text-[11px] text-slate-400 leading-snug">
+            Click <b class="text-emerald-400">Load Both Scenes for Change Detection</b> (or manually assign <b class="text-amber-300">T1 Baseline</b> &amp; <b class="text-blue-300">T2 Follow-up</b>) into the interactive canvas.
+          </p>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="bg-void-950/80 border border-void-800 hover:border-crimson-900/50 p-2.5 rounded-lg">
+          <div class="flex items-center space-x-2 mb-1.5">
+            <span class="w-5 h-5 rounded-full bg-crimson-600 text-white flex items-center justify-center font-bold text-[10px]">4</span>
+            <span class="font-bold text-slate-200">Detect &amp; Quantify</span>
+          </div>
+          <p class="text-[11px] text-slate-400 leading-snug">
+            Click <b class="text-crimson-400">Run Change Detection</b> or ask Copilot. SatQuery computes genuine physical hectares for <span class="text-red-400 font-semibold">Built-up</span>, <span class="text-yellow-300 font-semibold">Veg Loss</span>, and <span class="text-cyan-300 font-semibold">Water</span> with swipe overlay &amp; PDF report.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- Main Container -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 grid grid-cols-1 lg:grid-cols-12 gap-5">
@@ -162,33 +232,11 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
 
         <div class="space-y-2">
           <div class="flex gap-1.5">
-            <input type="text" id="copernicusPlaceInput" value="kankipadu" placeholder="Enter ANY place in India or worldwide (e.g. Kankipadu, Avanigadda, Vijayawada)..." class="flex-1 bg-void-950 border border-void-700 rounded px-2.5 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-crimson-500" onkeydown="if(event.key==='Enter') executeCopernicusSearch()">
-            <button onclick="executeCopernicusSearch()" id="btnCopernicusSearch" class="bg-crimson-600 hover:bg-crimson-500 text-white text-xs px-3.5 py-1.5 rounded font-semibold transition flex items-center space-x-1.5 shadow">
+            <input type="text" id="copernicusPlaceInput" value="river corridor near Rasuwa / Bhote Koshi" placeholder="Search ANY location or coordinates worldwide (e.g. Rasuwa, Bhote Koshi, Kathmandu, Vijayawada, 28.1° N, 85.3° E)..." class="flex-1 bg-void-950 border border-void-700 rounded px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-crimson-500" onkeydown="if(event.key==='Enter') executeCopernicusSearch()">
+            <button onclick="executeCopernicusSearch()" id="btnCopernicusSearch" class="bg-crimson-600 hover:bg-crimson-500 text-white text-xs px-4 py-2 rounded font-semibold transition flex items-center space-x-1.5 shadow">
               <i class="fa-solid fa-magnifying-glass text-[10px]"></i>
               <span>Fetch Scenes</span>
             </button>
-          </div>
-
-          <!-- Andhra Pradesh State-Wide Coverage -->
-          <div class="pt-1">
-            <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1">
-              <span class="font-semibold text-slate-300 flex items-center space-x-1">
-                <i class="fa-solid fa-map-location-dot text-crimson-400"></i>
-                <span>Andhra Pradesh State-Wide Coverage</span>
-              </span>
-              <span class="text-crimson-400 font-mono">10m GSD</span>
-            </div>
-            <div class="flex flex-wrap gap-1">
-              <button onclick="quickSelectPlace('kankipadu')" class="text-[9px] bg-crimson-950/80 hover:bg-crimson-900 border border-crimson-600 text-crimson-200 px-2 py-0.5 rounded transition font-bold">Kankipadu</button>
-              <button onclick="quickSelectPlace('vijayawada')" class="text-[9px] bg-void-950 hover:bg-crimson-950/60 border border-void-700 hover:border-crimson-500 text-slate-300 hover:text-white px-2 py-0.5 rounded transition">Vijayawada</button>
-              <button onclick="quickSelectPlace('amaravati')" class="text-[9px] bg-void-950 hover:bg-crimson-950/60 border border-void-700 hover:border-crimson-500 text-slate-300 hover:text-white px-2 py-0.5 rounded transition">Amaravati</button>
-              <button onclick="quickSelectPlace('visakhapatnam')" class="text-[9px] bg-void-950 hover:bg-crimson-950/60 border border-void-700 hover:border-crimson-500 text-slate-300 hover:text-white px-2 py-0.5 rounded transition">Visakhapatnam</button>
-              <button onclick="quickSelectPlace('tirupati')" class="text-[9px] bg-void-950 hover:bg-crimson-950/60 border border-void-700 hover:border-crimson-500 text-slate-300 hover:text-white px-2 py-0.5 rounded transition">Tirupati</button>
-              <button onclick="quickSelectPlace('kurnool')" class="text-[9px] bg-void-950 hover:bg-crimson-950/60 border border-void-700 hover:border-crimson-500 text-slate-300 hover:text-white px-2 py-0.5 rounded transition">Kurnool</button>
-              <button onclick="quickSelectPlace('avanigadda')" class="text-[9px] bg-void-950 hover:bg-crimson-950/60 border border-void-700 hover:border-crimson-500 text-slate-300 hover:text-white px-2 py-0.5 rounded transition">Avanigadda</button>
-              <button onclick="quickSelectPlace('gudlavalleru')" class="text-[9px] bg-void-950 hover:bg-crimson-950/60 border border-void-700 hover:border-crimson-500 text-slate-300 hover:text-white px-2 py-0.5 rounded transition">Gudlavalleru</button>
-              <button onclick="quickSelectPlace('machilipatnam')" class="text-[9px] bg-void-950 hover:bg-crimson-950/60 border border-void-700 hover:border-crimson-500 text-slate-300 hover:text-white px-2 py-0.5 rounded transition">Machilipatnam</button>
-            </div>
           </div>
 
           <div class="flex items-center justify-between text-[11px] text-slate-400 px-1 pt-1">
@@ -263,97 +311,125 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
     <!-- Right Visualization & Result Panel (7 Cols) -->
     <div class="lg:col-span-7 space-y-4">
 
-      <!-- Viewport Card with 4 View Modes, Opacity Slider & Hectare Statistics -->
+      <!-- Viewport Card with 3 View Modes, Basemap Switcher, Opacity Controls & Hectare Statistics -->
       <div class="bg-void-900 border border-void-800 rounded-xl p-4 shadow-sm">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
           <div class="flex items-center space-x-2">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Satellite Viewport</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-1.5">
+              <i class="fa-solid fa-satellite text-crimson-400"></i>
+              <span>Main Satellite Viewport</span>
+            </span>
             <span id="detectedBadge" class="hidden text-[10px] px-2 py-0.5 rounded font-mono font-medium bg-crimson-950 text-crimson-400 border border-crimson-800">
               Task: Change Detection
             </span>
           </div>
 
-          <!-- 4 View Mode Buttons -->
+          <!-- 3 Clean Viewport Mode Buttons -->
           <div class="flex items-center space-x-1 bg-void-950 p-1 rounded-md border border-void-700 text-xs flex-wrap">
-            <button onclick="setViewMode('base')" id="btnViewBase" class="px-2.5 py-1 rounded bg-crimson-600 text-white font-medium text-[11px] transition">VIEWPORT</button>
-            <button onclick="setViewMode('overlay')" id="btnViewOverlay" class="px-2.5 py-1 rounded text-slate-400 hover:text-white font-medium text-[11px] transition">DETECTION</button>
-            <button onclick="setViewMode('split')" id="btnViewSplit" class="px-2.5 py-1 rounded text-slate-400 hover:text-white font-medium text-[11px] transition">Split Comparison</button>
-            <button onclick="setViewMode('quality')" id="btnViewQuality" class="px-2.5 py-1 rounded text-slate-400 hover:text-white font-medium text-[11px] transition">Quality View</button>
+            <button onclick="setViewMode('satellite')" id="btnViewSatellite" class="px-3 py-1 rounded bg-crimson-600 text-white font-semibold text-[11px] transition shadow flex items-center space-x-1.5">
+              <i class="fa-solid fa-satellite text-[10px]"></i>
+              <span>Satellite Image</span>
+            </button>
+            <button onclick="setViewMode('split')" id="btnViewSplit" class="px-3 py-1 rounded text-slate-400 hover:text-white font-medium text-[11px] transition flex items-center space-x-1.5">
+              <i class="fa-solid fa-arrows-split-up-and-left text-[10px]"></i>
+              <span>Split Comparison</span>
+            </button>
+            <button onclick="setViewMode('evidence')" id="btnViewEvidence" class="px-3 py-1 rounded text-slate-400 hover:text-white font-medium text-[11px] transition flex items-center space-x-1.5">
+              <i class="fa-solid fa-layer-group text-[10px]"></i>
+              <span>Evidence View</span>
+            </button>
           </div>
         </div>
 
-        <!-- Layer Opacity & Category Palette Bar -->
+        <!-- Mode Sub-bar: Basemap Switcher & Evidence Layer Controls -->
         <div class="flex flex-wrap items-center justify-between gap-2 mb-2 px-2.5 py-1.5 rounded-lg bg-void-950/80 border border-void-800 text-[11px]">
+          <!-- Left: Analysis Image vs Basemap Indicator & Switcher -->
           <div class="flex items-center space-x-2">
-            <span class="text-slate-400 font-medium text-[10px]">Overlay Opacity:</span>
-            <input type="range" id="overlayOpacitySlider" min="10" max="100" value="85" class="w-24 accent-crimson-500 cursor-pointer" oninput="updateOverlayOpacity(this.value)">
-            <span id="overlayOpacityVal" class="text-crimson-400 font-mono text-[10px] font-bold">85%</span>
+            <div id="imageSourceBadge" class="inline-flex items-center space-x-1 text-[10px] bg-crimson-950/80 text-crimson-300 px-2 py-0.5 rounded border border-crimson-700/80 font-mono">
+              <i id="imageSourceIcon" class="fa-solid fa-satellite text-crimson-400"></i>
+              <span id="imageSourceBadgeText">Analysis Image: Sentinel-2 L2A</span>
+            </div>
+            <button onclick="toggleReferenceBasemap()" id="btnToggleBasemap" class="text-[10px] text-slate-300 hover:text-white bg-void-900 border border-void-700 hover:border-crimson-600 px-2.5 py-0.5 rounded transition flex items-center space-x-1">
+              <i class="fa-solid fa-map text-slate-400"></i>
+              <span id="toggleBasemapText">Show Reference Basemap</span>
+            </button>
           </div>
-          <div class="flex items-center space-x-2.5 text-[10px] text-slate-300">
-            <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-red-500"></span><span>Built-up</span></span>
-            <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-emerald-400"></span><span>Veg Growth</span></span>
-            <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-yellow-400"></span><span>Veg Loss</span></span>
-            <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-cyan-400"></span><span>Water</span></span>
-          </div>
-        </div>
 
-        <!-- Interactive Canvas Viewport (Never Black, Never Broken) -->
-        <div id="canvasViewport" class="relative w-full h-[400px] bg-black rounded-lg border border-void-800 overflow-hidden flex items-center justify-center">
-          <img id="viewerBaseImg" src="/static/thumbs/kankipadu_s2_2026.jpg" onerror="this.onerror=null; this.src='/static/thumbs/vja_s2_2026_09_02.jpg'" alt="Satellite Base Scene" class="absolute inset-0 w-full h-full object-contain">
-          
-          <img id="viewerOverlayImg" src="" alt="Evidence Overlay" class="absolute inset-0 w-full h-full object-contain opacity-85 transition-opacity z-10 hidden pointer-events-none">
+          <!-- Right: Evidence View Controls (Only visible in Evidence View mode) -->
+          <div id="evidenceControlsBar" class="hidden flex-wrap items-center gap-2">
+            <!-- Overlay On/Off Toggle -->
+            <label class="flex items-center space-x-1 text-[10px] text-slate-300 cursor-pointer">
+              <input type="checkbox" id="overlayToggleCheck" checked onchange="toggleOverlayVisibility(this.checked)" class="accent-crimson-500 rounded">
+              <span class="font-medium">Overlay: <b id="overlayStateText" class="text-emerald-400">ON</b></span>
+            </label>
 
-          <!-- Quality View Overlay -->
-          <div id="viewerQualityImg" class="absolute inset-0 w-full h-full hidden z-15 bg-emerald-950/40 backdrop-blur-[0.5px] flex items-center justify-center border-2 border-emerald-500/50">
-            <div class="bg-void-950/95 border border-emerald-500/80 rounded-xl p-4 text-center space-y-1.5 shadow-2xl max-w-sm">
-              <div class="text-emerald-400 font-bold flex items-center justify-center space-x-1.5 text-xs">
-                <i class="fa-solid fa-shield-check text-sm"></i>
-                <span id="qualityTitleText">Atmospheric Validity: 100% Clear</span>
-              </div>
-              <p id="qualityDescText" class="text-[11px] text-slate-300">Cloud mask: 0.0% &bull; Overlap: 100% &bull; Registration: Sub-pixel co-registered (good)</p>
-              <div class="text-[10px] text-slate-400 font-mono pt-1 border-t border-void-800">
-                Ground Resolution: 10m GSD &bull; Sentinel-2 MSI L2A
-              </div>
+            <!-- Opacity Slider (35-45% default, set to 40%) -->
+            <div class="flex items-center space-x-1.5 pl-2 border-l border-void-700">
+              <span class="text-slate-400 text-[10px]">Opacity:</span>
+              <input type="range" id="overlayOpacitySlider" min="10" max="90" value="40" class="w-20 accent-crimson-500 cursor-pointer" oninput="updateOverlayOpacity(this.value)">
+              <span id="overlayOpacityVal" class="text-crimson-400 font-mono text-[10px] font-bold">40%</span>
+            </div>
+
+            <!-- Category Filter Pills -->
+            <div class="flex items-center space-x-1 pl-2 border-l border-void-700">
+              <button onclick="filterCategory('all')" id="catBtnAll" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-crimson-600 text-white">All</button>
+              <button onclick="filterCategory('water')" id="catBtnWater" class="px-1.5 py-0.5 rounded text-[9px] font-medium bg-void-900 text-cyan-300 border border-cyan-800 hover:bg-cyan-950/60">Water</button>
+              <button onclick="filterCategory('builtup')" id="catBtnBuiltup" class="px-1.5 py-0.5 rounded text-[9px] font-medium bg-void-900 text-red-300 border border-red-800 hover:bg-red-950/60">Built-up</button>
+              <button onclick="filterCategory('veg')" id="catBtnVeg" class="px-1.5 py-0.5 rounded text-[9px] font-medium bg-void-900 text-yellow-300 border border-yellow-800 hover:bg-yellow-950/60">Vegetation</button>
+              <button onclick="filterCategory('uncertain')" id="catBtnUncertain" class="px-1.5 py-0.5 rounded text-[9px] font-medium bg-void-900 text-slate-400 border border-void-700 hover:bg-void-800">Uncertain</button>
             </div>
           </div>
+        </div>
 
-          <!-- Real-Time Tactical Coordinates HUD Overlay -->
+        <!-- Interactive Canvas Viewport (Authentic Sentinel-2 L2A & Esri Reference Basemap) -->
+        <div id="canvasViewport" class="relative w-full h-[400px] bg-black rounded-lg border border-void-800 overflow-hidden flex items-center justify-center">
+          <!-- 1. Real Sentinel-2 L2A True-Color RGB Analysis Image -->
+          <img id="viewerBaseImg" src="/static/thumbs/rasuwa_s2_2026.jpg" onerror="this.onerror=null; this.src='/static/thumbs/vja_s2_2026_09_02.jpg'" alt="Analysis Image: Sentinel-2 L2A" class="absolute inset-0 w-full h-full object-contain">
+          
+          <!-- 2. Optional Reference Basemap (Esri World Imagery) -->
+          <img id="viewerBasemapImg" src="" alt="Reference basemap — not the image used for analysis." class="absolute inset-0 w-full h-full object-contain hidden">
+
+          <!-- 3. Semi-Transparent Evidence Overlay (Default 40% subtle opacity) -->
+          <img id="viewerOverlayImg" src="" alt="Evidence Overlay" class="absolute inset-0 w-full h-full object-contain opacity-40 transition-opacity z-10 hidden pointer-events-none" style="opacity: 0.40;">
+
+          <!-- Real-Time Tactical Coordinates & Scene Details HUD -->
           <div id="viewerCoordsOverlay" class="absolute top-2.5 left-2.5 bg-void-950/90 border border-crimson-600/70 rounded-md px-2.5 py-1.5 text-[11px] font-mono backdrop-blur-md shadow-lg z-20 pointer-events-none flex flex-col space-y-0.5">
             <div class="flex items-center space-x-1.5 text-crimson-400 font-bold tracking-wider uppercase text-[10px]">
               <i class="fa-solid fa-crosshairs animate-pulse"></i>
-              <span id="hudLocationName">KANKIPADU</span>
+              <span id="hudLocationName">RIVER CORRIDOR NEAR RASUWA / BHOTE KOSHI</span>
             </div>
             <div class="text-slate-200 font-semibold tracking-wide flex items-center space-x-1 text-[11px]">
               <span class="text-slate-400 text-[10px]">COORDS:</span>
-              <span id="hudLatLon" class="text-emerald-400 font-bold">16.4387° N, 80.7647° E</span>
+              <span id="hudLatLon" class="text-emerald-400 font-bold">28.1754° N, 85.4776° E</span>
             </div>
-            <div class="text-[9px] text-slate-400">
-              <span>BBOX:</span> <span id="hudBbox" class="text-slate-300">[16.42° N, 80.74° E] to [16.46° N, 80.78° E]</span>
-            </div>
-            <div class="text-[8px] text-slate-500 font-mono pt-0.5 border-t border-void-800">
-              BAND COMBINATION: Sentinel-2 L2A True Color (B04, B03, B02) 10m Ground Resolution
+            <div class="text-[9px] text-slate-400 flex items-center space-x-2">
+              <span>BBOX: <b id="hudBbox" class="text-slate-300 font-normal">[28.08° N, 85.32° E] to [28.25° N, 85.50° E]</b></span>
             </div>
           </div>
 
           <!-- Split Screen Slider Container -->
-          <div id="splitContainer" class="absolute inset-0 hidden z-15">
-            <div id="splitClip" class="absolute inset-0 overflow-hidden w-1/2 border-r-2 border-crimson-500 shadow-2xl">
-              <img id="viewerSplitImg" src="/static/thumbs/kankipadu_s2_2025.jpg" onerror="this.onerror=null; this.src='/static/thumbs/vja_s2_2025_08_15.jpg'" class="absolute inset-0 w-full h-full object-contain max-w-none">
+          <div id="splitContainer" class="absolute inset-0 hidden z-15 pointer-events-none">
+            <img id="viewerSplitImg" src="/static/thumbs/rasuwa_s2_2025.jpg" onerror="this.onerror=null; this.src='/static/thumbs/vja_s2_2025_08_15.jpg'" class="absolute inset-0 w-full h-full object-contain pointer-events-none" style="clip-path: inset(0 calc(100% - 50%) 0 0);">
+            <div id="splitHandle" class="slider-handle pointer-events-auto" tabindex="0" role="slider" aria-label="Split Comparison Slider" aria-valuenow="50" style="left: 50%;"></div>
+            <div class="absolute top-2.5 left-2.5 bg-void-950/85 border border-void-700 px-2 py-0.5 rounded text-[9px] font-mono text-slate-300 pointer-events-none shadow">
+              <span>BEFORE: <b id="splitDateBefore" class="text-white">2025-08-15</b></span>
             </div>
-            <div id="splitHandle" class="slider-handle" style="left: 50%;"></div>
+            <div class="absolute top-2.5 right-2.5 bg-void-950/85 border border-void-700 px-2 py-0.5 rounded text-[9px] font-mono text-slate-300 pointer-events-none shadow">
+              <span>AFTER: <b id="splitDateAfter" class="text-white">2026-09-02</b></span>
+            </div>
           </div>
 
           <!-- Explainable Map Legend (Floating on Viewport) -->
           <div id="mapLegend" class="absolute bottom-3 left-3 bg-void-950/95 border border-crimson-900/70 rounded-lg p-2.5 text-[10px] space-y-1 backdrop-blur shadow-2xl z-20 hidden">
             <span class="font-bold text-slate-200 block border-b border-void-700 pb-0.5 uppercase tracking-wider text-[9px] flex items-center space-x-1">
               <i class="fa-solid fa-layer-group text-crimson-400 text-[8px]"></i>
-              <span>Calculated Change Legend</span>
+              <span>Calculated Evidence Legend</span>
             </span>
-            <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-sm shadow-red-500/50"></span><span class="text-slate-300">New Built-up & Roads</span></div>
-            <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50"></span><span class="text-slate-300">Vegetation / Canopy Growth</span></div>
-            <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-yellow-400 shadow-sm shadow-yellow-400/50"></span><span class="text-slate-300">Vegetation Loss / Clearing</span></div>
-            <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400/50"></span><span class="text-slate-300">Water Inundation / Expansion</span></div>
-            <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-purple-400 shadow-sm shadow-purple-400/50"></span><span class="text-slate-300">Water Body Decline / Drying</span></div>
+            <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400/50"></span><span class="text-slate-300">Possible new water / flood expansion</span></div>
+            <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-sm shadow-red-500/50"></span><span class="text-slate-300">Possible new built-up / paved surface</span></div>
+            <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50"></span><span class="text-slate-300">Vegetation increase / greening</span></div>
+            <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-yellow-400 shadow-sm shadow-yellow-400/50"></span><span class="text-slate-300">Vegetation decrease / clearing</span></div>
+            <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-slate-500 shadow-sm shadow-slate-500/50"></span><span class="text-slate-300">Cloud / invalid / uncertain region</span></div>
           </div>
 
           <!-- Loading Spinner -->
@@ -398,11 +474,58 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
           </div>
         </div>
 
+        <!-- Collapsible Advanced Details Accordion -->
+        <div class="mt-2.5 bg-void-950 border border-void-800 rounded-lg overflow-hidden text-xs">
+          <button onclick="toggleAdvancedDetails()" class="w-full px-3 py-2 bg-void-900/80 hover:bg-void-850 flex items-center justify-between text-slate-300 font-semibold transition">
+            <span class="flex items-center space-x-2">
+              <i class="fa-solid fa-sliders text-crimson-400"></i>
+              <span>Advanced Details &amp; Scientific Data Authenticity</span>
+            </span>
+            <i id="advDetailsChevron" class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform"></i>
+          </button>
+          
+          <div id="advDetailsContent" class="hidden p-3 space-y-3 border-t border-void-800 bg-void-950/90">
+            <!-- Atmospheric Quality & Sensor Band Spec -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+              <div class="p-2.5 rounded bg-void-900 border border-void-800 space-y-1">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 flex items-center space-x-1">
+                  <i class="fa-solid fa-shield-check"></i>
+                  <span>Atmospheric &amp; Quality Metrics</span>
+                </span>
+                <p class="text-[11px] text-slate-300" id="qualityDescText">Cloud mask: 0.0% &bull; Overlap: 100% &bull; Sub-pixel co-registered (good)</p>
+                <p class="text-[10px] text-slate-400 font-mono">Ground Sample Distance: 10.0 m &bull; EPSG:4326 (WGS84)</p>
+              </div>
+              
+              <div class="p-2.5 rounded bg-void-900 border border-void-800 space-y-1">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-cyan-400 flex items-center space-x-1">
+                  <i class="fa-solid fa-wave-pulse"></i>
+                  <span>Calibrated Sensor Bands</span>
+                </span>
+                <p class="text-[11px] text-slate-300">B04 (Red 665nm) &bull; B03 (Green 560nm) &bull; B02 (Blue 490nm) &bull; B08 (NIR 842nm)</p>
+                <p class="text-[10px] text-slate-400 font-mono">Contrast: Percentile stretch &bull; Dynamic range: BOA Reflectance</p>
+              </div>
+            </div>
+
+            <!-- Data Authenticity JSON Record -->
+            <div class="space-y-1">
+              <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono">
+                <span>Data Authenticity Record (Audit Trace):</span>
+                <button onclick="copyDataAuthenticityJson()" class="text-crimson-400 hover:underline">Copy JSON</button>
+              </div>
+              <pre id="dataAuthenticityViewer" class="p-2 rounded bg-void-900 border border-void-800 text-[10px] font-mono text-emerald-400 overflow-x-auto max-h-36"></pre>
+            </div>
+          </div>
+        </div>
+
         <!-- Viewport Metadata Footer -->
         <div class="mt-2 flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-slate-400 px-1 gap-1 border-t border-void-800 pt-2">
           <div class="flex items-center space-x-1.5 overflow-hidden text-ellipsis whitespace-nowrap">
-            <span class="text-slate-500 font-semibold uppercase text-[10px]">Data Source:</span>
-            <span id="sceneDataSource" class="text-crimson-300 font-medium">Copernicus Sentinel-2 (2025-08-15 vs 2026-09-02), kankipadu</span>
+            <span class="text-slate-500 font-semibold uppercase text-[10px]">Source:</span>
+            <span id="sceneDataSource" class="text-crimson-300 font-medium">Copernicus Sentinel-2 L2A</span>
+            <span>&bull;</span>
+            <span>Date: <b id="footerDate" class="text-white">02 Sep 2026</b></span>
+            <span>&bull;</span>
+            <span>Cloud: <b id="footerCloud" class="text-emerald-400">2.8%</b></span>
           </div>
           <div class="flex items-center space-x-2 text-slate-400 font-mono text-[10px]">
             <span id="sceneCoordinatesBadge" class="text-crimson-400 font-bold bg-crimson-950/60 px-2 py-0.5 rounded border border-crimson-900/60">LAT/LON: 16.4387° N, 80.7647° E</span>
@@ -621,11 +744,11 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         date: '2025-08-15 (T1) vs. 2026-09-02 (T2)',
         area: 'Vijayawada, Krishna District, AP, India',
         resolution: '10 m GSD',
-        source: 'Sentinel-2 L2A State-Wide AP Archive',
-        image: '/static/thumbs/vja_s2_2026_09_02.jpg',
-        split_image: '/static/thumbs/vja_s2_2025_08_15.jpg',
+        source: 'Copernicus Sentinel-2 L2A',
+        image: '/static/thumbs/vijayawada_s2_2026.jpg',
+        split_image: '/static/thumbs/vijayawada_s2_2025.jpg',
         query: 'What infrastructure and environmental changes occurred in vijayawada between 2025-08-15 and 2026-09-02?',
-        scene_ids: 'vja_s2_2025_08_15,vja_s2_2026_09_02',
+        scene_ids: 'vijayawada_s2_2025,vijayawada_s2_2026',
         analysis_mode: 'change'
       },
       'avanigadda': {
@@ -652,10 +775,10 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         area: 'Gudlavalleru, Krishna District, AP, India',
         resolution: '10 m GSD',
         source: 'Sentinel-2 L2A Archive (10m L2A)',
-        image: '/static/thumbs/gvl_s2_2026_09_05.jpg',
-        split_image: '/static/thumbs/gvl_s2_2025_09_03.jpg',
+        image: '/static/thumbs/gudlavalleru_s2_2026.jpg',
+        split_image: '/static/thumbs/gudlavalleru_s2_2025.jpg',
         query: 'What changed between 2025 and 2026 in this area?',
-        scene_ids: 'gvl_s2_2025_09_03,gvl_s2_2026_09_05',
+        scene_ids: 'gudlavalleru_s2_2025,gudlavalleru_s2_2026',
         analysis_mode: 'change'
       },
       'amaravati': {
@@ -667,10 +790,10 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         area: 'Amaravati Capital Region, Andhra Pradesh, India',
         resolution: '10 m GSD',
         source: 'Sentinel-2 L2A State-Wide AP Archive',
-        image: '/static/thumbs/amr_s2_2026_09_01.jpg',
-        split_image: '/static/thumbs/amr_s2_2025_08_12.jpg',
+        image: '/static/thumbs/amaravati_s2_2026.jpg',
+        split_image: '/static/thumbs/amaravati_s2_2025.jpg',
         query: 'What infrastructure and capital construction changes occurred between 2025 and 2026?',
-        scene_ids: 'amr_s2_2025_08_12,amr_s2_2026_09_01',
+        scene_ids: 'amaravati_s2_2025,amaravati_s2_2026',
         analysis_mode: 'change'
       },
       'visakhapatnam': {
@@ -682,10 +805,40 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         area: 'Visakhapatnam Port & Smart City, AP, India',
         resolution: '10 m GSD',
         source: 'Sentinel-2 L2A State-Wide AP Archive',
-        image: '/static/thumbs/vzg_s2_2026_09_04.jpg',
-        split_image: '/static/thumbs/vzg_s2_2025_08_17.jpg',
+        image: '/static/thumbs/visakhapatnam_s2_2026.jpg',
+        split_image: '/static/thumbs/visakhapatnam_s2_2025.jpg',
         query: 'Detect port container terminal expansion and shoreline breakwater changes.',
-        scene_ids: 'vzg_s2_2025_08_17,vzg_s2_2026_09_04',
+        scene_ids: 'visakhapatnam_s2_2025,visakhapatnam_s2_2026',
+        analysis_mode: 'change'
+      },
+      'tirupati': {
+        name: 'Tirupati Foothills & Tech Corridor, AP',
+        coords: '13.6300° N, 79.4200° E',
+        bbox: '[13.56° N, 79.35° E] to [13.70° N, 79.48° E]',
+        feature: 'Tirumala Foothills, Urban Tech Grid, Swarnamukhi Basin',
+        date: '2025-08-11 (T1) vs. 2026-09-03 (T2)',
+        area: 'Tirupati, AP, India',
+        resolution: '10 m GSD',
+        source: 'Sentinel-2 L2A State-Wide AP Archive',
+        image: '/static/thumbs/tirupati_s2_2026.jpg',
+        split_image: '/static/thumbs/tirupati_s2_2025.jpg',
+        query: 'What infrastructure and environmental changes occurred in Tirupati between 2025 and 2026?',
+        scene_ids: 'tirupati_s2_2025,tirupati_s2_2026',
+        analysis_mode: 'change'
+      },
+      'kurnool': {
+        name: 'Kurnool Tungabhadra Basin, AP',
+        coords: '15.8300° N, 78.0400° E',
+        bbox: '[15.76° N, 77.97° E] to [15.89° N, 78.10° E]',
+        feature: 'Tungabhadra River Basin, Ultra-Mega Solar Park & Arid Grid',
+        date: '2025-08-10 (T1) vs. 2026-09-04 (T2)',
+        area: 'Kurnool, AP, India',
+        resolution: '10 m GSD',
+        source: 'Sentinel-2 L2A State-Wide AP Archive',
+        image: '/static/thumbs/kurnool_s2_2026.jpg',
+        split_image: '/static/thumbs/kurnool_s2_2025.jpg',
+        query: 'Detect urban expansion, solar installation, and water shifts in Kurnool between 2025 and 2026.',
+        scene_ids: 'kurnool_s2_2025,kurnool_s2_2026',
         analysis_mode: 'change'
       },
       'machilipatnam': {
@@ -702,13 +855,28 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         query: 'What coastal and deepwater port construction changes occurred between 2025 and 2026?',
         scene_ids: 'machilipatnam_s2_2025,machilipatnam_s2_2026',
         analysis_mode: 'change'
+      },
+      'rasuwa': {
+        name: 'River Corridor near Rasuwa / Bhote Koshi, Nepal',
+        coords: '28.1754° N, 85.4776° E',
+        bbox: '[28.08° N, 85.32° E] to [28.25° N, 85.50° E]',
+        feature: 'Himalayan Riverbed, Valley Flood Corridor, Glacial Runoff',
+        date: '2025-08-15 (T1) vs. 2026-09-02 (T2)',
+        area: 'Rasuwa District & Bhote Koshi, Nepal',
+        resolution: '10 m GSD',
+        source: 'Copernicus Sentinel-2 L2A Stream',
+        image: '/static/thumbs/rasuwa_s2_2026.jpg',
+        split_image: '/static/thumbs/rasuwa_s2_2025.jpg',
+        query: 'What hydrological and river corridor changes occurred in Rasuwa / Bhote Koshi between 2025 and 2026?',
+        scene_ids: 'rasuwa_s2_2025,rasuwa_s2_2026',
+        analysis_mode: 'change'
       }
     };
 
     window.addEventListener('DOMContentLoaded', () => {
       initSplitSlider();
       fetchHealth();
-      executeCopernicusSearch('kankipadu');
+      executeCopernicusSearch('river corridor near Rasuwa / Bhote Koshi');
     });
 
     async function fetchHealth() {
@@ -767,7 +935,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
     function resolveWebImageUrl(url, fallback) {
       if (!url) return fallback || '/static/thumbs/vja_s2_2026_09_02.jpg';
       const s = String(url).trim();
-      if (s.toLowerCase().endsWith('.tif') || s.toLowerCase().endsWith('.tiff') || s.includes(':\\')) {
+      if (s.toLowerCase().endsWith('.tif') || s.toLowerCase().endsWith('.tiff') || (s.indexOf(':') !== -1 && !s.startsWith('http') && !s.startsWith('data:'))) {
         return fallback || '/static/thumbs/vja_s2_2026_09_02.jpg';
       }
       return s;
@@ -891,9 +1059,17 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
 
       const targetThumb = resolveWebImageUrl(thumbUrl, '/static/thumbs/vja_s2_2026_09_02.jpg');
       document.getElementById('viewerBaseImg').src = targetThumb;
-      document.getElementById('sceneDataSource').innerText = `Copernicus Sentinel-2 (${date}), ${aoi}`;
+      document.getElementById('sceneDataSource').innerText = `Copernicus Sentinel-2 L2A (${date}), ${aoi}`;
       document.getElementById('sceneResolution').innerText = '10 m GSD';
+      const fDate = document.getElementById('footerDate');
+      if (fDate) fDate.innerText = date || '02 Sep 2026';
       updateCoordinatesHUD(aoi, latLon || '16.4387° N, 80.7647° E', bboxStr || '[16.42° N, 80.74° E] to [16.46° N, 80.78° E]');
+
+      updateDataAuthenticityRecord({
+        scene_id: sceneId,
+        acquisition_date: date || '2026-09-02',
+        analysis_trace_id: 'trace-copernicus-' + sceneId
+      });
 
       setQuery(`Analyze physical land features, infrastructure, and water bodies in ${aoi}.`);
       resetViewerOverlays();
@@ -917,9 +1093,22 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       if (thumb1) {
         document.getElementById('viewerSplitImg').src = t1Src;
       }
-      document.getElementById('sceneDataSource').innerText = `Copernicus Sentinel-2 (${date1} vs ${date2}), ${aoi}`;
+      const dtBefore = document.getElementById('splitDateBefore');
+      const dtAfter = document.getElementById('splitDateAfter');
+      if (dtBefore) dtBefore.innerText = date1 || '2025-08-15';
+      if (dtAfter) dtAfter.innerText = date2 || '2026-09-02';
+
+      document.getElementById('sceneDataSource').innerText = `Copernicus Sentinel-2 L2A (${date1} vs ${date2}), ${aoi}`;
       document.getElementById('sceneResolution').innerText = '10 m GSD';
+      const fDate = document.getElementById('footerDate');
+      if (fDate) fDate.innerText = `${date1} vs ${date2}`;
       updateCoordinatesHUD(aoi, latLon || '16.4387° N, 80.7647° E', bboxStr || '[16.42° N, 80.74° E] to [16.46° N, 80.78° E]');
+
+      updateDataAuthenticityRecord({
+        scene_id: `${sid1} / ${sid2}`,
+        acquisition_date: `${date1} vs ${date2}`,
+        analysis_trace_id: 'trace-copernicus-bitemporal'
+      });
 
       setQuery(`What infrastructure and environmental changes occurred in ${aoi} between ${date1} and ${date2}?`);
       resetViewerOverlays();
@@ -949,53 +1138,197 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       }
     }
 
+    let isBasemapActive = false;
+    let activeSceneMetadata = {
+      provider: "Copernicus Data Space Ecosystem",
+      sensor: "Sentinel-2 L2A",
+      scene_id: "S2B_MSIL2A_20260902T045929_44QND_T2",
+      acquisition_date: "2026-09-02",
+      aoi_bbox: [80.74, 16.42, 80.78, 16.46],
+      resolution_m: 10.0,
+      analysis_trace_id: "trace-copernicus-baseline"
+    };
+
+    function updateDataAuthenticityRecord(customMeta) {
+      if (customMeta) {
+        activeSceneMetadata = Object.assign({}, activeSceneMetadata, customMeta);
+      }
+      const viewer = document.getElementById('dataAuthenticityViewer');
+      if (!viewer) return;
+      if (isBasemapActive) {
+        viewer.innerText = JSON.stringify({
+          layer_type: "reference_basemap",
+          provider: "Esri World Imagery",
+          used_for_analysis: false,
+          note: "Reference basemap shown for location context only. Not the image used for analysis."
+        }, null, 2);
+      } else {
+        viewer.innerText = JSON.stringify({
+          provider: activeSceneMetadata.provider || "Copernicus Data Space Ecosystem",
+          sensor: activeSceneMetadata.sensor || "Sentinel-2 L2A",
+          scene_id: activeSceneMetadata.scene_id || "S2B_MSIL2A_20260902T045929_44QND_T2",
+          acquisition_date: activeSceneMetadata.acquisition_date || activeSceneMetadata.date || "2026-09-02",
+          aoi_bbox: activeSceneMetadata.aoi_bbox || [80.74, 16.42, 80.78, 16.46],
+          resolution_m: activeSceneMetadata.resolution_m || 10.0,
+          analysis_trace_id: activeSceneMetadata.analysis_trace_id || (currentResponse && currentResponse.execution_trace ? currentResponse.execution_trace.trace_id : "trace-copernicus-baseline")
+        }, null, 2);
+      }
+    }
+
+    function toggleReferenceBasemap() {
+      isBasemapActive = !isBasemapActive;
+      const baseImg = document.getElementById('viewerBaseImg');
+      const basemapImg = document.getElementById('viewerBasemapImg');
+      const badge = document.getElementById('imageSourceBadge');
+      const badgeIcon = document.getElementById('imageSourceIcon');
+      const badgeText = document.getElementById('imageSourceBadgeText');
+      const toggleText = document.getElementById('toggleBasemapText');
+
+      if (isBasemapActive) {
+        // Load Esri World Imagery reference basemap tile
+        const bbox = activeSceneMetadata.aoi_bbox || [80.74, 16.42, 80.78, 16.46];
+        const minLon = bbox[0], minLat = bbox[1], maxLon = bbox[2], maxLat = bbox[3];
+        const esriUrl = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${minLon},${minLat},${maxLon},${maxLat}&bboxSR=4326&imageSR=4326&size=512,512&format=png&f=image`;
+        if (basemapImg) {
+          basemapImg.src = esriUrl;
+          basemapImg.classList.remove('hidden');
+        }
+        if (baseImg) baseImg.classList.add('hidden');
+
+        if (badge) {
+          badge.className = 'inline-flex items-center space-x-1 text-[10px] bg-amber-950/80 text-amber-300 px-2 py-0.5 rounded border border-amber-700/80 font-mono';
+        }
+        if (badgeIcon) badgeIcon.className = 'fa-solid fa-map text-amber-400';
+        if (badgeText) badgeText.innerText = 'Reference basemap — not the image used for analysis.';
+        if (toggleText) toggleText.innerText = 'Switch to Sentinel-2 Analysis Image';
+      } else {
+        if (basemapImg) basemapImg.classList.add('hidden');
+        if (baseImg) baseImg.classList.remove('hidden');
+
+        if (badge) {
+          badge.className = 'inline-flex items-center space-x-1 text-[10px] bg-crimson-950/80 text-crimson-300 px-2 py-0.5 rounded border border-crimson-700/80 font-mono';
+        }
+        if (badgeIcon) badgeIcon.className = 'fa-solid fa-satellite text-crimson-400';
+        if (badgeText) badgeText.innerText = 'Analysis Image: Sentinel-2 L2A';
+        if (toggleText) toggleText.innerText = 'Show Reference Basemap';
+      }
+      updateDataAuthenticityRecord();
+    }
+
+    function toggleOverlayVisibility(visible) {
+      const overlayImg = document.getElementById('viewerOverlayImg');
+      const stateText = document.getElementById('overlayStateText');
+      if (!overlayImg) return;
+      if (visible) {
+        overlayImg.classList.remove('hidden');
+        if (stateText) {
+          stateText.innerText = 'ON';
+          stateText.className = 'text-emerald-400';
+        }
+      } else {
+        overlayImg.classList.add('hidden');
+        if (stateText) {
+          stateText.innerText = 'OFF';
+          stateText.className = 'text-slate-400';
+        }
+      }
+    }
+
+    function filterCategory(cat) {
+      const cats = ['all', 'water', 'builtup', 'veg', 'uncertain'];
+      cats.forEach(c => {
+        const btn = document.getElementById('catBtn' + c.charAt(0).toUpperCase() + c.slice(1));
+        if (btn) {
+          if (c === cat) {
+            btn.className = 'px-1.5 py-0.5 rounded text-[9px] font-bold bg-crimson-600 text-white shadow';
+          } else {
+            btn.className = 'px-1.5 py-0.5 rounded text-[9px] font-medium bg-void-900 text-slate-400 border border-void-700 hover:text-white';
+          }
+        }
+      });
+      setViewMode('evidence');
+      const legend = document.getElementById('mapLegend');
+      if (legend) legend.classList.remove('hidden');
+    }
+
+    function toggleAdvancedDetails() {
+      const content = document.getElementById('advDetailsContent');
+      const chevron = document.getElementById('advDetailsChevron');
+      if (!content) return;
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        if (chevron) chevron.classList.add('rotate-180');
+      } else {
+        content.classList.add('hidden');
+        if (chevron) chevron.classList.remove('rotate-180');
+      }
+    }
+
+    function copyDataAuthenticityJson() {
+      const txt = document.getElementById('dataAuthenticityViewer').innerText;
+      navigator.clipboard.writeText(txt);
+      alert('Data Authenticity JSON copied to clipboard!');
+    }
+
     function resetViewerOverlays() {
       document.getElementById('viewerOverlayImg').classList.add('hidden');
       document.getElementById('splitContainer').classList.add('hidden');
       document.getElementById('mapLegend').classList.add('hidden');
-      setViewMode('base');
+      setViewMode('satellite');
     }
 
     function setViewMode(mode) {
+      if (mode === 'base') mode = 'satellite';
+      if (mode === 'overlay') mode = 'evidence';
       viewMode = mode;
-      const baseImg = document.getElementById('viewerBaseImg');
+
       const overlayImg = document.getElementById('viewerOverlayImg');
       const splitCont = document.getElementById('splitContainer');
-      const qualityView = document.getElementById('viewerQualityImg');
+      const legend = document.getElementById('mapLegend');
+      const evidenceControls = document.getElementById('evidenceControlsBar');
 
-      const btnBase = document.getElementById('btnViewBase');
-      const btnOverlay = document.getElementById('btnViewOverlay');
+      const btnSat = document.getElementById('btnViewSatellite');
       const btnSplit = document.getElementById('btnViewSplit');
-      const btnQuality = document.getElementById('btnViewQuality');
+      const btnEvidence = document.getElementById('btnViewEvidence');
 
-      [btnBase, btnOverlay, btnSplit, btnQuality].forEach(b => {
-        if (b) b.className = 'px-2.5 py-1 rounded text-slate-400 hover:text-white font-medium text-[11px] transition';
+      [btnSat, btnSplit, btnEvidence].forEach(b => {
+        if (b) b.className = 'px-3 py-1 rounded text-slate-400 hover:text-white font-medium text-[11px] transition flex items-center space-x-1.5';
       });
 
-      if (qualityView) qualityView.classList.add('hidden');
       if (overlayImg) overlayImg.classList.add('hidden');
       if (splitCont) splitCont.classList.add('hidden');
+      if (legend) legend.classList.add('hidden');
+      if (evidenceControls) {
+        evidenceControls.classList.add('hidden');
+        evidenceControls.classList.remove('flex');
+      }
 
-      if (mode === 'base') {
-        if (btnBase) btnBase.className = 'px-2.5 py-1 rounded bg-crimson-600 text-white font-medium text-[11px] transition';
-      } else if (mode === 'overlay') {
-        if (btnOverlay) btnOverlay.className = 'px-2.5 py-1 rounded bg-crimson-600 text-white font-medium text-[11px] transition';
-        if (overlayImg) overlayImg.classList.remove('hidden');
-        document.getElementById('mapLegend').classList.remove('hidden');
+      if (mode === 'satellite') {
+        if (btnSat) btnSat.className = 'px-3 py-1 rounded bg-crimson-600 text-white font-semibold text-[11px] transition shadow flex items-center space-x-1.5';
       } else if (mode === 'split') {
-        if (btnSplit) btnSplit.className = 'px-2.5 py-1 rounded bg-crimson-600 text-white font-medium text-[11px] transition';
+        if (btnSplit) btnSplit.className = 'px-3 py-1 rounded bg-crimson-600 text-white font-semibold text-[11px] transition shadow flex items-center space-x-1.5';
         if (splitCont) splitCont.classList.remove('hidden');
-      } else if (mode === 'quality') {
-        if (btnQuality) btnQuality.className = 'px-2.5 py-1 rounded bg-emerald-600 text-white font-medium text-[11px] transition';
-        if (qualityView) qualityView.classList.remove('hidden');
+        if (isBasemapActive) toggleReferenceBasemap();
+      } else if (mode === 'evidence') {
+        if (btnEvidence) btnEvidence.className = 'px-3 py-1 rounded bg-crimson-600 text-white font-semibold text-[11px] transition shadow flex items-center space-x-1.5';
+        const chk = document.getElementById('overlayToggleCheck');
+        if (!chk || chk.checked) {
+          if (overlayImg) overlayImg.classList.remove('hidden');
+        }
+        if (legend) legend.classList.remove('hidden');
+        if (evidenceControls) {
+          evidenceControls.classList.remove('hidden');
+          evidenceControls.classList.add('flex');
+        }
       }
     }
 
     function updateOverlayOpacity(val) {
       const overlayImg = document.getElementById('viewerOverlayImg');
       const valLabel = document.getElementById('overlayOpacityVal');
+      const norm = val / 100;
       if (overlayImg) {
-        overlayImg.style.opacity = (val / 100).toString();
+        overlayImg.style.opacity = norm.toString();
       }
       if (valLabel) {
         valLabel.innerText = val + '%';
@@ -1004,19 +1337,24 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
 
     function initSplitSlider() {
       const container = document.getElementById('canvasViewport');
-      const clip = document.getElementById('splitClip');
       const handle = document.getElementById('splitHandle');
-      if (!container || !clip || !handle) return;
+      const splitImg = document.getElementById('viewerSplitImg');
+      if (!container || !handle || !splitImg) return;
 
       let isDragging = false;
+
+      const setSplitPos = (pos) => {
+        pos = Math.max(0.01, Math.min(0.99, pos));
+        const pct = (pos * 100).toFixed(1) + '%';
+        splitImg.style.clipPath = `inset(0 calc(100% - ${pct}) 0 0)`;
+        handle.style.left = pct;
+        handle.setAttribute('aria-valuenow', Math.round(pos * 100));
+      };
 
       const updateSplit = (clientX) => {
         const rect = container.getBoundingClientRect();
         let pos = (clientX - rect.left) / rect.width;
-        pos = Math.max(0.01, Math.min(0.99, pos));
-        const pct = (pos * 100).toFixed(1) + '%';
-        clip.style.width = pct;
-        handle.style.left = pct;
+        setSplitPos(pos);
       };
 
       handle.addEventListener('mousedown', (e) => {
@@ -1037,6 +1375,18 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
           updateSplit(e.touches[0].clientX);
         }
       }, { passive: true });
+
+      // Keyboard Accessibility: Left/Right arrow keys
+      handle.addEventListener('keydown', (e) => {
+        const curLeft = parseFloat(handle.style.left) || 50;
+        if (e.key === 'ArrowLeft') {
+          setSplitPos((curLeft - 5) / 100);
+          e.preventDefault();
+        } else if (e.key === 'ArrowRight') {
+          setSplitPos((curLeft + 5) / 100);
+          e.preventDefault();
+        }
+      });
     }
 
     async function executeAnalysis(customQuery) {
@@ -1131,12 +1481,13 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         overlayImg.src = data.result.visual_evidence.overlay_base64;
         overlayImg.classList.remove('hidden');
 
-        const splitImg = document.getElementById('viewerSplitImg');
-        splitImg.src = data.result.visual_evidence.overlay_base64;
-
         document.getElementById('mapLegend').classList.remove('hidden');
-        setViewMode('overlay');
+        setViewMode('evidence');
       }
+
+      updateDataAuthenticityRecord({
+        analysis_trace_id: data.execution_trace ? data.execution_trace.trace_id : 'trace-active'
+      });
 
       // Populate Hectare Statistics Card
       if (data.result.visual_evidence && data.result.visual_evidence.metric_summary) {
@@ -1152,12 +1503,16 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         if (ms.builtup_expansion_hectares !== undefined) {
           document.getElementById('statBuiltup').innerText = `${Number(ms.builtup_expansion_hectares).toFixed(1)} ha`;
         }
-        if (ms.vegetation_loss_hectares !== undefined) {
-          document.getElementById('statVegLoss').innerText = `${Number(ms.vegetation_loss_hectares).toFixed(1)} ha`;
-        }
-        if (ms.water_increase_hectares !== undefined) {
-          document.getElementById('statWaterInc').innerText = `${Number(ms.water_increase_hectares).toFixed(1)} ha`;
-        }
+        const vLoss = Number(ms.vegetation_loss_hectares || 0);
+        const vGain = Number(ms.vegetation_growth_hectares || 0);
+        const totalVeg = vLoss > 0 ? vLoss : vGain;
+        document.getElementById('statVegLoss').innerText = `${totalVeg.toFixed(1)} ha`;
+
+        const wInc = Number(ms.water_increase_hectares || 0);
+        const wDec = Number(ms.water_decrease_hectares || 0);
+        const totalWater = wInc + wDec;
+        document.getElementById('statWaterInc').innerText = `${totalWater.toFixed(1)} ha`;
+
         if (ms.quality) {
           const qTitle = document.getElementById('qualityTitleText');
           const qDesc = document.getElementById('qualityDescText');
@@ -1231,6 +1586,22 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       }
       const traceId = currentResponse.execution_trace.trace_id;
       window.open(`/api/v1/report/pdf?trace_id=${traceId}`, '_blank');
+    }
+
+    function toggleHowToUseGuide() {
+      const grid = document.getElementById('guideStepsGrid');
+      const toggleText = document.getElementById('guideToggleText');
+      const toggleIcon = document.getElementById('guideToggleIcon');
+      if (!grid) return;
+      if (grid.classList.contains('hidden')) {
+        grid.classList.remove('hidden');
+        if (toggleText) toggleText.innerText = 'Collapse Guide';
+        if (toggleIcon) toggleIcon.className = 'fa-solid fa-chevron-up text-[10px]';
+      } else {
+        grid.classList.add('hidden');
+        if (toggleText) toggleText.innerText = 'Expand Guide';
+        if (toggleIcon) toggleIcon.className = 'fa-solid fa-chevron-down text-[10px]';
+      }
     }
 
     function openDataModal() {

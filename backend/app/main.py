@@ -468,6 +468,22 @@ def search_area_of_interest(q: str = Query(..., description="Location place name
     }
 
 
+@app.get("/api/reference-basemap")
+@app.get("/api/v1/reference-basemap")
+def get_reference_basemap_endpoint(bbox: Optional[str] = Query(None, description="Bounding box min_lat,min_lon,max_lat,max_lon")):
+    """
+    Returns reference basemap tile configuration and non-analysis disclaimer badge.
+    """
+    parsed_bbox = None
+    if bbox:
+        try:
+            parsed_bbox = [float(x.strip()) for x in bbox.split(",")]
+        except Exception:
+            parsed_bbox = None
+    return copernicus_service.get_reference_basemap(parsed_bbox)
+
+
+
 @app.get("/api/scenes")
 def get_scenes_catalog(
     aoi: Optional[str] = Query(None, description="Filter by Area of Interest"),
@@ -651,12 +667,21 @@ async def analyze_remote_sensing_query(
 
     # 1. Handle scenario or scene ID(s)
     if resolved_scene_ids:
-        # Check if all specified IDs correspond to catalog scenes or copernicus scenes
-        catalog_scenes = [
-            catalog_service.get_scene_by_id(sid) or copernicus_service.get_scene_by_id(sid)
-            for sid in resolved_scene_ids
-        ]
-        if all(cs is not None for cs in catalog_scenes):
+        # Check if single ID matches a known multi-image scenario/demo package
+        is_known_scenario = (
+            len(resolved_scene_ids) == 1 and (
+                any(resolved_scene_ids[0] == s.id for s in get_all_scenarios())
+                or (settings.ROOT_DIR / "backend" / "demo_data" / resolved_scene_ids[0]).exists()
+                or (settings.DEMO_SCENARIOS_DIR / resolved_scene_ids[0]).exists()
+            )
+        )
+        catalog_scenes = []
+        if not is_known_scenario:
+            catalog_scenes = [
+                catalog_service.get_scene_by_id(sid) or copernicus_service.get_scene_by_id(sid)
+                for sid in resolved_scene_ids
+            ]
+        if not is_known_scenario and all(cs is not None for cs in catalog_scenes):
             for cs in catalog_scenes:
                 rel_path = cs.get("path_rgb") or cs.get("file_path") or cs.get("path_all_bands")
                 target_fpath = None

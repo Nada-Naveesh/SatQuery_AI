@@ -101,23 +101,38 @@ def detect_surface_changes(
     invalid_mask = ~valid_mask
 
     # 4. Raw change candidate thresholding
-    has_spectral_change = (diff_spectral > cfg.get("minimum_change", 0.08)) & valid_mask
+    has_spectral_change = (diff_spectral > cfg.get("minimum_change", 0.07)) & valid_mask
 
-    # Water increase / flood: strong positive NDWI delta + post-change scene is water (NDWI > 0.0)
-    raw_water_inc = (d_ndwi > cfg.get("water_increase", 0.16)) & (indices2.ndwi > 0.0) & has_spectral_change
-    # Water decrease / drying: strong negative NDWI delta + pre-change scene was water (NDWI > 0.0)
-    raw_water_dec = (d_ndwi < cfg.get("water_decrease", -0.16)) & (indices1.ndwi > 0.0) & has_spectral_change & (~raw_water_inc)
+    # Water increase / flood: positive NDWI delta + post-change scene is water (NDWI > 0.0)
+    raw_water_inc = (d_ndwi > cfg.get("water_increase", 0.12)) & (indices2.ndwi > 0.0) & has_spectral_change
+    # Water decrease / drying: negative NDWI delta + pre-change scene was water (NDWI > 0.0)
+    raw_water_dec = (d_ndwi < cfg.get("water_decrease", -0.12)) & (indices1.ndwi > 0.0) & has_spectral_change & (~raw_water_inc)
+
+    # Spectral neutrality check: for 3-band RGB imagery, built-up materials are spectrally neutral,
+    # whereas multi-band imagery with true NIR relies directly on the physical NDBI / Red-NIR differential
+    has_nir = getattr(indices2, "has_true_nir", False)
+    is_neutral_builtup = (
+        has_nir or (
+            (np.abs(scene2.red.astype(np.float32) - scene2.blue.astype(np.float32)) < 0.10) &
+            (np.abs(scene2.red.astype(np.float32) - scene2.green.astype(np.float32)) < 0.10)
+        )
+    )
+
+    # New built-up / roads: positive built-up delta or transition from vegetation/soil to concrete/asphalt
+    raw_builtup = (
+        ((d_builtup > cfg.get("builtup_increase", 0.10)) & is_neutral_builtup)
+        | ((diff_spectral > 0.08) & (d_ndvi < -0.04) & (indices2.brightness > 0.32) & is_neutral_builtup)
+        | ((indices2.brightness - indices1.brightness > 0.06) & (indices2.brightness > 0.33) & is_neutral_builtup)
+    ) & has_spectral_change & (~raw_water_inc) & (~raw_water_dec)
 
     # Vegetation increase / crop growth: positive NDVI delta
-    raw_veg_inc = (d_ndvi > cfg.get("vegetation_increase", 0.16)) & has_spectral_change & (~raw_water_inc)
-    # Vegetation decrease / clearing: negative NDVI delta
-    raw_veg_dec = (d_ndvi < cfg.get("vegetation_decrease", -0.16)) & has_spectral_change & (~raw_water_inc) & (~raw_water_dec)
+    raw_veg_inc = (d_ndvi > cfg.get("vegetation_increase", 0.08)) & has_spectral_change & (~raw_water_inc) & (~raw_builtup)
 
-    # New built-up / roads: positive built-up delta or combination of high spectral change + vegetation drop
-    raw_builtup = (
-        (d_builtup > cfg.get("builtup_increase", 0.15))
-        | ((diff_spectral > 0.18) & (d_ndvi < -0.06) & (indices2.brightness > 0.25))
-    ) & has_spectral_change & (~raw_water_inc) & (~raw_water_dec) & (~raw_veg_inc)
+    # Vegetation decrease / clearing: negative NDVI delta (and not built-up or water)
+    raw_veg_dec = (
+        (d_ndvi < cfg.get("vegetation_decrease", -0.06))
+        | ((indices1.ndvi > 0.04) & (diff_spectral > 0.08) & (d_ndvi < -0.04))
+    ) & has_spectral_change & (~raw_water_inc) & (~raw_water_dec) & (~raw_builtup) & (~raw_veg_inc)
 
     # 5. Morphological Cleanup (Minimum Mapping Unit filtering)
     mmu = min_mapping_unit_pixels
