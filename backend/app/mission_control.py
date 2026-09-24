@@ -566,7 +566,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
           <!-- Viewport Mode & Map Layer Selectors -->
           <div class="flex items-center space-x-1.5 bg-void-950 p-1 rounded-md border border-void-700 text-xs flex-wrap">
             <div class="flex items-center space-x-1 pr-1 border-r border-void-700">
-              <button onclick="setMapLayer('streets')" id="btnLayerStreets" title="Streets & Places (Google Maps / OpenStreetMap view)" class="px-2 py-1 rounded bg-blue-600 text-white font-semibold text-[10px] transition shadow flex items-center space-x-1">
+              <button onclick="setMapLayer('streets')" id="btnLayerStreets" title="Streets & Places (Google Maps / OpenStreetMap view)" class="px-2 py-1 rounded text-slate-300 hover:text-white bg-slate-900 border border-slate-700 hover:border-blue-600 font-medium text-[10px] transition flex items-center space-x-1">
                 <i class="fa-solid fa-map-location-dot text-[10px]"></i>
                 <span>Streets &amp; Places</span>
               </button>
@@ -579,7 +579,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
                 <span>Hybrid</span>
               </button>
             </div>
-            <button onclick="setViewMode('satellite')" id="btnViewSatellite" class="px-2.5 py-1 rounded text-slate-400 hover:text-white font-medium text-[10px] transition flex items-center space-x-1">
+            <button onclick="setViewMode('satellite')" id="btnViewSatellite" class="px-2.5 py-1 rounded bg-blue-600 text-white font-semibold text-[10px] transition flex items-center space-x-1 shadow">
               <i class="fa-solid fa-satellite text-[10px]"></i>
               <span>Satellite Image</span>
             </button>
@@ -629,7 +629,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
           <div class="flex items-center space-x-2">
             <div id="imageSourceBadge" class="inline-flex items-center space-x-1 text-[10px] bg-blue-950/80 text-cyan-300 px-2 py-0.5 rounded border border-blue-700/80 font-mono">
               <i id="imageSourceIcon" class="fa-solid fa-satellite text-blue-400"></i>
-              <span id="imageSourceBadgeText">Map: OpenStreetMap &amp; Copernicus</span>
+              <span id="imageSourceBadgeText">Analysis Image: Sentinel-2 L2A</span>
             </div>
             <button onclick="toggleReferenceBasemap()" id="btnToggleBasemap" class="text-[10px] text-slate-300 hover:text-white bg-void-900 border border-void-700 hover:border-blue-600 px-2 py-0.5 rounded transition flex items-center space-x-1">
               <i class="fa-solid fa-map text-slate-400"></i>
@@ -661,13 +661,13 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         </div>
 
         <!-- Interactive Leaflet Canvas Viewport (Supports Real Map Zooming, Streets/Satellite, Pan, and Thin Cyan AOI Boundary) -->
-        <div id="canvasViewport" class="relative w-full h-[450px] bg-slate-950 rounded-lg border border-void-800 overflow-hidden select-none" onwheel="handleViewportWheel(event)">
+        <div id="canvasViewport" class="relative w-full h-[450px] bg-slate-950 rounded-lg border border-void-800 overflow-hidden select-none cursor-grab" onwheel="handleViewportWheel(event)">
           
           <!-- 1. Real Interactive Map (Leaflet) with OpenStreetMap Streets, Esri Satellite, and Place Labels -->
-          <div id="leafletMap" class="absolute inset-0 w-full h-full z-0"></div>
+          <div id="leafletMap" class="absolute inset-0 w-full h-full z-0 hidden"></div>
 
           <!-- Zoomable / Pannable Stage for Static Scene Overlay & Split Slider -->
-          <div id="viewportStage" class="absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none z-10 hidden">
+          <div id="viewportStage" class="absolute inset-0 w-full h-full flex items-center justify-center pointer-events-auto z-10">
             <!-- 1. Real Analysis Image -->
             <img id="viewerBaseImg" src="/static/thumbs/rasuwa_s2_2026.jpg" onerror="this.onerror=null; this.src='/static/thumbs/vja_s2_2026_09_02.jpg'" alt="Analysis Image: Sentinel-2 L2A" class="absolute inset-0 w-full h-full object-contain pointer-events-none">
             
@@ -911,8 +911,8 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
     let activeSceneIds = null;
     let activeAnalysisMode = null;
     let currentSessionTraceId = null;
-    let currentResponse = null;
     let viewMode = 'satellite';
+    let currentDisplayMode = 'image'; // 'image' (default, uploaded & satellite data) or 'map' (streets & places)
 
     // Interactive Viewport Pan/Zoom state
     let zoomLevel = 1.0;
@@ -1046,6 +1046,8 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
     // Preset Demo Packages Loader
     // -------------------------------------------------------------------------
     function loadPresetScenario(scenarioKey) {
+      switchToImageView('satellite');
+      resetZoomPan();
       if (scenarioKey === 'scenario_3_optical_sar') {
         selectInputMode('optical_sar_pair');
         activeSceneIds = 'scenario_3_optical_sar';
@@ -1104,6 +1106,8 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
     }
 
     function loadNepalFloodAOI(useSar) {
+      switchToImageView('satellite');
+      resetZoomPan();
       if (useSar) {
         selectInputMode('optical_sar_pair');
         activeSceneIds = 'scenario_3_optical_sar';
@@ -1195,11 +1199,60 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       }
     }
 
+    function switchToImageView(mode) {
+      currentDisplayMode = 'image';
+      const stage = document.getElementById('viewportStage');
+      const mapCont = document.getElementById('leafletMap');
+      if (stage) stage.classList.remove('hidden');
+      if (mapCont) mapCont.classList.add('hidden');
+
+      ['btnLayerStreets', 'btnLayerSatellite', 'btnLayerHybrid'].forEach(id => {
+        const b = document.getElementById(id);
+        if (b) b.className = 'px-2 py-1 rounded text-slate-300 hover:text-white bg-slate-900 border border-slate-700 hover:border-blue-600 font-medium text-[10px] transition flex items-center space-x-1';
+      });
+
+      if (mode) {
+        setViewMode(mode);
+      }
+    }
+
+    function switchToMapView(layerName) {
+      currentDisplayMode = 'map';
+      const stage = document.getElementById('viewportStage');
+      const mapCont = document.getElementById('leafletMap');
+      if (stage) stage.classList.add('hidden');
+      if (mapCont) mapCont.classList.remove('hidden');
+
+      ['btnViewSatellite', 'btnViewSplit', 'btnViewEvidence'].forEach(id => {
+        const b = document.getElementById(id);
+        if (b) b.className = 'px-2.5 py-1 rounded text-slate-400 hover:text-white font-medium text-[10px] transition flex items-center space-x-1';
+      });
+
+      const splitCont = document.getElementById('splitContainer');
+      if (splitCont) splitCont.classList.add('hidden');
+
+      setMapLayer(layerName || 'streets');
+      if (leafletMap) {
+        setTimeout(() => leafletMap.invalidateSize(), 50);
+      }
+    }
+
     function setMapLayer(layerName) {
-      if (!leafletMap) return;
+      currentDisplayMode = 'map';
+      const stage = document.getElementById('viewportStage');
+      const mapCont = document.getElementById('leafletMap');
+      if (stage) stage.classList.add('hidden');
+      if (mapCont) mapCont.classList.remove('hidden');
+
+      ['btnViewSatellite', 'btnViewSplit', 'btnViewEvidence'].forEach(id => {
+        const b = document.getElementById(id);
+        if (b) b.className = 'px-2.5 py-1 rounded text-slate-400 hover:text-white font-medium text-[10px] transition flex items-center space-x-1';
+      });
+
+      if (!leafletMap) initLeafletMap();
       currentTileLayerName = layerName;
 
-      if (currentTileLayer) {
+      if (currentTileLayer && leafletMap && leafletMap.hasLayer(currentTileLayer)) {
         leafletMap.removeLayer(currentTileLayer);
       }
 
@@ -1211,8 +1264,9 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         currentTileLayer = hybridTileLayer;
       }
 
-      if (currentTileLayer) {
+      if (currentTileLayer && leafletMap) {
         leafletMap.addLayer(currentTileLayer);
+        setTimeout(() => leafletMap.invalidateSize(), 50);
       }
 
       const btnStreets = document.getElementById('btnLayerStreets');
@@ -1445,10 +1499,11 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
             aoiBox.style.height = '0px';
             aoiBox.classList.remove('hidden');
           }
-        } else {
+        } else if (currentDisplayMode === 'image') {
           isPanning = true;
           startX = e.clientX - panX;
           startY = e.clientY - panY;
+          viewport.style.cursor = 'grabbing';
         }
         e.preventDefault();
       });
@@ -1486,7 +1541,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
               (top + height) / rect.height
             ];
           }
-        } else if (isPanning) {
+        } else if (isPanning && currentDisplayMode === 'image') {
           panX = e.clientX - startX;
           panY = e.clientY - startY;
           applyTransform();
@@ -1499,7 +1554,10 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
           aoiStartY = 0;
           toggleDrawAOI(false); // finish drawing mode
         }
-        isPanning = false;
+        if (isPanning) {
+          isPanning = false;
+          if (viewport) viewport.style.cursor = 'grab';
+        }
       });
     }
 
@@ -1510,7 +1568,12 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
     }
 
     function zoomViewport(factor) {
-      if (leafletMap) {
+      if (currentDisplayMode === 'image') {
+        zoomLevel = Math.max(0.2, Math.min(8.0, zoomLevel * factor));
+        applyTransform();
+        const indicator = document.getElementById('zoomLevelIndicator');
+        if (indicator) indicator.innerText = Math.round(zoomLevel * 100) + '%';
+      } else if (leafletMap) {
         if (factor > 1) {
           leafletMap.zoomIn();
         } else {
@@ -1518,16 +1581,18 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         }
         const indicator = document.getElementById('zoomLevelIndicator');
         if (indicator) indicator.innerText = Math.round(leafletMap.getZoom() * 10) + '%';
-      } else {
-        zoomLevel = Math.max(0.5, Math.min(5.0, zoomLevel * factor));
-        applyTransform();
-        const indicator = document.getElementById('zoomLevelIndicator');
-        if (indicator) indicator.innerText = Math.round(zoomLevel * 100) + '%';
       }
     }
 
     function resetZoomPan() {
-      if (leafletMap) {
+      if (currentDisplayMode === 'image') {
+        zoomLevel = 1.0;
+        panX = 0;
+        panY = 0;
+        applyTransform();
+        const indicator = document.getElementById('zoomLevelIndicator');
+        if (indicator) indicator.innerText = '100%';
+      } else if (leafletMap) {
         const bbox = activeSceneMetadata?.aoi_bbox;
         if (bbox && bbox.length === 4) {
           flyToLocation(null, null, 13, bbox);
@@ -1536,43 +1601,41 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         }
         const indicator = document.getElementById('zoomLevelIndicator');
         if (indicator) indicator.innerText = '100%';
-      } else {
-        zoomLevel = 1.0;
-        panX = 0;
-        panY = 0;
-        applyTransform();
-        const indicator = document.getElementById('zoomLevelIndicator');
-        if (indicator) indicator.innerText = '100%';
       }
     }
 
     function fitToAOI() {
-      if (leafletMap && activeSceneMetadata?.aoi_bbox) {
+      if (currentDisplayMode === 'map' && leafletMap && activeSceneMetadata?.aoi_bbox) {
         flyToLocation(null, null, 13, activeSceneMetadata.aoi_bbox);
         return;
       }
-      if (!drawnAOIBbox) {
-        alert('Please draw an Area of Interest on the map first using "Draw AOI".');
-        return;
+      if (drawnAOIBbox) {
+        const viewport = document.getElementById('canvasViewport');
+        const rect = viewport.getBoundingClientRect();
+        const aoiW = (drawnAOIBbox[2] - drawnAOIBbox[0]) * rect.width;
+        const aoiH = (drawnAOIBbox[3] - drawnAOIBbox[1]) * rect.height;
+        if (aoiW >= 10 && aoiH >= 10) {
+          const scaleX = rect.width / aoiW;
+          const scaleY = rect.height / aoiH;
+          zoomLevel = Math.min(scaleX, scaleY, 4.0);
+
+          const centerX = ((drawnAOIBbox[0] + drawnAOIBbox[2]) / 2) * rect.width;
+          const centerY = ((drawnAOIBbox[1] + drawnAOIBbox[3]) / 2) * rect.height;
+          panX = (rect.width / 2 - centerX) * zoomLevel;
+          panY = (rect.height / 2 - centerY) * zoomLevel;
+
+          applyTransform();
+          const indicator = document.getElementById('zoomLevelIndicator');
+          if (indicator) indicator.innerText = Math.round(zoomLevel * 100) + '%';
+          return;
+        }
       }
-      const viewport = document.getElementById('canvasViewport');
-      const rect = viewport.getBoundingClientRect();
-      const aoiW = (drawnAOIBbox[2] - drawnAOIBbox[0]) * rect.width;
-      const aoiH = (drawnAOIBbox[3] - drawnAOIBbox[1]) * rect.height;
-      if (aoiW < 10 || aoiH < 10) return;
-
-      const scaleX = rect.width / aoiW;
-      const scaleY = rect.height / aoiH;
-      zoomLevel = Math.min(scaleX, scaleY, 4.0);
-
-      const centerX = ((drawnAOIBbox[0] + drawnAOIBbox[2]) / 2) * rect.width;
-      const centerY = ((drawnAOIBbox[1] + drawnAOIBbox[3]) / 2) * rect.height;
-      panX = (rect.width / 2 - centerX) * zoomLevel;
-      panY = (rect.height / 2 - centerY) * zoomLevel;
-
+      panX = 0;
+      panY = 0;
+      zoomLevel = 1.0;
       applyTransform();
       const indicator = document.getElementById('zoomLevelIndicator');
-      if (indicator) indicator.innerText = Math.round(zoomLevel * 100) + '%';
+      if (indicator) indicator.innerText = '100%';
     }
 
     function applyTransform() {
@@ -1827,6 +1890,8 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
     }
 
     function loadSingleCopernicusScene(sid, date, thumb, aoi) {
+      switchToImageView('satellite');
+      resetZoomPan();
       selectInputMode('single_optical');
       activeSceneIds = sid;
       activeAnalysisMode = 'single';
@@ -1844,6 +1909,8 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
     }
 
     function loadBiTemporalPair(sid1, sid2, date1, date2, thumb1, thumb2, aoi, latLon, bboxStr) {
+      switchToImageView('satellite');
+      resetZoomPan();
       selectInputMode('bitemporal_pair');
       activeSceneIds = `${sid1},${sid2}`;
       activeAnalysisMode = 'change';
@@ -1871,14 +1938,49 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
         selectedFiles = Array.from(files);
         activeSceneIds = null;
         activeAnalysisMode = null;
+
+        // Immediately switch to Image view mode: hide streets & places map!
+        switchToImageView('satellite');
+
+        // Reset pan & zoom to 100%
+        panX = 0;
+        panY = 0;
+        zoomLevel = 1.0;
+        applyTransform();
+        const ind = document.getElementById('zoomLevelIndicator');
+        if (ind) ind.innerText = '100%';
+
         document.getElementById('uploadLabel').innerText = `${files.length} custom file(s) loaded: ` + Array.from(files).map(f => f.name).join(', ');
         document.getElementById('sceneDataSource').innerText = `Custom Upload (${files[0].name})`;
 
         const reader = new FileReader();
         reader.onload = (e) => {
-          document.getElementById('viewerBaseImg').src = e.target.result;
+          const baseImg = document.getElementById('viewerBaseImg');
+          if (baseImg) {
+            baseImg.src = e.target.result;
+            baseImg.classList.remove('hidden');
+          }
         };
         reader.readAsDataURL(files[0]);
+
+        if (files.length > 1) {
+          const reader2 = new FileReader();
+          reader2.onload = (e) => {
+            const splitImg = document.getElementById('viewerSplitImg');
+            if (splitImg) splitImg.src = e.target.result;
+          };
+          reader2.readAsDataURL(files[1]);
+          const sDateBefore = document.getElementById('splitDateBefore');
+          if (sDateBefore) sDateBefore.innerText = files[1].name;
+          const sDateAfter = document.getElementById('splitDateAfter');
+          if (sDateAfter) sDateAfter.innerText = files[0].name;
+        }
+
+        const badgeText = document.getElementById('imageSourceBadgeText');
+        if (badgeText) {
+          badgeText.innerText = `Uploaded Data: ${files[0].name}`;
+        }
+
         resetViewerOverlays();
       }
     }
@@ -1998,6 +2100,17 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       if (mode === 'overlay') mode = 'evidence';
       viewMode = mode;
 
+      currentDisplayMode = 'image';
+      const stage = document.getElementById('viewportStage');
+      const mapCont = document.getElementById('leafletMap');
+      if (stage) stage.classList.remove('hidden');
+      if (mapCont) mapCont.classList.add('hidden');
+
+      ['btnLayerStreets', 'btnLayerSatellite', 'btnLayerHybrid'].forEach(id => {
+        const b = document.getElementById(id);
+        if (b) b.className = 'px-2 py-1 rounded text-slate-300 hover:text-white bg-slate-900 border border-slate-700 hover:border-blue-600 font-medium text-[10px] transition flex items-center space-x-1';
+      });
+
       const overlayImg = document.getElementById('viewerOverlayImg');
       const splitCont = document.getElementById('splitContainer');
       const legend = document.getElementById('mapLegend');
@@ -2008,7 +2121,7 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       const btnEvidence = document.getElementById('btnViewEvidence');
 
       [btnSat, btnSplit, btnEvidence].forEach(b => {
-        if (b) b.className = 'px-3 py-1 rounded text-slate-400 hover:text-white font-medium text-[11px] transition flex items-center space-x-1.5';
+        if (b) b.className = 'px-2.5 py-1 rounded text-slate-400 hover:text-white font-medium text-[10px] transition flex items-center space-x-1';
       });
 
       if (overlayImg) overlayImg.classList.add('hidden');
@@ -2020,13 +2133,21 @@ MISSION_CONTROL_HTML = """<!DOCTYPE html>
       }
 
       if (mode === 'satellite') {
-        if (btnSat) btnSat.className = 'px-3 py-1 rounded bg-blue-600 text-white font-semibold text-[11px] transition shadow flex items-center space-x-1.5';
+        if (btnSat) btnSat.className = 'px-2.5 py-1 rounded bg-blue-600 text-white font-semibold text-[10px] transition shadow flex items-center space-x-1';
+        const badgeText = document.getElementById('imageSourceBadgeText');
+        if (badgeText) {
+          if (selectedFiles && selectedFiles.length > 0) {
+            badgeText.innerText = `Uploaded Data: ${selectedFiles[0].name}`;
+          } else {
+            badgeText.innerText = 'Analysis Image: Sentinel-2 L2A';
+          }
+        }
       } else if (mode === 'split') {
-        if (btnSplit) btnSplit.className = 'px-3 py-1 rounded bg-blue-600 text-white font-semibold text-[11px] transition shadow flex items-center space-x-1.5';
+        if (btnSplit) btnSplit.className = 'px-2.5 py-1 rounded bg-blue-600 text-white font-semibold text-[10px] transition shadow flex items-center space-x-1';
         if (splitCont) splitCont.classList.remove('hidden');
         if (isBasemapActive) toggleReferenceBasemap();
       } else if (mode === 'evidence') {
-        if (btnEvidence) btnEvidence.className = 'px-3 py-1 rounded bg-blue-600 text-white font-semibold text-[11px] transition shadow flex items-center space-x-1.5';
+        if (btnEvidence) btnEvidence.className = 'px-2.5 py-1 rounded bg-blue-600 text-white font-semibold text-[10px] transition shadow flex items-center space-x-1';
         const chk = document.getElementById('overlayToggleCheck');
         if (!chk || chk.checked) {
           if (overlayImg) overlayImg.classList.remove('hidden');

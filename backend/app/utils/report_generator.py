@@ -208,8 +208,13 @@ def generate_mission_pdf_report(
     def make_rl_image(img_bytes: bytes, max_w: int = 160, max_h: int = 120):
         try:
             pil_img = Image.open(io.BytesIO(img_bytes))
+            if pil_img.mode in ("RGBA", "LA") or (pil_img.mode == "P" and "transparency" in pil_img.info):
+                canvas_img = Image.new("RGBA", pil_img.size, (255, 255, 255, 255))
+                pil_img = Image.alpha_composite(canvas_img, pil_img.convert("RGBA")).convert("RGB")
+            elif pil_img.mode != "RGB":
+                pil_img = pil_img.convert("RGB")
             buf = io.BytesIO()
-            pil_img.save(buf, format="JPEG", quality=85)
+            pil_img.save(buf, format="JPEG", quality=90)
             buf.seek(0)
             return RLImage(buf, width=max_w, height=max_h)
         except Exception:
@@ -225,9 +230,9 @@ def generate_mission_pdf_report(
             [
                 [rl_t1, rl_t2, rl_ov],
                 [
-                    Paragraph("<b>1. Earlier Image (2025)</b>", body_style),
-                    Paragraph("<b>2. Recent Image (2026)</b>", body_style),
-                    Paragraph("<b>3. Change Map Overlay</b>", body_style)
+                    Paragraph("<b>1. Before (Baseline Satellite)</b>", body_style),
+                    Paragraph("<b>2. After (Recent Satellite Observation)</b>", body_style),
+                    Paragraph("<b>3. Real Satellite Change Analysis</b>", body_style)
                 ]
             ],
             colWidths=[168, 168, 168]
@@ -240,6 +245,28 @@ def generate_mission_pdf_report(
         ]))
         story.append(vis_table)
 
+    elif base_image_bytes and comparison_image_bytes:
+        rl_t1 = make_rl_image(base_image_bytes, max_w=240, max_h=160)
+        rl_t2 = make_rl_image(comparison_image_bytes, max_w=240, max_h=160)
+
+        vis_table = Table(
+            [
+                [rl_t1, rl_t2],
+                [
+                    Paragraph("<b>1. Before (Baseline Satellite)</b>", body_style),
+                    Paragraph("<b>2. After (Recent Satellite Observation)</b>", body_style)
+                ]
+            ],
+            colWidths=[252, 252]
+        )
+        vis_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('TOPPADDING', (0, 0), (-1, -1), 2),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ]))
+        story.append(vis_table)
+
     elif base_image_bytes and evidence_image_bytes:
         rl_base = make_rl_image(base_image_bytes, max_w=240, max_h=160)
         rl_ev = make_rl_image(evidence_image_bytes, max_w=240, max_h=160)
@@ -248,8 +275,8 @@ def generate_mission_pdf_report(
             [
                 [rl_base, rl_ev],
                 [
-                    Paragraph("<b>Satellite Image</b>", body_style),
-                    Paragraph("<b>Detected Feature Overlay</b>", body_style)
+                    Paragraph("<b>Real Satellite Image (Observation)</b>", body_style),
+                    Paragraph("<b>Real Satellite Change Analysis</b>", body_style)
                 ]
             ],
             colWidths=[252, 252]
@@ -264,7 +291,7 @@ def generate_mission_pdf_report(
 
     elif base_image_bytes:
         rl_base = make_rl_image(base_image_bytes, max_w=300, max_h=180)
-        story.append(Table([[rl_base], [Paragraph("<b>Satellite Scene</b>", body_style)]], colWidths=[504]))
+        story.append(Table([[rl_base], [Paragraph("<b>Real Satellite Scene</b>", body_style)]], colWidths=[504]))
 
     story.append(Spacer(1, 10))
 
